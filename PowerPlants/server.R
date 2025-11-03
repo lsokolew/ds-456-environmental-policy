@@ -1,11 +1,12 @@
-
+# Libraries
 library(shiny)
 library(bslib)
 
+# Sourcing ui to know what plot is being called
 source("ui.R")
 
 # Define server logic required to draw a histogram
-function(input, output, session) {
+server <- function(input, output, session) {
 
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R

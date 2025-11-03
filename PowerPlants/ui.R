@@ -1,23 +1,26 @@
 
+# Libraries
 library(shiny)
 library(bslib)
+source("set_code.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
     # Application title
-    titlePanel("<strong>Positive adaptation of power plants in Minnesota<strong>"),
+    h1(style = "text-align:center; font-size:30px;", strong("Positive adaptations of power plants in Minnesota")),
+    
     
     # theme
     theme = bs_theme(
       # background color
-      bg = "#9ECADE",
+      bg = light_blue,
       # font color
       fg = "#0C181F",
       primary = "#E69F00",
-      secondary = "#0072B2",
+      secondary = "#CBE0F7",
       success = "#009E73",
-      base_font = font_google("Roboto"),
+      base_font = font_google("Tinos"),
       code_font = font_google("JetBrains Mono")
     ),
 
