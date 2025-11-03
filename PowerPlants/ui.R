@@ -17,9 +17,6 @@ ui <- fluidPage(
       bg = light_blue,
       # font color
       fg = "#0C181F",
-      primary = "#E69F00",
-      secondary = "#CBE0F7",
-      success = "#009E73",
       base_font = font_google("Tinos"),
       code_font = font_google("JetBrains Mono")
     ),

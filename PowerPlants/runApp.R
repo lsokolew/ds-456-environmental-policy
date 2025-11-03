@@ -4,6 +4,7 @@ library(shiny)
 # Call the other files
 source("ui.R")
 source("server.R")
+source("set_code.R")
 
 # Run the application 
 shinyApp(ui = ui, server = server)
