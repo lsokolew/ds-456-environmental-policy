@@ -23,7 +23,7 @@ ui <- fluidPage(
 
     # side
     sidebarLayout(
-      sidebarPanel = sidebarPanel(sliderInput('numeric', 'Numeric', min = 1907, max = 2025, value = c(2022))),
+      sidebarPanel = sidebarPanel(sliderInput('numeric', 'Year', min = 1907, max = 2025, value = c(2022))),
       
     # main
       mainPanel = mainPanel(
