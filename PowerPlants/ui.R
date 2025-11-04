@@ -10,7 +10,6 @@ ui <- fluidPage(
     # Application title
     h1(style = "text-align:center; font-size:30px;", strong("Positive adaptations of power plants in Minnesota")),
     
-    
     # theme
     theme = bs_theme(
       # background color
@@ -20,21 +19,15 @@ ui <- fluidPage(
       base_font = font_google("Tinos"),
       code_font = font_google("JetBrains Mono")
     ),
+###=========================layout of shiny=========================###
 
-    # Sidebar with a slider input for number of bins 
+    # side
     sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
-    )
-)
-
+      sidebarPanel = sidebarPanel(sliderInput('numeric', 'Numeric', min = 1907, max = 2025, value = c(2022))),
+      
+    # main
+      mainPanel = mainPanel(
+        leafletOutput(outputId = 'map')
+      ) # closing main panel
+    ) # closing sidebar Layout
+  ) # closing UI

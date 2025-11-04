@@ -4,20 +4,31 @@ library(bslib)
 
 # Sourcing ui to know what plot is being called
 source("ui.R")
+source("set_code.R")
 
-# Define server logic required to draw a histogram
-server <- function(input, output, session) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+server = function(input, output, session){
+  
+  map_df = reactive({
+    
+    mn_powerplants %>%
+      filter(first_op_year == as.numeric(input$numeric[1]))%>%
+      filter(!is.na(Longitude) & !is.na(Latitude)) %>%
+      group_by(plant_code, Longitude,Latitude) %>%
+      summarize (count = n()) %>%
+      st_as_sf(coords = c('Longitude', 'Latitude')) %>%
+      st_set_crs(4326)
+    
+  })
+  
+  output$map = renderLeaflet({
+    
+    leaflet() %>%
+      addTiles() %>%
+      setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
+      addCircleMarkers(data = map_df())
+    
+  })
+  
+  
 }
-
-
