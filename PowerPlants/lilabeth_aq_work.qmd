@@ -16,34 +16,40 @@ library(readr)
 library(lubridate)
 ```
 
+# Load in & Wrangle Data
+
+Dataset: 
+
 ```{r warning=FALSE, message=FALSE}
-powerPlants <- read_csv("Project_Data/Power_Plants.csv")
+# read in powerplant location & characteristic data
+powerPlants <- read_csv("Data/Power_Plants.csv")
 mn_powerplants <- powerPlants %>%
   filter(State == "Minnesota") %>% 
   mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"),
-         PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% 
+         PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% # change 'other' to 'waste heat'
   janitor::clean_names() 
+```
 
-# TO DO: change other to 'waste heat'
-mn_powerplants %>% filter(prim_source == "other")
+Dataset: 
+air quality only goes 2008-2021
 
-mn_aqi_all_years <- read_csv("Project_Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv") %>% 
+```{r warning=FALSE, message=FALSE,results='hide'}
+# read in air quality data
+mn_aq_all_years <- read_csv("Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv") %>% 
   mutate(county = str_split_i(county, ",", 1),
          county = str_remove(county, "County"),
          county = str_trim(county)
          )
 ```
 
-```{r warning=FALSE, message=FALSE,results='hide'}
-mn_counties <- counties(state = "MN", cb = TRUE)
-
-mn_tracts <- tracts(state = "MN", cb = TRUE)
-```
+Dataset: Form EIA-860
 
 ```{r}
-powerplant_dates <- read_csv("Project_Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+# load in dataset containing powerplant first operational date
+powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
   janitor::clean_names() 
 
+# filter to MN and get date of *first* operational generator for a powerplant (disregard dates of generators added later)
 powerplant_dates_mn <- powerplant_dates %>% 
   filter(state == "MN") %>% 
   mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
@@ -65,32 +71,43 @@ mn_powerplants <- mn_powerplants %>%
                                    TRUE ~ first_op_date), 
          first_op_year = year(first_op_date)
          ) 
-
-# avg # generators/plant = ~1.6
 ```
 
+
 ```{r}
-powerplant_dates_retired_mn <- read_csv("Project_Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
+# read in dataset containing powerplant retirement date, if applicable
+powerplant_dates_retired_mn <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
   janitor::clean_names() %>% 
   filter(state == "MN")
 
-
+# get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later)
 powerplant_dates_retired_mn <- powerplant_dates_retired_mn %>% 
   mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>% 
   group_by(plant_code) %>% 
   summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded
 
+# join to mn_powerplants
 mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
+```
 
+```{r warning=FALSE, message=FALSE,results='hide'}
+# load spatial/boundary info
+mn_counties <- counties(state = "MN", cb = TRUE) %>%
+  st_transform(crs = 4326)
+
+mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
+  st_transform(crs = 4326)
 ```
 
 ```{r}
-mn_counties_aqi <- mn_counties %>%
-  left_join(mn_aqi_all_years, by = c("NAME" = "county")) %>% 
+# join AQ data to add spatial data
+mn_counties_aq <- mn_counties %>%
+  left_join(mn_aq_all_years, by = c("NAME" = "county")) %>% 
   janitor::clean_names()
-
-max(mn_counties_aqi$year)
 ```
+
+
+# Visualizations
 
 ```{r}
 pal_pp <- colorFactor(
@@ -135,11 +152,13 @@ leaflet() %>%
   ) 
 ```
 
+This map shows the locations of all powerplants that have been built in Minnesota since 1900, with black points being fossil-fuel powered and green points being renewable-powered. The power plants seem clustered in the southern half of the state, particularly renewable plants, which seem to outnumber fossil-fuel plants. 
+
 ```{r}
 map_mn_aq <- function(year_spec, pollutant_spec){
   
   # filter df based on user specs
-  filtered_mn_aq <- mn_counties_aqi %>% filter(year <= year_spec, pollutant == pollutant_spec)
+  filtered_mn_aq <- mn_counties_aq %>% filter(year <= year_spec, pollutant == pollutant_spec)
   filtered_mn_powerplants <- mn_powerplants %>% filter(first_op_year <= year_spec, is.na(last_retire_year) | last_retire_year > year_spec)
   
     pal_pp <- colorFactor(
@@ -194,7 +213,6 @@ map_mn_aq <- function(year_spec, pollutant_spec){
 ```
 
 ```{r}
-#aqi only goes 2008-2021
 map_mn_aq(2008, "Ozone")
 map_mn_aq(2015, "Ozone")
 map_mn_aq(2021, "Ozone")
@@ -206,6 +224,26 @@ map_mn_aq(2015, "PM2.5")
 map_mn_aq(2018, "PM2.5")
 map_mn_aq(2021, "PM2.5")
 ```
+
+This plot allows for a user-specified year and pollutant, to the end of becoming an interactive plot with a slider for year. We can see a lot more renewable plants getting built in later years, but air quality doesn't seem to follow clear patterns over time. Connections between air quality and presence of power plants are not immediately apparent.
+
+```{r}
+mn_powerplants %>% 
+  ggplot(aes(x = first_op_year, fill = fossil_fuel)) +
+  geom_bar() +
+  facet_wrap(~fossil_fuel) +
+  labs(title = "When have different kinds of powerplants been built in Minnesota?") +
+  theme_classic() 
+
+# interesting that earliest powerplants are renewable - they're all hydroelectric power
+mn_powerplants %>% filter(first_op_year < 1920)
+
+# TO DO: make plot of de-op pps - when do they get decomissioned?
+```
+
+The plots show the shift to renewable power around the turn of the century, preceding a huge boom in their construction around 2018. We can see that fossil fuel plant construction has remained fairly constant post-1950, with a lull in the 80s and a spike in the early 2000s. However, the numbers of new fossil fuel plants become nearly insignificantcompared to the overwhelming amounts of new renewable plants.
+
+The earliest plants were also renewable ones, making use of exclusively hydroelectric power as shown in the table. 
 
 ```{r}
 mn_powerplants %>% 
@@ -224,27 +262,28 @@ mn_powerplants %>%
   labs(x = "Energy Source", y = "MW produced", title = "Energy produced by Source in MN Powerplants") +  
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# change color scheme
-#consider time frame - specific year? this is just showing all that have ever existed
 
-# what's install_MW?
+# TO DOs:
+# change color scheme
+# consider time frame - specific year? this is just showing all that have ever existed
 ```
+
+Across all plants built in MN, we can see that by far the most (by nearly five times) solar-fueled plants have been built, by numbers alone. There seem to be very few coal plants, although petroleum and natural gas have a notable amount. However, looking at the actual energy produced by each fuel type, natural gas produces the most, followed by wind and coal, suggesting that fossil-fuel plants are either larger and/or more efficient - a single fossil-fuel plant can produce more energy than a renewable one. Solar power produces only about 1800 MWs, less than a third of natural gas's production, despite having over 10x the number of plants. 
 
 ```{r}
 # which counties to look at? ones with new fossil fuel plants in our time range
-mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel", first_op_year > 2007) %>% count(county) %>% arrange(desc(n))
+mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel", first_op_year > 2007) %>% count(county) %>% arrange(desc(n)) %>% head()
 ```
 
-```{r}
-# line chart of county or groups of counties - showing air quality over time; have vertical lines when plants were built
+This table shows which counties have the most new fossil fuel plants built within the time frame of our air quality data (2008-2021), for the sake of analysis.
 
-county_spec <- "Hennepin"
-county_spec <- "Otter Tail"
-county_spec <- "Dakota"
+```{r}
+# line chart of county or groups of counties - showing air quality over time; vertical lines when plants were built
+#county_spec <- "Dakota"
 county_spec <- "Olmsted"
 
 pollutant_spec <- "Ozone"
-pollutant_spec <- "PM2.5"
+#pollutant_spec <- "PM2.5"
 
 mn_powerplants_filtered <- mn_powerplants %>% 
   filter(county == county_spec, first_op_year >= 2008, first_op_year <= 2021) %>% 
@@ -265,6 +304,8 @@ ggplot() +
 # TO DO : make capable of handling clusters of counties
 ```
 
+This plot is also designed to be interactive. In this case, there appears little connection between air quality and fossil fuel plants being built. 
+
 ```{r}
 #Overall trends in AQ
 
@@ -273,6 +314,7 @@ mn_counties_aqi %>%
   ggplot() +
     geom_line(aes(x = year, y = average_concentration, group = name, color = name), show.legend = FALSE) +
   labs(title = "Average Ozone Concentration By County") +
+  ylim(0,40) +
   theme_classic()
 
 mn_counties_aqi %>% 
@@ -282,13 +324,19 @@ mn_counties_aqi %>%
   ggplot() +
     geom_line(aes(x = year, y = avg_conc_by_year)) +
   labs(title = "Ozone Concentration (Average of All MN Counties)") +
+  ylim(0,38) +
   theme_classic()
+```
 
+Average ozone concentration does not seems to change too drastically in this time frame; although it dips somewhat around 2016 before rising again. All counties seems to follow the overall trend, with a more distinctive high around 2013 and low around 2015-2016. 
+
+```{r}
 mn_counties_aqi %>% 
   filter(pollutant == "PM2.5") %>% 
   ggplot() +
     geom_line(aes(x = year, y = average_concentration, group = name, color = name), show.legend = FALSE) +
   labs(title = "Average PM2.5 Concentration By County") +
+  ylim(0, 12) +
   theme_classic()
 
 mn_counties_aqi %>% 
@@ -298,32 +346,17 @@ mn_counties_aqi %>%
   ggplot() +
     geom_line(aes(x = year, y = avg_conc_by_year)) +
   labs(title = "PM2.5 Concentration (Average of All MN Counties)") +
+  ylim(0, 10) +
   theme_classic()
 
 # What's causing the 2021 spike?
 ```
+There seems to be more variation in PM2.5, and a distinct pattern shared across counties that suggests larger-scale factors (such as large wildfires) affect each county's air quality more than individual elements like the addition of powerplants. The is a zig-zag pattern between 2014 and 2020, in which PM2.5 jumps and then drops every few years. 2021 measurements seems to be rising back to, or even exceeding pre-2014 levels. 
 
-```{r}
-mn_powerplants %>% 
-  ggplot(aes(x = first_op_year, fill = fossil_fuel)) +
-  geom_bar() +
-  labs(title = "When have different kinds of powerplants been built in Minnesota?") +
-  theme_classic()
-
-# interesting that earliest pps renewable - all hydroelectric power
-mn_powerplants %>% filter(first_op_year < 1920)
-# boom of renewable plants right around turn of century
-# look into the the blips - non renewables after 2015
-
-
-# TO DO: make plot of de-op pps - do they go out the same time the renewables come in?
-
-```
 
 ```{r}
 # combine the two
-
-pollutant_spec <- "Ozone"
+#pollutant_spec <- "Ozone"
 pollutant_spec <- "PM2.5"
 
 summary_df <- mn_counties_aqi %>%
@@ -341,20 +374,11 @@ summary_df <- mn_counties_aqi %>%
 
 ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) +
   geom_point(color = "red") +
-  geom_smooth(color = "black") +
+  geom_smooth(method = 'lm',color = "black") +
   labs(title = str_c("MN Counties' Average Air Quality vs Number of Fossil Fuel Plants"),
        x = "Number of Fossil Fuel Plants",
        y = str_c("Mean ", pollutant_spec, " Concentration")) +
   theme_classic()
-
-
-ggplot(summary_df, aes(x = factor(num_fossil), y = mean_aqi)) +
-  geom_boxplot() +
-  labs(title = str_c("MN Counties' Average Air Quality vs Number of Fossil Fuel Plants"),
-       x = "Number of Fossil Fuel Plants",
-       y = str_c("Mean ", pollutant_spec, " Concentration")) +
-  theme_classic()
-  
 
 
 # renewables 
@@ -380,16 +404,42 @@ ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) +
   theme_classic()
 
 ```
+A county having more fossil fuel plants appears to be associated with higher PM2.5 concentrations on average. However, having fewer renewable power plants seems associated with better air quality also, which calls this analysis into question, as renewable plants should not be affecting the air quality. 
+
 
 ```{r}
-mn_powerplants %>% count(first_op_year)
-```
+summary_df <- mn_counties_aqi %>%
+  filter(pollutant == pollutant_spec) %>% 
+  group_by(name) %>%
+  summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
+  left_join(
+    mn_powerplants %>%
+      group_by(county) %>% 
+      summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")),
+    by = c("name" = "county")
+  ) %>%
+  mutate(has_fossil = ifelse(is.na(has_fossil), FALSE, has_fossil),
+         plant_group = ifelse(has_fossil, "Contains Fossil Fuel Plants", "No Fossil Fuel Plants"))
 
-```{r}
-# Compare counties with fossil plants vs counties with only renewable or no plants in terms of:
-# Mean pollutant concentrations
-# Rate of improvement/decline in air quality
+ggplot(summary_df, aes(x = plant_group, y = mean_aqi, fill = plant_group)) +
+  geom_boxplot(alpha = 0.7, outlier.color = "gray40") +
+  geom_jitter(width = 0.15, alpha = 0.6) +
+  labs(
+    title = str_c("Mean ", pollutant_spec, " Concentration by County Type"),
+    x = NULL,
+    y = str_c("Mean ", pollutant_spec, " Concentration")
+  ) +
+  ylim(0,10) +
+  scale_fill_manual(values = c("Contains Fossil Fuel Plants" = "#d95f02",
+                               "No Fossil Fuel Plants" = "#1b9e77")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+mn_powerplants %>% group_by(county) %>% count(fossil_fuel)
 ```
+This plot suggests that counties containing fossil fuel plants have higher concentrations of pm2.5 than those containing only renewable or no powerplants. 
+
+# Future Steps
 
 ```{r}
 # Heatmaps: correlation between number of fossil/renewable plants and pollution per county.
@@ -397,10 +447,14 @@ mn_powerplants %>% count(first_op_year)
 # Line plots: before-and-after trends in air quality for counties that transitioned to renewables.
 ```
 
-timeseries analysis?
+- do a timeseries analysis, á la correlated data? Model accounting for time or spatial correlation 
+- consider buffer area around plant
+- look into install_MW
+- look into potential confounders
+  - What's causing the 2021 spike in aq?
+- look into why powerplants are where they are
+- look at select counties with air monitors post-2021, beyond the scope of my current modeled data. look at impacts of wildfires (2023)
 
-more advanced options - consider buffer area around plant consider de-op dates - create dataset of functional pps at each year? look at other things that affect aq
+# AI Statement
 
-look at select counties (without modeled data) post-2021? (wildfires 2023)
-
-modeling - time or spatial analysis
+-----
