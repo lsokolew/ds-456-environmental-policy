@@ -40,7 +40,6 @@ mn_counties <- counties(state = "MN", cb = TRUE)
 mn_tracts <- tracts(state = "MN", cb = TRUE)
 ```
 
-
 ```{r}
 powerplant_dates <- read_csv("Project_Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
   janitor::clean_names() 
@@ -70,7 +69,6 @@ mn_powerplants <- mn_powerplants %>%
 # avg # generators/plant = ~1.6
 ```
 
-
 ```{r}
 powerplant_dates_retired_mn <- read_csv("Project_Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
   janitor::clean_names() %>% 
@@ -85,7 +83,6 @@ powerplant_dates_retired_mn <- powerplant_dates_retired_mn %>%
 mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
 ```
-
 
 ```{r}
 mn_counties_aqi <- mn_counties %>%
@@ -137,9 +134,6 @@ leaflet() %>%
   title = "Power Plants: Energy Type"
   ) 
 ```
-
-
-
 
 ```{r}
 map_mn_aq <- function(year_spec, pollutant_spec){
@@ -213,7 +207,6 @@ map_mn_aq(2018, "PM2.5")
 map_mn_aq(2021, "PM2.5")
 ```
 
-
 ```{r}
 mn_powerplants %>% 
   ggplot(aes(x = fct_infreq(prim_source))) +
@@ -272,8 +265,6 @@ ggplot() +
 # TO DO : make capable of handling clusters of counties
 ```
 
-
-
 ```{r}
 #Overall trends in AQ
 
@@ -311,7 +302,6 @@ mn_counties_aqi %>%
 
 # What's causing the 2021 spike?
 ```
-
 
 ```{r}
 mn_powerplants %>% 
@@ -395,14 +385,11 @@ ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) +
 mn_powerplants %>% count(first_op_year)
 ```
 
-
-
 ```{r}
 # Compare counties with fossil plants vs counties with only renewable or no plants in terms of:
 # Mean pollutant concentrations
 # Rate of improvement/decline in air quality
 ```
-
 
 ```{r}
 # Heatmaps: correlation between number of fossil/renewable plants and pollution per county.
@@ -412,9 +399,7 @@ mn_powerplants %>% count(first_op_year)
 
 timeseries analysis?
 
-more advanced options - consider buffer area around plant
-consider de-op dates - create dataset of functional pps at each year?
-look at other things that affect aq
+more advanced options - consider buffer area around plant consider de-op dates - create dataset of functional pps at each year? look at other things that affect aq
 
 look at select counties (without modeled data) post-2021? (wildfires 2023)
 
