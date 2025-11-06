@@ -1,0 +1,390 @@
+---
+title: "FP2 Revisited"
+format: html
+editor: visual
+---
+
+AI Statement: I used ChatGPT to help me with the zcta files since I have never used them before, and my code was nor running correctly
+
+SETUP
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(leaflet)
+library(dplyr)
+library(tidycensus)
+library(tigris)
+library(naniar)
+library(tidyverse)
+library(sf)
+library(htmlwidgets)
+library(htmltools)
+library(httr)
+library(jsonlite)
+
+```
+
+DATA
+```{r, include=FALSE }
+
+# Power plants
+american_powerPlants <- read_csv("Power_Plants.csv")
+mn_powerplants <- american_powerPlants %>%
+  filter(State == "Minnesota")
+
+# Operating Years
+powerplant_dates <- read_csv("powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+  janitor::clean_names() 
+powerplant_dates_mn <- powerplant_dates %>% 
+  filter(state == "MN") %>% 
+  mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(first_op_date = min(full_date))
+
+# add years to mn_powerplants (main dataset we're using for powerplants)
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn, by = c("Plant_Code" = "plant_code"))
+
+# fill in missing dates:
+# Buffalo Sun CSG - active since 2/1/2025
+# Oster Sun CSG	- active since 1/1/2025
+# Quarry Sun CSG - active since 1/1/2025
+# via sunshare website
+mn_powerplants <- mn_powerplants %>%
+  mutate(first_op_date = case_when(Plant_Code == 66070 ~ as.Date(mdy("2/1/2025")),
+                                   Plant_Code == 66072 ~ as.Date(mdy("1/1/2025")),
+                                   Plant_Code == 66073 ~ as.Date(mdy("1/1/2025")),
+                                   TRUE ~ first_op_date), 
+         first_op_year = year(first_op_date)
+         ) 
+mn_powerplants
+
+
+
+# Health
+copd <- read_csv("copd.csv")
+asthmaMN <- read_csv("MN-asthma-zipcode.csv") 
+# Air
+air <- read_csv("air.csv")
+
+
+
+# Filter for specific zip codes if needed
+# For example, to get data for zip codes 90210 and 90001
+
+zctas <- zctas(cb = FALSE, year = 2020)
+mn_counties <- counties(state = "MN", class = "sf")
+mn_zctas <- st_filter(zctas, mn_counties)
+
+
+zcta_joined <- mn_zctas %>%
+  full_join(asthmaMN, by = c("GEOID20" = "_ZIP")) %>%
+  drop_na() %>%
+  mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
+        `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
+   mutate(value_cat = case_when(
+    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
+    `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
+    `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
+    `Age-adjusted rate per 10,000` >= 7 ~ "7+")) 
+
+
+```
+AIR
+```{r}
+air %>%
+  group_by(year) %>%
+  summarize(avg_air = mean(pm25AvgMod)) %>%
+  ggplot(aes(x = year, y = avg_air)) +
+  geom_point() + theme_classic()
+```
+
+COPD
+```{r}
+copd_total_hospitalizations <- copd %>%
+  group_by(year) %>%
+  summarise(hospitalizations = sum(count)) %>%
+  slice(3:23) %>%
+  mutate(year = as.numeric(year))
+
+copd_total_hospitalizations %>%
+  ggplot(aes(x = year, y = hospitalizations)) + 
+  geom_point() +
+  theme_classic() + 
+  labs(title = "COPD Hospitalizations between 2000-2020 in MN", x = "Year", y = "Hospitalizations")
+  
+```
+
+ASTHMA
+```{r}
+
+pal <- colorFactor(
+  palette = c("lightblue", "steelblue", "royalblue4", "navy"),  
+  levels = c("0-2", "2-4", "4-7", "7+"),
+  na.color = "grey")
+
+leaflet(zcta_joined) %>%
+  addTiles() %>%
+  addPolygons(
+    fillColor = ~pal(value_cat),
+    color = "black",
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.7,
+    highlight = highlightOptions(
+      weight = 2,
+      color = "white",
+      bringToFront = TRUE),
+    label = ~paste0(
+      "Zipcode: ", ZCTA5CE20, "\n",
+      "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`))) %>%
+  addLegend(
+    pal = pal,
+    values = ~value_cat,
+    opacity = 0.7,
+    title = "Asthma related hospitalizations per 10,000 between 2017-2021",
+    position = "bottomright",
+    na.label = "Not given") %>%
+  addCircleMarkers(
+    data = mn_powerplants,
+    lng = ~Longitude,
+    lat = ~Latitude,
+    radius = 0.25,
+    fillOpacity = 1,
+    color = "red")
+
+
+```
+
+ASTHMA & EJ & POWER PLANTS
+```{r}
+ej_justice <- read_csv("csv_env_ej_mpca_census/ej_mpca_census.csv")
+ej_shapefile <- sf::st_read("shp_env_ej_mpca_census/ej_mpca_census.shp")
+
+ej_shapefile_cleaned <- ej_shapefile %>%
+  mutate(ej_status = if_else(status200x == "YES" | statuspoc == "YES" | statuslep == "YES", TRUE, FALSE))
+
+zcta_joined <- st_transform(zcta_joined, 4326)
+ej_shapefile_cleaned <- st_transform(ej_shapefile_cleaned, 4326)
+
+pattern_dep <- htmltools::htmlDependency(
+  name = "leaflet.pattern",
+  version = "0.2.0",
+  src = c(href = "https://unpkg.com/leaflet.pattern@0.2.0/dist"),
+  script = "leaflet.pattern.js"
+)
+
+
+pal <- colorFactor(
+  palette = c("lightblue", "steelblue", "royalblue4", "navy"),  
+  levels = c("0-2", "2-4", "4-7", "7+"),
+  na.color = "grey")
+
+plot <- leaflet(zcta_joined) %>%
+  addTiles() %>%
+  addPolygons(
+    fillColor = ~pal(value_cat),
+    color = "black",
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.7,
+    highlight = highlightOptions(
+      weight = 2,
+      color = "white",
+      bringToFront = TRUE),
+    label = ~paste0(
+      "Zipcode: ", GEOID, "\n",
+      "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`)),
+    group = "Asthma") %>%
+  addPolygons(
+    data = ej_shapefile_cleaned,
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.7,
+    fillColor = "transparent",
+    highlight = highlightOptions(
+      weight = 2,
+      color = "white",
+      bringToFront = TRUE),
+    label = ~ej_status,
+    group = "EJ Tracts"
+    ) %>%
+    htmlwidgets::onRender("
+    function(el, x) {
+      var map = this;
+
+      // --- Define two patterns ---
+      var patTrue  = new L.StripePattern({weight:6, spaceWeight:6, color:'#1f77b4', angle:45});
+      var patFalse = new L.StripePattern({weight:6, spaceWeight:6, color:'#ff7f0e', angle:-45});
+      patTrue.addTo(map);
+      patFalse.addTo(map);
+
+      // --- Apply patterns based on TRUE/FALSE ---
+      map.eachLayer(function(layer){
+        if(layer.feature && layer.feature.properties){
+          var val = layer.feature.properties.ej_status;
+          if(val === true){
+            layer.setStyle({fillPattern: patTrue});
+          } else {
+            layer.setStyle({fillPattern: patFalse});
+          }
+        }
+      });
+    }
+  ") %>%
+  addLegend(
+    pal = pal,
+    values = ~value_cat,
+    opacity = 0.7,
+    title = "Asthma related hospitalizations per 10,000 between 2017-2021",
+    position = "bottomright",
+    na.label = "Not given") %>%
+  addCircleMarkers(
+    data = mn_powerplants,
+    lng = ~Longitude,
+    lat = ~Latitude,
+    radius = 0.25,
+    fillOpacity = 1,
+    color = "red",
+    group = "Power Plants") %>%
+  addLayersControl(
+  overlayGroups = c("Asthma", "EJ Tracts", "Power Plants"),
+  options = layersControlOptions(collapsed = FALSE)
+)
+
+plot <- htmltools::attachDependencies(plot, pattern_dep)
+plot
+
+```
+
+SIMPLE PLOTS
+```{r}
+# Simple plots
+
+mn_counties <- counties(state = "MN", cb = TRUE)
+mn_tracts <- tracts(state = "MN", cb = TRUE)
+# color palette: (working on it)
+pal2 <- colorFactor(c("navy", "red", "green","cyan", "purple", "pink", "black", "red4",
+                     "blue"),
+                   domain = c("batteries", "biomass", "coal", "natural gas",
+                              "nuclear", "other", "petroleum", "solar",
+                              "wind"))
+
+pal3 <- colorFactor(c("palegreen", "seashell"),
+                    domain = c(TRUE, FALSE))
+# Plotting power plants
+leaflet() %>%
+  # putting layer of counties
+  addPolygons(
+    data = mn_counties,
+    fill = FALSE,
+    weight = 1,
+    color = "black",
+    opacity = 0.7,
+    group = "Counties"
+  ) %>%
+  # putting layer of tracts
+  addPolygons(
+    data = mn_tracts,
+    fill = FALSE,
+    weight = 0.5,
+    color = "gray",
+    opacity = 0.5,
+    group = "Tracts"
+  ) %>%
+  addPolygons(
+    data = ej_shapefile_cleaned,
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.7,
+    fillColor = ~pal3(ej_status),
+    highlight = highlightOptions(
+      weight = 2,
+      color = "white",
+      bringToFront = FALSE),
+    label = ~ej_status,
+    group = "EJ Tracts"
+    ) %>%
+  # putting circles for each powerplant
+  addCircleMarkers(
+    data = mn_powerplants,
+    lng = ~Longitude,
+    lat = ~Latitude,
+    radius = 0.25,
+     color = ~pal2(PrimSource),
+    fillOpacity = 0.25,
+    label = ~paste0("Plant Name: ", Plant_Name, "\n",
+                   "Company Name: " , Utility_Name)) %>%
+  # adding a legend to identify type of powerplant
+   addLegend(pal = pal2,
+                values = mn_powerplants$PrimSource, title = 'Type of Powerplant')
+```
+
+
+EPA API DATA
+```{r}
+# Load httr package
+library(httr)
+
+# Define the API URL
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 2000:2020
+all_data <- list()
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "amberbird59",    
+    param  = "88101",       # PM2.5
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "123",
+    site   = "0868"
+  )
+  
+  
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df <- bind_rows(all_data)
+
+df<-final_df %>%
+  filter(metric_used == "Daily Mean") %>%
+  arrange(year) %>%
+  filter(method == 'R & P Model 2025 PM-2.5 Sequential Air Sampler w/VSCC - Gravimetric'| method == 'Andersen RAAS2.5-300 PM2.5 SEQ w/WINS - GRAVIMETRIC') %>%
+  distinct(arithmetic_mean, .keep_all = TRUE) %>%
+  mutate(year = as.numeric(year))
+
+aq_copd <- df %>% left_join(copd_total_hospitalizations)
+
+aq_plot <- df %>% ggplot(aes(x = year, y = arithmetic_mean)) +
+  geom_line()
+
+copd_plot <- aq_copd %>% ggplot(aes(x = year, y = hospitalizations)) +
+  geom_line()
+
+ggarrange(aq_plot, copd_plot, 1,1)
+  
+
+```
+
+
+
+
+
+
+
