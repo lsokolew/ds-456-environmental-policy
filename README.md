@@ -69,7 +69,7 @@ Minnesota has one of the leading frameworks regarding power plants, their enviro
 
 
 ## Contributions to FP4:
-- Alicia: built Shiny app framework, demographics & EJA analysis...
-- Lilabeth: air quality analysis, ...
-- Sydney: health analysis, ...
+- Alicia: built Shiny app framework, demographics & EJA analysis
+- Lilabeth: air quality analysis, looked into the historical data and fixed issues in the data 
+- Sydney: health analysis, had a lot of context on negative impacts of power plants in other areas
 - All: made next steps plan, drafted presentation, contributed to shiny app
