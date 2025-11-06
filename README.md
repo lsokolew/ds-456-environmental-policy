@@ -9,7 +9,11 @@ environmental and health impacts on marginalized communities, as well as taking 
 of all people into account when creating environmental policy. 
 
 - Our research question concerns the locations of Minnesota powerplants and their effects on surrounding
-communities, quanitified through demographics, air quality, and health outcomes. 
+communities, quanitified through demographics, air quality, and health outcomes.
+
+## Motivation:
+We were initially interested in how policies, both past and present, affect local communities. Past discriminatory practices led to the building of power plants in minority communities and these practices have lasting effects on surrounding communities today. We wanted to pinpoint these effects, show how these power plants are harmful, and determine what communities are hit the hardest. Governments are beginning to implement environmental justice principles into ordinances, yet these initiatives are at risk given pressures to withdraw funding. It has never been more important to recognize how different communities are impacted differently.   
+
 
 ## Longer Context & Research Question:
 
@@ -35,6 +39,7 @@ if they are also built around communities of color. Furthermore, we would like t
 of them. 
 
 
+
 ## Description of Files:
   1. The 'Data" folder consists of all the data used for this analysis
   2. The 'ui.R' file organizes the layout of the shiny app, that being the plots, text, and sidebar
@@ -57,6 +62,10 @@ of them.
 
 ## Plan for the rest of the semester can be found here: 
 https://docs.google.com/document/d/1UmGPfNbmCvgxP4FVRG4xTKzD4NWpulKdt1rvIgYfyVs/edit?usp=sharing
+
+## Next steps:
+Minnesota has one of the leading frameworks regarding power plants, their environmental impacts, and where they can be located. Our goal is to do a comparative analysis of another city that may lack environmental justice policies and how their different policies impact local communities. For our final shiny app, we want to be able to tell a story— the history of power plants in the state, policies, the demographics affected— through an article format. 
+
 
 ## Contributions to FP4:
 - Alicia: built Shiny app framework, ...
