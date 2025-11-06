@@ -69,25 +69,22 @@ asthmaMN <- read_csv("MN-asthma-zipcode.csv")
 air <- read_csv("air.csv")
 
 
-
-# Filter for specific zip codes if needed
-# For example, to get data for zip codes 90210 and 90001
-
 zctas <- zctas(cb = FALSE, year = 2020)
 mn_counties <- counties(state = "MN", class = "sf")
 mn_zctas <- st_filter(zctas, mn_counties)
 
 
-zcta_joined <- mn_zctas %>%
-  full_join(asthmaMN, by = c("GEOID20" = "_ZIP")) %>%
-  drop_na() %>%
+zcta_joined <- asthmaMN %>%
+  left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
   mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
         `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
    mutate(value_cat = case_when(
     `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
     `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
     `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
-    `Age-adjusted rate per 10,000` >= 7 ~ "7+")) 
+    `Age-adjusted rate per 10,000` >= 7 ~ "7"))
+
+zcta_joined <- st_as_sf(zcta_joined)
 
 
 ```
