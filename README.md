@@ -55,7 +55,8 @@ of them.
 - American Community Survey 5-Year Summary File: From US Census Bureau. Via Minnesota Geospatial Commons. Used for househould income data. 
 - Environmental Justice Areas:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. 
 
-## Plan for the rest of the semester can be found here: https://docs.google.com/document/d/1UmGPfNbmCvgxP4FVRG4xTKzD4NWpulKdt1rvIgYfyVs/edit?usp=sharing
+## Plan for the rest of the semester can be found here: 
+https://docs.google.com/document/d/1UmGPfNbmCvgxP4FVRG4xTKzD4NWpulKdt1rvIgYfyVs/edit?usp=sharing
 
 ## Contributions to FP4:
 - Alicia: built Shiny app framework, ...
