@@ -2,9 +2,37 @@
 
 Group Members: Alicia Severiano Perez, Sydney Ohr, Lilabeth Sokolewicz
 
-Our project focuses on the topic of environmental justice, which aims to avoid disproportionate environmental and health impacts on marginalized communities, as well as taking the wellbeing and voice of all people into account when creating environmental policy. 
+Summarized Context & Research Question:
 
-Our research quesiton concerns the locations of Minnesota powerplants and their effects on surrounding communities, quanitified through demographics, air quality, and health outcomes. 
+- Our project focuses on the topic of environmental justice, which aims to avoid disproportionate 
+environmental and health impacts on marginalized communities, as well as taking the wellbeing and voice 
+of all people into account when creating environmental policy. 
+
+- Our research question concerns the locations of Minnesota powerplants and their effects on surrounding
+communities, quanitified through demographics, air quality, and health outcomes. 
+
+Longer Context & Research Question:
+
+The need for electricity stems from its essential role in daily life, powering various
+things from vehicle charging to heating and refrigeration. Due to the vast amount of demand and use of it, 
+finding reliable sources of electricity has become crucial. Power plants are facilities that generate electric
+energy from various sources, including fossil fuels, such as coal, natural gas, and petroleum, and renewable sources, 
+like sunlight, water, and wind. Fossil fuel power plants operate by burning  the chosen fuel to generate heat,
+which generates steam or gas in a boiler. This steam or gas spins a turbine, which converts heat energy into 
+rotational energy, that is then transformed into electricity. However, this process releases vast amounts of harmful 
+pollutants, such as mercury, greenhouse gasses, and carbon dioxide. The release of such pollutants contributes to harmful 
+air pollution levels that harm individuals' health. On the other hand, renewable energy power plants are 
+considered to be cleaner, as they don’t burn fuel or release greenhouse gases. However, there are still some 
+drawbacks to individuals, such as the displacement of communities, in order to build these power plants. Furthermore, 
+research has shown that fossil fuel power plants have been constructed near predominantly black, hispanic, and asian 
+communities and historical redlined areas. Some examples include Chicago, Los Angeles, and Philadelphia. Consequently, 
+these communities end up being harmed by the releases of different fuels and are the ones shouldering the unequal
+distribution of air quality as a result of these power plants.
+
+When it comes to Minnesota, there are about 100 fossil fuel and 682 renewable energy power plants distributed around the state.
+This has led us to wonder about the placement of these power plants throughout the state, particularly to discover 
+if they are also built around communities of color. Furthermore, we would like to explore the air quality and health effects
+of them. 
 
 
 Description of Files:
