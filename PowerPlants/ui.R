@@ -8,7 +8,10 @@ source("set_code.R")
 ui <- fluidPage(
 
     # Application title
-    h1(style = "text-align:center; font-size:30px;", strong("Positive adaptations of power plants in Minnesota")),
+    h1(style = "text-align:center; font-size:40px;", strong("Positive adaptations of power plants in Minnesota")),
+    h2(style = "text-align:center; font-size:22px;", strong("By: Alicia Severiano Perez, Sydney Ohr, Lilabeth Sokolewicz")),
+    
+    h3(style = "text-align:left; font-size:18px;", strong("When have power plants been installed?")),
     
     # theme
     theme = bs_theme(
