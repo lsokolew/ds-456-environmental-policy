@@ -6,6 +6,14 @@ Our project focuses on the topic of environmental justice, which aims to avoid d
 
 Our research quesiton concerns the locations of Minnesota powerplants and their effects on surrounding communities, quanitified through demographics, air quality, and health outcomes. 
 
+
+Description of Files:
+  1. The 'Data" folder consists of all the data used for this analysis
+  2. The 'ui.R' file organizes the layout of the shiny app, that being the plots, text, and sidebar
+  3. The 'server.r' file is where the code for the plots are stored
+  4. The 'app.R' file is where the ui render function lives
+  5. The 'set_code.R' file is where we load in and wrangle data that will be used for plots
+
 Ethical issues (who may be harmed and who may benefit): ???
 
 [INSERT FILE/ORGANIZATIONAL DESCRIPTIONS ("If there's more than one RMD, an overall guide to what is in each one")]
