@@ -38,27 +38,28 @@ This has led us to wonder about the placement of these power plants throughout t
 if they are also built around communities of color. Furthermore, we would like to explore the air quality and health effects
 of them. 
 
+## Ethical issues (who may be harmed and who may benefit): 
 
+By taking a positive viewpoint on this topic and saying that Minnesota has a good framework for power plants,  we may be downplaying the experiences of some who live in communities negatively impacted by power plants. We cannot tell every individual’s story; while the data may look positive overall, we should not forget that not everyone’s experience is.
+
+Further, by using pre-defined environmental justice areas (EJAs), we risk overlooking communities who don’t meet that exact definition, but should nevertheless be considered as a vulnerable area. For instance, a tract made up of 39% people of color will not qualify as an EJA for our analysis, yet it is barely distinct from a tract with 40% that would. 
 
 ## Description of Files:
-  1. The 'Data" folder consists of all the data used for this analysis
-  2. The 'ui.R' file organizes the layout of the shiny app, that being the plots, text, and sidebar
-  3. The 'server.r' file is where the code for the plots are stored
-  4. The 'app.R' file is where the ui render function lives
-  5. The 'set_code.R' file is where we load in and wrangle data that will be used for plots
-
-## Ethical issues (who may be harmed and who may benefit): ???
-
-[INSERT FILE/ORGANIZATIONAL DESCRIPTIONS] ("If there's more than one RMD, an overall guide to what is in each one")
-- `lilabeth_aq_work` contains an analysis of air quality and powerplants in Minnesota. 
+  1. The Data folder consists of all the data used for this analysis
+  2. The `ui.R` file organizes the layout of the shiny app, that being the plots, text, and sidebar
+  3. The `server.r` file is where the code for the plots are stored
+  4. The `app.R` file is where the ui render function lives
+  5. The `set_code.R` file is where we load in and wrangle data that will be used for plots
+  6. `lilabeth_aq_work.qmd` contains an analysis of air quality and powerplants in Minnesota.
+  7. `FP2Redone.qmd` contains an analysis of hospitalizations due to asthma and COPD. 
 
 ## Datasets Used:
-- Power plant dataset: from EIA. Used for power plant point locations, fuel types, output amounts, and other characteristics.
-- eGRID Form EIA-860: from EPA. Used for powerplant operational & retirement dates.
-- Minnesota Air Quality Data by county: From Minnesota Pollution Control Agency. Used for ozone & PM2.5 values in MN counties, including modeled data for counties without monitors.
-- Hospitalization data: From the MN Department of Health, via the MN Public Health Data Access Portal. Used for hospitalizations due to asthma and COPD. 
-- American Community Survey 5-Year Summary File: From US Census Bureau. Via Minnesota Geospatial Commons. Used for househould income data. 
-- Environmental Justice Areas:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. 
+- `Power_Plants.csv`: By EIA. Used for power plant point locations, fuel types, output amounts, and other characteristics.
+- `powerplant_data_eia_egrid_2024_generator_operable.csv` & `powerplant_data_eia_egrid_2024_generator_retired.csv`: eGRID Form EIA-860. By EPA. Used for powerplant operational & retirement dates.
+- `Modeled_PM25_Ozone_MN_county_data_allyears.csv`: By Minnesota Pollution Control Agency. Used for ozone & PM2.5 values in MN counties, including modeled data for counties without monitors.
+- `MN-asthma-zipcode.csv ` & `copd.csv`: By MN Department of Health, via the MN Public Health Data Access Portal. Used for hospitalizations due to asthma and COPD. 
+- `CensusACSTract.xlsx`: American Community Survey 5-Year Summary File. By US Census Bureau. Via Minnesota Geospatial Commons. Used for househould income data. 
+- `ej_mpca_census.csv`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. 
 
 ## Plan for the rest of the semester can be found here: 
 https://docs.google.com/document/d/1UmGPfNbmCvgxP4FVRG4xTKzD4NWpulKdt1rvIgYfyVs/edit?usp=sharing
@@ -68,6 +69,7 @@ Minnesota has one of the leading frameworks regarding power plants, their enviro
 
 
 ## Contributions to FP4:
-- Alicia: built Shiny app framework, ...
-- Lilabeth: ...
-- Sydney: ...
+- Alicia: built Shiny app framework, demographics & EJA analysis...
+- Lilabeth: air quality analysis, ...
+- Sydney: health analysis, ...
+- All: made next steps plan, drafted presentation, contributed to shiny app
