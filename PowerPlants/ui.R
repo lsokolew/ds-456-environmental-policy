@@ -33,17 +33,11 @@ ui <- fluidPage(
 
     # main
       column(12, align = "center", leafletOutput(outputId = 'map', height = 400, width = 600)),
-  
       column(12, align = "center", sliderInput('numeric', 'Year', min = 1906, max = 2025, value = c(1907), sep = "")),
 
 
     ##=================Context=================##
-  
 
-
-  fluidRow(
-    column(width = 12, h3(style = "text-align:center; font-size:18px;", context)),
-  )
-
+  fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", context)),)
 
   ) # closing UI
