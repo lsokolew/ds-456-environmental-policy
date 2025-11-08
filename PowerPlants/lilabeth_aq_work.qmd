@@ -464,20 +464,60 @@ mn_powerplants_lagged_aq %>%
 It appears that air quality improves (pollutant concentration goes down) after fossil fuel plants are added; however, looking at the overall air quality 
 
 ```{r}
-mn_counties_aqi %>% 
-  filter(pollutant == "PM2.5") %>% 
-  ggplot() +
-    geom_line(aes(x = year, y = average_concentration, group = fossil_fuel, color = fossil_fuel), show.legend = FALSE) +
-  labs(title = "Average PM2.5 Concentration By County") +
-  ylim(0, 12) +
-  theme_classic()
+
+```
+
+
+```{r}
+ff_status <- mn_powerplants %>%
+  group_by(county) %>%
+  summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
+  mutate(plant_group = ifelse(has_fossil, "Fossil Fuel County", "Renewable/None"))
+
+
+mn_counties_aqi %>%
+  filter(pollutant == "PM2.5") %>%
+  left_join(ff_status, by = c("name" = "county")) %>%
+  mutate(plant_group = ifelse(is.na(plant_group), "Renewable/None", plant_group)) %>%
+  ggplot(aes(x = year, y = average_concentration, group = name, color = plant_group)) +
+    geom_line(alpha = 0.2) + # faint individual counties
+    stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend
+    labs(
+      title = "Average PM2.5 Concentration by County Type",
+      color = "County Type",
+      y = "Average PM2.5 Concentration",
+      x = "Year"
+    ) +
+    ylim(0, 12) +
+    scale_color_manual(values = c("Fossil Fuel" = "#d95f02",
+                                  "Renewable Only/None" = "#1b9e77")) +
+    theme_classic()
+
+
+mn_counties_aqi %>%
+  filter(pollutant == "Ozone") %>%
+  left_join(ff_status, by = c("name" = "county")) %>%
+  mutate(plant_group = ifelse(is.na(plant_group), "Renewable/None", plant_group)) %>%
+  ggplot(aes(x = year, y = average_concentration, group = name, color = plant_group)) +
+    geom_line(alpha = 0.2) + # faint individual counties
+    stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend
+    labs(
+      title = "Average PM2.5 Concentration by County Type",
+      color = "County Type",
+      y = "Average PM2.5 Concentration",
+      x = "Year"
+    ) +
+    ylim(0, 12) +
+    scale_color_manual(values = c("Fossil Fuel County" = "#d95f02",
+                                  "Renewable/None" = "lightgreen")) +
+    theme_classic()
 ```
 
 
 # Future Steps
 
-What's the modeling taking into account? can it/does it take powerplants into acount
-color plot by whether there'e a pp or not
+look at documentation of MCAQ - is pps already accounted for? yes - the modeled AQ data uses powerplants' emissions in its modeling process
+look at outliers 
 
 ```{r}
 # Heatmaps: correlation between number of fossil/renewable plants and pollution per county.

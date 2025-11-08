@@ -36,9 +36,24 @@ ui <- fluidPage(
       column(12, align = "center", sliderInput('numeric', 'Year', min = 1906, max = 2025, value = c(1907), sep = "")),
 
 
-    ##=================Context=================##
+  ##=================Context=================##
 
   fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", context))),
+  
+  ##=================Power Plants=================##
+  
+  br(),
+  h2(style = "text-align:center; font-size:22px;", strong("Power Plants in Minnesota")),
+  
+  column(12, align = "center", plotOutput(outputId = "pp_type_barplot", height = 400, width = 600)),
+  
+  column(12, align = "center", plotOutput(outputId = "pp_type_by_mw_barplot", height = 400, width = 600)),
+  
+  column(12, align = "center", plotOutput(outputId = "pp_dates_barplot", height = 400, width = 600)),
+ 
+  
+  ##=================Air Quality=================##
+  
   
   
   ##=================Data=================##

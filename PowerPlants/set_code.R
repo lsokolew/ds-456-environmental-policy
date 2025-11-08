@@ -19,13 +19,22 @@ values <- c("New Power Plant", "Old Power Plant")
 # power plant
 mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
   filter(State == "Minnesota") %>%
-  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable")) %>%
-  rename(plant_code = Plant_Code)
-
-# historical data
-powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"),
+         PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% # change 'other' to 'waste heat'
   janitor::clean_names() 
 
+# power plant dates
+powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+  janitor::clean_names() 
+powerplant_dates_retired <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
+  janitor::clean_names()
+
+# air quality 
+mn_aq_all_years <- read_csv("Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv") %>% 
+  mutate(county = str_split_i(county, ",", 1),
+         county = str_remove(county, "County"),
+         county = str_trim(county)
+  )
 
 ###=============Wrangling =============###
 
@@ -51,6 +60,15 @@ mn_powerplants <- mn_powerplants %>%
          first_op_year = year(first_op_date)
   ) 
 
+# get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later)
+powerplant_dates_retired_mn <- powerplant_dates_retired %>% 
+  filter(state == "MN", plant_code != 1912) %>% #inaccurate info given for plant 1912 (it's still operational)
+  mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded
+
+# join to mn_powerplants
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
 ###================================ Text ================================###
 
