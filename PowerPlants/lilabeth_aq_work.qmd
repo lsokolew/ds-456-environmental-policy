@@ -359,7 +359,7 @@ There seems to be more variation in PM2.5, and a distinct pattern shared across 
 #pollutant_spec <- "Ozone"
 pollutant_spec <- "PM2.5"
 
-summary_df <- mn_counties_aqi %>%
+summary_df <- mn_counties_aq %>%
   filter(pollutant == pollutant_spec) %>% 
   group_by(name) %>%
   summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
@@ -382,7 +382,7 @@ ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) +
 
 
 # renewables 
-summary_df <- mn_counties_aqi %>%
+summary_df <- mn_counties_aq %>%
   filter(pollutant == pollutant_spec) %>% 
   group_by(name) %>%
   summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
@@ -408,7 +408,7 @@ A county having more fossil fuel plants appears to be associated with higher PM2
 
 
 ```{r}
-summary_df <- mn_counties_aqi %>%
+summary_df <- mn_counties_aq %>%
   filter(pollutant == pollutant_spec) %>% 
   group_by(name) %>%
   summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
@@ -439,7 +439,45 @@ mn_powerplants %>% group_by(county) %>% count(fossil_fuel)
 ```
 This plot suggests that counties containing fossil fuel plants have higher concentrations of pm2.5 than those containing only renewable or no powerplants. 
 
+
+```{r}
+# look at lagged air quality - what does the aq do the year after a new ff pp installed? 3 years?
+
+mn_powerplants_lagged_aq <- mn_powerplants %>% 
+  filter(fossil_fuel == "Fossil Fuel",
+         first_op_year >= 2008, first_op_year <= 2021) %>% 
+  mutate(year_after_pp_installed = first_op_year + 1,
+         year_3_after_pp_installed = first_op_year + 3) %>% 
+  left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "first_op_year" = "year")) %>% 
+  rename(average_conc_baseline = average_concentration) %>% 
+  left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "year_after_pp_installed" = "year", "pollutant", "geometry", "unit")) %>% 
+  rename(average_conc_year1 = average_concentration) %>% 
+    left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "year_3_after_pp_installed" = "year", "pollutant", "geometry", "unit")) %>% 
+  rename(average_conc_year3 = average_concentration) %>% 
+  mutate(year1_diff = average_conc_year1 - average_conc_baseline,
+         year3_diff = average_conc_year3 - average_conc_baseline) 
+
+mn_powerplants_lagged_aq %>% 
+  group_by(pollutant) %>% 
+  summarise(mean(year1_diff), mean(year3_diff, na.rm = TRUE)) # have to exclude the year three lag for plant 65405 since that falls in 2022, outside of aq range
+```
+It appears that air quality improves (pollutant concentration goes down) after fossil fuel plants are added; however, looking at the overall air quality 
+
+```{r}
+mn_counties_aqi %>% 
+  filter(pollutant == "PM2.5") %>% 
+  ggplot() +
+    geom_line(aes(x = year, y = average_concentration, group = fossil_fuel, color = fossil_fuel), show.legend = FALSE) +
+  labs(title = "Average PM2.5 Concentration By County") +
+  ylim(0, 12) +
+  theme_classic()
+```
+
+
 # Future Steps
+
+What's the modeling taking into account? can it/does it take powerplants into acount
+color plot by whether there'e a pp or not
 
 ```{r}
 # Heatmaps: correlation between number of fossil/renewable plants and pollution per county.
@@ -447,8 +485,10 @@ This plot suggests that counties containing fossil fuel plants have higher conce
 # Line plots: before-and-after trends in air quality for counties that transitioned to renewables.
 ```
 
+- figure out what's going on with dates for plant 1912
 - do a timeseries analysis, á la correlated data? Model accounting for time or spatial correlation 
 - consider buffer area around plant
+- insert units into graph axis titles
 - look into install_MW
 - look into potential confounders
   - What's causing the 2021 spike in aq?
@@ -457,4 +497,4 @@ This plot suggests that counties containing fossil fuel plants have higher conce
 
 # AI Statement
 
------
+I used ChatGPT to help create the more complicated plots at the end, as well as to help me debug some leaflet errors. 

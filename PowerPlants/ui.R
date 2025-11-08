@@ -38,6 +38,27 @@ ui <- fluidPage(
 
     ##=================Context=================##
 
-  fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", context)),)
+  fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", context))),
+  
+  
+  ##=================Data=================##
+  
+  br(),
+  h2(style = "text-align:center; font-size:22px;", strong("About Our Data")),
+
+  fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", data_intro))),
+  
+  div(
+    style = "text-align: center;",
+    tags$img(
+      src = "data_sources.png",
+      alt = "logos for EIA, EPA, US Census Bureau, MPCA, and MN Department of Health",
+      width = 650,
+      height = 250
+    ),
+    tags$p(
+      "Our Data Souces"
+    )
+  )
 
   ) # closing UI

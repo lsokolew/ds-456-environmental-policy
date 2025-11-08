@@ -72,3 +72,15 @@ hispanic, and asian communities and historical redlined areas. Some examples inc
 and Philadelphia. Consequently, these communities end up being harmed by the releases of different fuels 
 and are the ones shouldering the unequal distribution of air quality as a result of these power plants.
 "
+
+data_intro <- "We got our main data about the locations and characteristics of all power plants in Minnesota 
+from the US Energy Information Administration (EIA). The Environmental Protection Agency (EPA) had data about 
+their dates of operation that we incorporated. In order to examine demographics and characteristics of Minnesota 
+counties, we used American Community Survey (ACS) data, collected by the US Census Bureau. We made use of Minnesota
+Pollution Control Agency's (MPCA) restructured version of that ACS data to explore tracts considered Environmental 
+Justice Areas. The MPCA, using their own monitors and EPA's Fused Air Quality Surfaces Using Downscaling Tool and 
+Community Multiscale Air Quality model, also provided air quality data by county. This included data about ozone 
+and PM2.5 (fine particulate matter) levels, with modeled estimates for counties without air monitors. Finally, in 
+order to explore the human-level impacts of air quality, we used MN Department of Health's data on hospitalizations 
+due to asthma and COPD. 
+"
