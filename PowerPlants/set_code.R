@@ -10,6 +10,15 @@ light_blue <- "#CBE0F7"
 my_colors <- c("red", "grey")
 values <- c("New Power Plant", "Old Power Plant")
 
+theme_1 <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+                 panel.background = element_blank(),     
+                 plot.background = element_blank(),     
+                 panel.grid = element_blank(),
+                 legend.background = element_rect(fill = "transparent", color = NA) )
+
+fuel_colors <- scale_fill_manual(
+  values = c("Fossil Fuel" = "#A39081", 
+             "Renewable" = "#1C693A"))
 
 ###================================ Data ================================###
 
@@ -92,13 +101,12 @@ and are the ones shouldering the unequal distribution of air quality as a result
 "
 
 data_intro <- "We got our main data about the locations and characteristics of all power plants in Minnesota 
-from the US Energy Information Administration (EIA). The Environmental Protection Agency (EPA) had data about 
+from the US Energy Information Administration (EIA).  <b>The Environmental Protection Agency (EPA)</b> had data about 
 their dates of operation that we incorporated. In order to examine demographics and characteristics of Minnesota 
-counties, we used American Community Survey (ACS) data, collected by the US Census Bureau. We made use of Minnesota
-Pollution Control Agency's (MPCA) restructured version of that ACS data to explore tracts considered Environmental 
-Justice Areas. The MPCA, using their own monitors and EPA's Fused Air Quality Surfaces Using Downscaling Tool and 
+counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau.</b> We made use of <b>Minnesota
+Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental 
+Justice Areas.</b> The MPCA, using their own monitors and EPA's Fused Air Quality Surfaces Using Downscaling Tool and 
 Community Multiscale Air Quality model, also provided air quality data by county. This included data about ozone 
 and PM2.5 (fine particulate matter) levels, with modeled estimates for counties without air monitors. Finally, in 
-order to explore the human-level impacts of air quality, we used MN Department of Health's data on hospitalizations 
-due to asthma and COPD. 
-"
+order to explore the human-level impacts of air quality, we used <b>MN Department of Health's data</b> on hospitalizations 
+due to asthma and COPD.</b>"

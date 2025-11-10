@@ -2,6 +2,7 @@
 library(shiny)
 library(bslib)
 library(leaflegend)
+library(sf)
 
 
 # Sourcing ui to know what plot is being called
@@ -13,9 +14,9 @@ server = function(input, output, session){
   
 ###================================ Opening ===============================###
   
-  
+
   map_df = reactive({
-    
+
     mn_powerplants %>%
       filter(first_op_year == as.numeric(input$numeric[1]))%>%
       filter(!is.na(longitude) & !is.na(latitude)) %>%
@@ -23,12 +24,12 @@ server = function(input, output, session){
       summarize (count = n()) %>%
       st_as_sf(coords = c('longitude', 'latitude')) %>%
       st_set_crs(4326)
-    
+
   })
-  
-  
+
+
   map_lp = reactive({
-    
+
     mn_powerplants %>%
       filter(first_op_year < as.numeric(input$numeric[1]))%>%
       filter(!is.na(longitude) & !is.na(latitude)) %>%
@@ -36,25 +37,26 @@ server = function(input, output, session){
       summarize (count = n()) %>%
       st_as_sf(coords = c('longitude', 'latitude')) %>%
       st_set_crs(4326)
-    
+
   })
-  
+
   output$map = renderLeaflet({
-    
+
     leaflet() %>%
       addTiles() %>%
       setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
       addCircleMarkers(data = map_df(), color = "red", radius = 3) %>%
       addCircleMarkers(data = map_lp(), color = "grey", radius = 1) %>%
-    addLegendFactor(
-      pal = colorFactor(my_colors, domain = values),
-      values = values,
-      orientation = "horizontal",
-      opacity = 0.75,
-      position = "topright",
-      width = 12,
-      height = 12
-    )
+      addCircleMarkers(data = map_lp(), color = "grey", radius = 1) %>%
+      addLegendFactor(
+        pal = colorFactor(my_colors, domain = values),
+        values = values,
+        orientation = "horizontal",
+        opacity = 0.75,
+        position = "topright",
+        width = 12,
+        height = 12
+      )
 
   })
   
@@ -71,10 +73,9 @@ server = function(input, output, session){
            y = "Number of Powerplants",
            fill = "Powerplant Type") +
       theme_classic() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 1))
-    # TO DO: change colors
+      theme_1    
 
-  })
+  }, bg = "transparent")
   
   output$pp_type_barplot = renderPlot({
     
@@ -84,9 +85,9 @@ server = function(input, output, session){
       labs(x = "Energy Source", y = "Number of Powerplants", title = "Minnesota Powerplants' Energy Sources",
            fill = "Powerplant Type") +
       theme_classic() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-    
-  })
+      theme_1    +
+      fuel_colors
+  }, bg = "transparent")
   
   output$pp_type_by_mw_barplot = renderPlot({
     
@@ -96,12 +97,12 @@ server = function(input, output, session){
       mutate(fossil_fuel = ifelse(prim_source %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable")) %>% 
       ggplot(aes(x = fct_reorder(prim_source, prod_by_type, .desc = TRUE), y = prod_by_type, fill = fossil_fuel)) +
       geom_bar(stat = 'identity') +
+      fuel_colors +
       labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Energy produced by Source in MN Powerplants",
            fill = "Powerplant Type") +  
       theme_classic() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-    
-  })
+      theme_1 
+    }, bg = "transparent")
   
 
 }

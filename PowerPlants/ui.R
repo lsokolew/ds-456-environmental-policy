@@ -2,6 +2,7 @@
 # Libraries
 library(shiny)
 library(bslib)
+library(leaflet)
 source("set_code.R")
 
 # Define UI for application that draws a histogram
@@ -37,20 +38,32 @@ ui <- fluidPage(
 
 
   ##=================Context=================##
-
-  fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", context))),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(context)),
+  
   
   ##=================Power Plants=================##
   
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Power Plants in Minnesota")),
-  
+
   column(12, align = "center", plotOutput(outputId = "pp_type_barplot", height = 400, width = 600)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_type_by_mw_barplot", height = 400, width = 600)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_dates_barplot", height = 400, width = 600)),
  
+  ##=================EJ areas=================##
+  
+  
   
   ##=================Air Quality=================##
   
@@ -59,21 +72,52 @@ ui <- fluidPage(
   ##=================Data=================##
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("About Our Data")),
-
-  fluidRow(column(width = 12, h3(style = "text-align:center; font-size:18px;", data_intro))),
+  h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
   
+  # highlight the source 
   div(
-    style = "text-align: center;",
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;
+  ",
+    HTML(paste0(
+      "<style> 
+      b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;
+        font-weight: 700;
+        padding: 1px 3px;
+        border-radius: 2px;
+      } 
+    </style>",
+      data_intro
+    ))
+  ),
+  
+  # data source logos
+  div(
+    style = "
+    text-align: center;
+  ",
     tags$img(
       src = "data_sources.png",
       alt = "logos for EIA, EPA, US Census Bureau, MPCA, and MN Department of Health",
       width = 650,
       height = 250
-    ),
+    ), # close ta
+    br(),
     tags$p(
-      "Our Data Souces"
-    )
-  )
-
-  ) # closing UI
+      style = "
+      font-family: 'Tinos', serif;
+      font-size: 16px;
+      color: #4a4a4a;
+      margin-top: 5px;
+    ",
+      "Our Data Sources") # close tag
+  )# close div
+  
+) # closing UI
