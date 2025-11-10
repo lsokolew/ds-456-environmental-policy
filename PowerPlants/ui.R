@@ -74,7 +74,7 @@ ui <- fluidPage(
   br(),
   h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
   
-  # highlight the source 
+  # choose how the text should be formated
   div(
     style = "
     max-width: 900px; 
@@ -84,6 +84,8 @@ ui <- fluidPage(
     font-family: 'Tinos', serif; 
     color: #4a4a4a;
   ",
+    # highlight the source 
+    
     HTML(paste0(
       "<style> 
       b { 
