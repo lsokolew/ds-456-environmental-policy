@@ -32,7 +32,8 @@ DATA
 # Power plants
 american_powerPlants <- read_csv("Power_Plants.csv")
 mn_powerplants <- american_powerPlants %>%
-  filter(State == "Minnesota")
+  filter(State == "Minnesota") %>% 
+  mutate(energy_source = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"))
 
 # Operating Years
 powerplant_dates <- read_csv("powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
@@ -69,6 +70,10 @@ asthmaMN <- read_csv("MN-asthma-zipcode.csv")
 air <- read_csv("air.csv")
 
 
+
+# Filter for specific zip codes if needed
+# For example, to get data for zip codes 90210 and 90001
+
 zctas <- zctas(cb = FALSE, year = 2020)
 mn_counties <- counties(state = "MN", class = "sf")
 mn_zctas <- st_filter(zctas, mn_counties)
@@ -82,7 +87,7 @@ zcta_joined <- asthmaMN %>%
     `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
     `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
     `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
-    `Age-adjusted rate per 10,000` >= 7 ~ "7"))
+    `Age-adjusted rate per 10,000` >= 7 ~ "7+"))
 
 zcta_joined <- st_as_sf(zcta_joined)
 
@@ -125,7 +130,12 @@ pal <- colorFactor(
   levels = c("0-2", "2-4", "4-7", "7+"),
   na.color = "grey")
 
-leaflet(zcta_joined) %>%
+pal3 <- colorFactor(
+  palette = c("red", "green"),
+  domain = mn_powerplants$energy_source)
+
+
+plot <- leaflet(zcta_joined) %>%
   addTiles() %>%
   addPolygons(
     fillColor = ~pal(value_cat),
@@ -135,8 +145,7 @@ leaflet(zcta_joined) %>%
     fillOpacity = 0.7,
     highlight = highlightOptions(
       weight = 2,
-      color = "white",
-      bringToFront = TRUE),
+      color = "white"),
     label = ~paste0(
       "Zipcode: ", ZCTA5CE20, "\n",
       "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`))) %>%
@@ -148,12 +157,16 @@ leaflet(zcta_joined) %>%
     position = "bottomright",
     na.label = "Not given") %>%
   addCircleMarkers(
+    color = ~pal3(energy_source),
     data = mn_powerplants,
     lng = ~Longitude,
     lat = ~Latitude,
     radius = 0.25,
     fillOpacity = 1,
-    color = "red")
+    label = ~paste0("Plant Name: ", Plant_Name, "\n", 
+                    "Plant Code:", Plant_Code))
+
+plot
 
 
 ```
@@ -170,12 +183,7 @@ ej_shapefile_cleaned <- ej_shapefile %>%
 zcta_joined <- st_transform(zcta_joined, 4326)
 ej_shapefile_cleaned <- st_transform(ej_shapefile_cleaned, 4326)
 
-pattern_dep <- htmltools::htmlDependency(
-  name = "leaflet.pattern",
-  version = "0.2.0",
-  src = c(href = "https://unpkg.com/leaflet.pattern@0.2.0/dist"),
-  script = "leaflet.pattern.js"
-)
+
 
 
 pal <- colorFactor(
@@ -183,7 +191,13 @@ pal <- colorFactor(
   levels = c("0-2", "2-4", "4-7", "7+"),
   na.color = "grey")
 
-plot <- leaflet(zcta_joined) %>%
+pal2 <- colorFactor(
+  palette = c("green", "red"),
+  domain = ej_shapefile_cleaned$ej_status
+)
+
+
+plot2 <- leaflet(zcta_joined) %>%
   addTiles() %>%
   addPolygons(
     fillColor = ~pal(value_cat),
@@ -196,15 +210,16 @@ plot <- leaflet(zcta_joined) %>%
       color = "white",
       bringToFront = TRUE),
     label = ~paste0(
-      "Zipcode: ", GEOID, "\n",
+      "Zipcode: ", ZCTA5CE20, "\n",
       "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`)),
     group = "Asthma") %>%
   addPolygons(
     data = ej_shapefile_cleaned,
+    color = ~pal2(ej_status),
+    fillColor = "transparent",
     weight = 1,
     opacity = 1,
     fillOpacity = 0.7,
-    fillColor = "transparent",
     highlight = highlightOptions(
       weight = 2,
       color = "white",
@@ -212,29 +227,6 @@ plot <- leaflet(zcta_joined) %>%
     label = ~ej_status,
     group = "EJ Tracts"
     ) %>%
-    htmlwidgets::onRender("
-    function(el, x) {
-      var map = this;
-
-      // --- Define two patterns ---
-      var patTrue  = new L.StripePattern({weight:6, spaceWeight:6, color:'#1f77b4', angle:45});
-      var patFalse = new L.StripePattern({weight:6, spaceWeight:6, color:'#ff7f0e', angle:-45});
-      patTrue.addTo(map);
-      patFalse.addTo(map);
-
-      // --- Apply patterns based on TRUE/FALSE ---
-      map.eachLayer(function(layer){
-        if(layer.feature && layer.feature.properties){
-          var val = layer.feature.properties.ej_status;
-          if(val === true){
-            layer.setStyle({fillPattern: patTrue});
-          } else {
-            layer.setStyle({fillPattern: patFalse});
-          }
-        }
-      });
-    }
-  ") %>%
   addLegend(
     pal = pal,
     values = ~value_cat,
@@ -254,9 +246,36 @@ plot <- leaflet(zcta_joined) %>%
   overlayGroups = c("Asthma", "EJ Tracts", "Power Plants"),
   options = layersControlOptions(collapsed = FALSE)
 )
+plot2
 
-plot <- htmltools::attachDependencies(plot, pattern_dep)
-plot
+```
+
+EJ Mile Radius
+
+```{r}
+points_sf <- st_as_sf(mn_powerplants,
+                      coords = c("Longitude", "Latitude"),
+                      crs = 4326) 
+ej_areas <- ej_shapefile %>%
+  filter(status200x == "YES")
+
+ej_tracts_proj <- st_transform(ej_areas, 26915)
+pp_points_proj <- st_transform(points_sf, 26915)
+
+
+tracts_buffer <- st_buffer(ej_tracts_proj, dist = (1609.34/2))
+within_half_mile <- st_within(pp_points_proj, tracts_buffer)
+points_sf$within_half_mile <- lengths(within_half_mile) > 0
+points_sf$within_half_mile
+
+points_inside <- st_within(pp_points_proj, ej_tracts_proj)
+points_sf$inside_tract <- lengths(points_inside) > 0
+
+
+points_sf %>%
+  group_by(energy_source) %>%
+  summarise(count_inside_or_near = sum(inside_tract | within_half_mile))
+
 
 ```
 
@@ -348,6 +367,8 @@ for (yr in years) {
     site   = "0868"
   )
   
+  27-053-1007
+
   
   response <- GET(url, query = query_params)
   if (status_code(response) == 200) {
@@ -385,4 +406,47 @@ copd_plot <- aq_copd %>% ggplot(aes(x = year, y = hospitalizations)) +
 ggarrange(aq_plot, copd_plot, 1,1)
   
 
+```
+
+EPA API DATA PM10
+
+```{r}
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 1999:2025
+all_data1 <- list()
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "taupemallard55",    
+    param  = "88101",       # PM10
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "123",
+    site   = "0868"
+  )
+
+  
+
+  
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data1[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df_PM2.5 <- bind_rows(all_data1)
+final_df_PM2.5
 ```
