@@ -45,6 +45,13 @@ mn_aq_all_years <- read_csv("Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv
          county = str_trim(county)
   )
 
+# Asthma
+asthmaMN <- read_csv("Data/MN-asthma-zipcode.csv")
+ 
+# Zip codes
+mn_zctas <- readRDS("Data/mn_zctas_2020.rds")
+
+ 
 ###=============Wrangling =============###
 
 powerplant_dates_mn <- powerplant_dates %>% 
@@ -79,6 +86,21 @@ powerplant_dates_retired_mn <- powerplant_dates_retired %>%
 # join to mn_powerplants
 mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
+# Asthma Data and ZCTAs
+
+zcta_joined <- asthmaMN %>%
+  left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
+  mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
+         `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
+  mutate(value_cat = case_when(
+    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
+    `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
+    `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
+    `Age-adjusted rate per 10,000` >= 7 ~ "7+"))
+
+zcta_joined <- st_as_sf(zcta_joined)
+
+
 ###================================ Text ================================###
 
 context <- "The need for electricity stems from its essential role in daily life, 
@@ -110,3 +132,11 @@ Community Multiscale Air Quality model, also provided air quality data by county
 and PM2.5 (fine particulate matter) levels, with modeled estimates for counties without air monitors. Finally, in 
 order to explore the human-level impacts of air quality, we used <b>MN Department of Health's data</b> on hospitalizations 
 due to asthma and COPD.</b>"
+
+health_blurb <- "Asthma, the most common chronic disease in the United States, is triggered by irritants such as air pollution. 
+Class and race are factors that affect the levels of pollutants in the surrounding environment according to the article 
+“Environmental Justice: The Economics of Race, Place, and Pollution.” by authors Spencer Banzhaf, Lala Ma and Christopher Timmins. 
+Using the demographics of the neighborhood they studied, it was concluded that facilities may seek out non-white areas with lower income 
+levels because of the inexpensive land and low wages. This is a result of past instances of red-lining and the government’s involvement 
+in the concentration of regulations in white areas.  These polluters, such as power plants, release tons of particulate matter into the 
+surrounding air. Air quality has been monitored for years, showing a steady improvement in air quality over the years."

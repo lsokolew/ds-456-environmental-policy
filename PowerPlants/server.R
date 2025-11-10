@@ -3,6 +3,9 @@ library(shiny)
 library(bslib)
 library(leaflegend)
 library(sf)
+library(tigris)
+
+options(tigris_use_cache = TRUE)
 
 
 # Sourcing ui to know what plot is being called
@@ -104,5 +107,75 @@ server = function(input, output, session){
       theme_1 
     }, bg = "transparent")
   
-
+  
+  ###================================ Health ===============================###
+  
+  output$asthma_map <- renderLeaflet({
+    
+    # ---- Color palette for polygons ----
+    pal <- colorFactor(
+      palette = c("lightblue", "steelblue", "royalblue4", "navy"),
+      levels = c("0-2", "2-4", "4-7", "7+"),
+      na.color = "grey"
+    )
+    
+    # ---- Palette for power plants ----
+    pal3 <- colorFactor(
+      palette = c("red", "green"),
+      domain = mn_powerplants$fossil_fuel
+    )
+    
+    leaflet(zcta_joined) %>%
+      setView(lng = -93.265, lat = 44.9778, zoom = 8) %>%
+      addTiles() %>%
+      addPolygons(
+        fillColor = ~pal(value_cat),
+        color = "black",
+        weight = 1,
+        fillOpacity = 0.7,
+        opacity = 1,
+        highlight = highlightOptions(
+          weight = 2,
+          color = "white"
+        ),
+        label = ~paste0(
+          "Zipcode: ", ZCTA5CE20, "<br>",
+          "Rate: ",
+          ifelse(is.na(`Age-adjusted rate per 10,000`),
+                 "Not given due to small population",
+                 `Age-adjusted rate per 10,000`)
+        ),
+        labelOptions = labelOptions(
+          style = list("white-space" = "pre-line")
+        )
+      ) %>%
+      addLegend(
+        pal = pal,
+        values = zcta_joined$value_cat,
+        opacity = 0.7,
+        title = "Asthma hospitalizations per 10,000 (2017–2021)",
+        position = "bottomright",
+        na.label = "Not given"
+      ) %>%
+      addLegend(
+        data = mn_powerplants,
+        pal = pal3,
+        values = ~fossil_fuel,
+        opacity = 0.7,
+        title = "Renewable or Fossil Fuel",
+        position = "bottomright",
+        na.label = "Not given") %>%
+      addCircleMarkers(
+        data = mn_powerplants,
+        lng = ~longitude,
+        lat = ~latitude,
+        color = ~pal3(fossil_fuel),
+        radius = 3,        # 0.25 is too small to see
+        fillOpacity = 1,
+        label = ~paste0(
+          "Plant Name: ", plant_name, "<br>",
+          "Plant Code: ", plant_code
+        )
+      )
+  })
 }

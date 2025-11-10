@@ -27,6 +27,60 @@ library(jsonlite)
 
 DATA
 
+test
+```{r}
+# power plant
+mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
+  filter(State == "Minnesota") %>%
+  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"),
+         PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% # change 'other' to 'waste heat'
+  janitor::clean_names() 
+
+# power plant dates
+powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+  janitor::clean_names() 
+powerplant_dates_retired <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
+  janitor::clean_names()
+
+
+ 
+###=============Wrangling =============###
+
+powerplant_dates_mn <- powerplant_dates %>% 
+  filter(state == "MN") %>% 
+  mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(first_op_date = min(full_date))
+
+# add years to mn_powerplants (main dataset we're using for powerplants)
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn)
+
+# fill in missing dates:
+# Buffalo Sun CSG - active since 2/1/2025
+# Oster Sun CSG	- active since 1/1/2025
+# Quarry Sun CSG - active since 1/1/2025
+# via sunshare website
+mn_powerplants <- mn_powerplants %>%
+  mutate(first_op_date = case_when(plant_code == 66070 ~ as.Date(mdy("2/1/2025")),
+                                   plant_code == 66072 ~ as.Date(mdy("1/1/2025")),
+                                   plant_code == 66073 ~ as.Date(mdy("1/1/2025")),
+                                   TRUE ~ first_op_date), 
+         first_op_year = year(first_op_date)
+  ) 
+
+# get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later)
+powerplant_dates_retired_mn <- powerplant_dates_retired %>% 
+  filter(state == "MN", plant_code != 1912) %>% #inaccurate info given for plant 1912 (it's still operational)
+  mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded
+
+# join to mn_powerplants
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
+
+```
+
+
 ```{r, include=FALSE }
 
 # Power plants
@@ -78,6 +132,8 @@ zctas <- zctas(cb = FALSE, year = 2020)
 mn_counties <- counties(state = "MN", class = "sf")
 mn_zctas <- st_filter(zctas, mn_counties)
 
+saveRDS(mn_zctas, "mn_zctas_2020.rds")
+
 
 zcta_joined <- asthmaMN %>%
   left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
@@ -90,7 +146,6 @@ zcta_joined <- asthmaMN %>%
     `Age-adjusted rate per 10,000` >= 7 ~ "7+"))
 
 zcta_joined <- st_as_sf(zcta_joined)
-
 
 ```
 
@@ -132,10 +187,11 @@ pal <- colorFactor(
 
 pal3 <- colorFactor(
   palette = c("red", "green"),
-  domain = mn_powerplants$energy_source)
+  domain = mn_powerplants$fossil_fuel)
 
 
 plot <- leaflet(zcta_joined) %>%
+  setView(lng = -93.265, lat = 44.9778, zoom = 10) %>%
   addTiles() %>%
   addPolygons(
     fillColor = ~pal(value_cat),
@@ -156,15 +212,23 @@ plot <- leaflet(zcta_joined) %>%
     title = "Asthma related hospitalizations per 10,000 between 2017-2021",
     position = "bottomright",
     na.label = "Not given") %>%
-  addCircleMarkers(
-    color = ~pal3(energy_source),
+   addLegend(
     data = mn_powerplants,
-    lng = ~Longitude,
-    lat = ~Latitude,
+    pal = pal3,
+    values = ~fossil_fuel,
+    opacity = 0.7,
+    title = "Renewable or Fossil Fuel",
+    position = "bottomright",
+    na.label = "Not given") %>%
+  addCircleMarkers(
+    color = ~pal3(fossil_fuel),
+    data = mn_powerplants,
+    lng = ~longitude,
+    lat = ~latitude,
     radius = 0.25,
     fillOpacity = 1,
-    label = ~paste0("Plant Name: ", Plant_Name, "\n", 
-                    "Plant Code:", Plant_Code))
+    label = ~paste0("Plant Name: ", plant_name, "\n", 
+                    "Plant Code:", plant_code))
 
 plot
 
