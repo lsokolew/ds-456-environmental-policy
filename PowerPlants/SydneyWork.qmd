@@ -30,13 +30,13 @@ DATA
 ```{r, include=FALSE }
 
 # Power plants
-american_powerPlants <- read_csv("Power_Plants.csv")
+american_powerPlants <- read_csv("Data/Power_Plants.csv")
 mn_powerplants <- american_powerPlants %>%
   filter(State == "Minnesota") %>% 
   mutate(energy_source = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"))
 
 # Operating Years
-powerplant_dates <- read_csv("powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
   janitor::clean_names() 
 powerplant_dates_mn <- powerplant_dates %>% 
   filter(state == "MN") %>% 
@@ -64,10 +64,10 @@ mn_powerplants
 
 
 # Health
-copd <- read_csv("copd.csv")
-asthmaMN <- read_csv("MN-asthma-zipcode.csv") 
+copd <- read_csv("Data/copd.csv")
+asthmaMN <- read_csv("Data/MN-asthma-zipcode.csv") 
 # Air
-air <- read_csv("air.csv")
+air <- read_csv("Data/air.csv")
 
 
 
