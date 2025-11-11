@@ -109,7 +109,7 @@ server = function(input, output, session){
   
   # ----Reactive Plot------
   filtered_mn_aq = reactive({
-    mn_counties_aq %>% filter(year <= input$year_for_aq_viz, pollutant == "Ozone") 
+    mn_counties_aq %>% filter(year <= input$year_for_aq_viz, pollutant == "PM2.5") 
     })
   filtered_mn_powerplants = reactive({
     mn_powerplants %>% 
@@ -125,7 +125,7 @@ server = function(input, output, session){
       domain = filtered_mn_powerplants()$fossil_fuel
     )
     
-    pal_aqi <- colorNumeric("YlOrRd", domain = filtered_mn_aq()$average_concentration)
+    pal_aqi <- colorNumeric("YlOrRd", domain = c(4, 12))
     
     leaflet() %>%
       # putting layer of counties
@@ -167,8 +167,8 @@ server = function(input, output, session){
       )  %>% 
       addLegend(
         pal = pal_aqi,
-        values = filtered_mn_aq()$average_concentration,
-        title = str_c("Ozone", " Concentration (", "ppb", ")"),
+        values = c(4, 12),
+        title = str_c("PM2.5", " Concentration (", "µg/m3", ")"),
         opacity = 0.75
       ) 
   })
@@ -178,7 +178,7 @@ server = function(input, output, session){
   ff_status <- mn_powerplants %>%
     group_by(county) %>%
     summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
-    mutate(plant_group = ifelse(has_fossil, "Has Fossil Fuel", "Only Renewable/None"))
+    mutate(plant_group = ifelse(has_fossil, "At Least One", "Only Renewable/None"))
   
   output$pm_by_pp_type = renderPlot({
     mn_counties_aq %>%
@@ -189,13 +189,13 @@ server = function(input, output, session){
       geom_line(alpha = 0.2) + # faint individual counties
       stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend
       labs(
-        title = "Average PM2.5 Concentration by County Type",
-        color = "County Plant(s) Type",
-        y = "Average PM2.5 Concentration (µg/m3)",
+        title = "Counties With Fossil Fuel Plants Tend to Have Worse Air Quality",
+        color = "Fossil Fuel Plant(s)?",
+        y = "Average PM2.5 Concentration by County (µg/m3)",
         x = "Year"
       ) +
       ylim(0, 12) +
-      scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
+      scale_color_manual(values = c("At Least One" = "#d95f02",
                                     "Only Renewable/None" = "#1b9e77")) +
       theme_classic()
   }, bg = "transparent")
@@ -210,15 +210,15 @@ server = function(input, output, session){
       geom_line(alpha = 0.15) + # faint individual counties
       stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1) + # bold mean trend
       labs(
-        title = "Average Ozone Concentration by County Type",
-        color = "County Plant(s) Type",
-        y = "Average Ozone Concentration (ppb)",
+        title = "",
+        color = "County Power Plants",
+        y = "Average Ozone Concentration by County (ppb)",
         x = "Year"
       ) +
-      ylim(20, 42) +
-      scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
+      ylim(0, 42) +
+      scale_color_manual(values = c("At Least One" = "#d95f02",
                                     "Only Renewable/None" = "#1b9e77")) +
-      theme_classic()
+      theme_classic() 
   }, bg = "transparent")
   
   ###================================ Health ===============================###

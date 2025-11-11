@@ -269,6 +269,12 @@ and PM2.5 (fine particulate matter) levels, with modeled estimates for counties 
 order to explore the human-level impacts of air quality, we used <b>MN Department of Health's data</b> on hospitalizations 
 due to asthma and COPD.</b>"
 
+aq_blurb <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor 
+to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants are the largest stationary 
+source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they emit significant quantities of fine particulate matter
+(PM₂.₅). These pollutants contribute to environmental damage, including acid rain, loss of biodiversity, and climate change. (Source: 
+https://www.epa.gov/power-sector/human-health-environmental-impacts-electric-power-sector)"
+
 health_blurb <- "Asthma, the most common chronic disease in the United States, is triggered by irritants such as air pollution. 
 Class and race are factors that affect the levels of pollutants in the surrounding environment according to the article 
 “Environmental Justice: The Economics of Race, Place, and Pollution.” by authors Spencer Banzhaf, Lala Ma and Christopher Timmins. 
