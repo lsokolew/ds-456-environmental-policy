@@ -64,8 +64,14 @@ ui <- fluidPage(
   
   ##=================Air Quality=================##
   
+  h2(style = "text-align:center; font-size:22px;", strong("Air Quality")),
   
+  column(12, align = "center", leafletOutput(outputId = 'aq_choropleth_by_year', height = 400, width = 600)),
+  column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),
   
+  column(12, align = "center", plotOutput(outputId = "pm_by_pp_type", height = 400, width = 600)),
+  column(12, align = "center", plotOutput(outputId = "ozone_by_pp_type", height = 400, width = 600)),
+  br(),
   
   ##=================Health=================##
   

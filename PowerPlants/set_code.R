@@ -60,6 +60,18 @@ mn_aq_all_years <- read_csv("Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv
          county = str_remove(county, "County"),
          county = str_trim(county))
 
+# load spatial/boundary info
+mn_counties <- counties(state = "MN", cb = TRUE) %>%
+  st_transform(crs = 4326)
+
+mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
+  st_transform(crs = 4326)
+
+# join AQ data to add spatial data
+mn_counties_aq <- mn_counties %>%
+  left_join(mn_aq_all_years, by = c("NAME" = "county")) %>% 
+  janitor::clean_names()
+
 ###=== Healthcare ===###
 
 # Asthma

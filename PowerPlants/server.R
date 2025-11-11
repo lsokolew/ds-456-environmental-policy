@@ -104,6 +104,122 @@ server = function(input, output, session){
       theme_1 
     }, bg = "transparent")
   
+  ###================================ Air Quality ===============================###
+
+  
+  # ----Reactive Plot------
+  filtered_mn_aq = reactive({
+    mn_counties_aq %>% filter(year <= input$year_for_aq_viz, pollutant == "Ozone") 
+    })
+  filtered_mn_powerplants = reactive({
+    mn_powerplants %>% 
+      filter(first_op_year <= input$year_for_aq_viz, is.na(last_retire_year) | last_retire_year > input$year_for_aq_viz) 
+    })
+
+  
+  output$aq_choropleth_by_year = renderLeaflet({
+    
+    pal_pp <- colorFactor(
+      c("black",
+        "darkgreen"),
+      domain = filtered_mn_powerplants()$fossil_fuel
+    )
+    
+    pal_aqi <- colorNumeric("YlOrRd", domain = filtered_mn_aq()$average_concentration)
+    
+    leaflet() %>%
+      # putting layer of counties
+      addPolygons(
+        data = filtered_mn_aq(),
+        fillColor = ~ pal_aqi(average_concentration),
+        weight = 1,
+        color = "black",
+        fillOpacity = .6,
+        group = "Counties"
+      ) %>%
+      # putting layer of tracts
+      addPolygons(
+        data = mn_tracts,
+        fillColor = FALSE,
+        weight = 0.5,
+        color = "gray",
+        opacity = 0.5,
+        group = "Tracts"
+      ) %>%
+      # putting circles for each power plant
+      addCircleMarkers(
+        data = filtered_mn_powerplants(),
+        lng = ~ longitude,
+        lat = ~ latitude,
+        radius = 0.25,
+        color = ~pal_pp(fossil_fuel),
+        opacity = 0.35
+      ) %>% 
+      addLegendFactor(
+        pal = pal_pp,
+        values = filtered_mn_powerplants()$fossil_fuel,
+        title = "Power Plants: Energy Type",
+        orientation = "horizontal",
+        position = "topright",
+        width = 12,
+        height = 12,
+        opacity = 0.75
+      )  %>% 
+      addLegend(
+        pal = pal_aqi,
+        values = filtered_mn_aq()$average_concentration,
+        title = str_c("Ozone", " Concentration (", "ppb", ")"),
+        opacity = 0.75
+      ) 
+  })
+  
+  # ----Static Plot-----
+  
+  ff_status <- mn_powerplants %>%
+    group_by(county) %>%
+    summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
+    mutate(plant_group = ifelse(has_fossil, "Has Fossil Fuel", "Only Renewable/None"))
+  
+  output$pm_by_pp_type = renderPlot({
+    mn_counties_aq %>%
+      filter(pollutant == "PM2.5") %>%
+      left_join(ff_status, by = c("name" = "county")) %>%
+      mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
+      ggplot(aes(x = year, y = average_concentration, group = name, color = plant_group)) +
+      geom_line(alpha = 0.2) + # faint individual counties
+      stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend
+      labs(
+        title = "Average PM2.5 Concentration by County Type",
+        color = "County Plant(s) Type",
+        y = "Average PM2.5 Concentration (µg/m3)",
+        x = "Year"
+      ) +
+      ylim(0, 12) +
+      scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
+                                    "Only Renewable/None" = "#1b9e77")) +
+      theme_classic()
+  }, bg = "transparent")
+    
+  output$ozone_by_pp_type = renderPlot({
+    mn_counties_aq %>%
+      filter(pollutant == "Ozone") %>%
+      left_join(ff_status, by = c("name" = "county")) %>%
+      mutate(avg_conc_jittered = average_concentration + runif(n(), min=0, max=.5)) %>% # jitter so lines don't cover each other
+      mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
+      ggplot(aes(x = year, y = avg_conc_jittered, group = name, color = plant_group)) +
+      geom_line(alpha = 0.15) + # faint individual counties
+      stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1) + # bold mean trend
+      labs(
+        title = "Average Ozone Concentration by County Type",
+        color = "County Plant(s) Type",
+        y = "Average Ozone Concentration (ppb)",
+        x = "Year"
+      ) +
+      ylim(20, 42) +
+      scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
+                                    "Only Renewable/None" = "#1b9e77")) +
+      theme_classic()
+  }, bg = "transparent")
   
   ###================================ Health ===============================###
   
