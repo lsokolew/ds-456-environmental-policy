@@ -209,7 +209,6 @@ plants_in_ej_counts %>%
        subtitle = "Comparison by energy type for Enviromental Justice Areas",
        x = "Number of Power Plants per Census Tract", y = "Number of Census Tracts")
 
-
 ```
 
 ## Populations to where power plants are at
@@ -295,6 +294,8 @@ MI_Power_Plants <- read_csv("Power_Plants.csv")  %>%
    filter(State == "Michigan") %>%
   mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"))
 ```
+
+
 ```{r}
 leaflet() %>%
   addCircleMarkers(

@@ -40,8 +40,7 @@ server = function(input, output, session){
       summarize (count = n()) %>%
       st_as_sf(coords = c('longitude', 'latitude')) %>%
       st_set_crs(4326)
-
-  })
+    })
 
   output$map = renderLeaflet({
 
@@ -58,10 +57,8 @@ server = function(input, output, session){
         opacity = 0.75,
         position = "topright",
         width = 12,
-        height = 12
-      )
-
-  })
+        height = 12)
+    })
   
   ###================================ Power Plants ===============================###
   
@@ -120,11 +117,6 @@ server = function(input, output, session){
     )
     
     # ---- Palette for power plants ----
-    pal3 <- colorFactor(
-      palette = c("red", "green"),
-      domain = mn_powerplants$fossil_fuel
-    )
-    
     leaflet(zcta_joined) %>%
       setView(lng = -93.265, lat = 44.9778, zoom = 8) %>%
       addTiles() %>%
@@ -178,4 +170,126 @@ server = function(input, output, session){
         )
       )
   })
+
+
+###================================ EJ ===============================###
+
+# Plot Fossil Fuel 
+
+output$pp_ej_ff <- renderLeaflet({
+leaflet() %>%
+  addPolygons(data = mn_tracts,
+              color = "black",
+              fillOpacity = 0,
+              weight = 0.5) %>%
+  addPolygons(
+    data = ej_sf,
+    fillColor = ~pal1(EJ_area), 
+    fillOpacity = 0.7, 
+    color = "white", 
+    weight = 0.15
+  ) %>%
+  addLegend(
+    pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+  addCircleMarkers(
+    data = fossil_power_plants,
+    lng = ~Longitude,
+    lat = ~Latitude,
+    radius = 1.75,         
+    fillOpacity = 0.75,  
+    opacity = 0.1,      
+    color = "#000000") 
+  
+})
+
+
+# Plot renable Fuel 
+
+output$pp_ej_re <- renderLeaflet({ 
+  leaflet() %>%
+  addPolygons(data = mn_tracts,
+              color = "black",
+              fillOpacity = 0,
+              weight = 0.5) %>%
+  addPolygons(
+    data = ej_sf,
+    fillColor = ~pal1(EJ_area), 
+    fillOpacity = 0.7, 
+    color = "white", 
+    weight = 0.15
+  ) %>%
+  addLegend(
+    pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+  addCircleMarkers(
+    data = Renewable_power_plants,
+    lng = ~Longitude,
+    lat = ~Latitude,
+    radius = 1.75,         
+    fillOpacity = 0.75,  
+    opacity = 0.1,      
+    color = "#000000")  
+  
+})
+
+## Counts of power plants per census tracts
+
+output$pp_count_all = renderPlot({
+
+  plants_in_ej_counts %>%
+    ggplot(aes(x = plant_count)) +
+    geom_histogram(binwidth = 1, fill = "#c44900", color = "white") +
+    theme_classic() +
+    facet_wrap(~fossil_fuel + EJ_OR_NOT) +
+    labs(title = "Distribution of Power Plants per Census Tract",
+         subtitle = "Comparison by energy type and Environmental Justice area status",
+         x = "Number of Power Plants per Census Tract", y = "Number of Census Tracts") +
+    theme_1
+    }, bg = "transparent")
+
+
+  output$pp_count_ej = renderPlot({
+    
+    plants_in_ej_counts %>%
+    filter(EJ_OR_NOT == TRUE) %>%
+    ggplot(aes(x = plant_count)) +
+    geom_histogram(binwidth = 1, fill = "#22577a", color = "white") +
+    theme_classic() +
+    facet_wrap(~fossil_fuel) +
+    labs(title = "Distribution of Power Plants per Census Tract",
+       subtitle = "Comparison by energy type for Enviromental Justice Areas",
+       x = "Number of Power Plants per Census Tract", y = "Number of Census Tracts") +
+      theme_1
+    }, bg = "transparent")
+  
+## Populations to where power plants are at
+
+# Plot all
+
+output$pp_pop_all = renderPlot({
+  
+  plants_per_pop %>%
+    ggplot(aes(x = plants_per_10k)) +
+    geom_histogram( fill = "#c44900", color = "white") +
+    theme_classic() +
+    facet_wrap(~fossil_fuel + EJ_OR_NOT) +
+    labs(title = "Distribution of Power Plants per 10,000 People",
+         subtitle = "For type of power plants and environmental justice designation",
+         x = "Power Plants per 10,000 Resident in Census Tract", y = "Count of Census Tracts") +
+    theme_1
+  }, bg = "transparent")
+
+# Plot on EJ
+output$pp_pop_ej = renderPlot({
+  plants_per_pop %>%
+    filter(EJ_OR_NOT == TRUE) %>%
+    ggplot(aes(x = plants_per_10k)) +
+    geom_histogram( fill = "#22577a", color = "white") +
+    theme_classic() +
+    facet_wrap(~fossil_fuel) +
+    labs(title = "Distribution of Power Plants per 10,000 People",
+         subtitle = "For each type of power plants in enviromental Justice Areas",
+         x = "Power Plants per 10,000 Resident in Census Tract", y = "Count of Census Tracts") +
+    theme_1
+}, bg = "transparent")
+
 }
