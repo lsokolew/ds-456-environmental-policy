@@ -148,10 +148,6 @@ zcta_joined <- st_as_sf(zcta_joined)
 
 ###=== EJ Areas ===###
 
-Power_Plants <- read_csv("Data/Power_Plants.csv")  %>%
-  filter(State == "Minnesota") %>%
-  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"))
-
 # Join Environmental Justice Data
 ej_tracts <- mn_tracts %>%
   left_join(ej_spaces, by = c("GEOID" = "geoid"))
@@ -192,12 +188,12 @@ EJ_stacked <- bind_rows(statuselp_filtered, status200x_filtered,
 
 
 # Subset fossil fuel power plants
-fossil_power_plants <- Power_Plants %>%
-  filter(fossil_fuel == "Fossil Fuel", County %in% EJ_stacked$County)
+fossil_power_plants <- mn_powerplants %>%
+  filter(fossil_fuel == "Fossil Fuel", county %in% EJ_stacked$County)
 
 # Subset Reneable power plants
-Renewable_power_plants <- Power_Plants %>%
-  filter(fossil_fuel == "Renewable", County %in% EJ_stacked$County)
+Renewable_power_plants <- mn_powerplants %>%
+  filter(fossil_fuel == "Renewable", county %in% EJ_stacked$County)
 
 # transform to sf
 ej_sf <- st_as_sf(EJ_stacked)
@@ -205,7 +201,7 @@ ej_sf <- st_as_sf(EJ_stacked)
 
 # Loading in census data
 mn_tracts <- tracts(state = "MN", year = 2020, class = "sf")
-Power_Plants_sf <- st_as_sf(Power_Plants, coords = c("Longitude", "Latitude"), crs = 4326)
+Power_Plants_sf <- st_as_sf(mn_powerplants, coords = c("longitude", "latitude"), crs = 4326)
 
 mn_tracts <- st_transform(mn_tracts, crs = st_crs(Power_Plants_sf))
 
@@ -215,7 +211,7 @@ Power_Plants_with_tract <- st_join(Power_Plants_sf, mn_tracts[, c("GEOID", "NAME
 # Add a column to identify is power plant is part of EJ or Not also simplify df
 plants_in_ej <- st_join(Power_Plants_with_tract, ej_sf, join = st_within) %>%
   mutate(EJ_OR_NOT = if_else(is.na(EJ_OR_NOT), FALSE, EJ_OR_NOT)) %>%
-  select(X, Y, OBJECTID.x, Plant_Code, Plant_Name, County.x, Zip, PrimSource, 
+  select(x, y, OBJECTID, plant_code, plant_name, county, zip, prim_source, 
          fossil_fuel, geometry, GEOID, NAME, COUNTYFP,EJ_OR_NOT, EJ_area)
 
 # Find the count of power plants per census tracts

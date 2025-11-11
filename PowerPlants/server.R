@@ -9,9 +9,8 @@ options(tigris_use_cache = TRUE)
 
 
 # Sourcing ui to know what plot is being called
+source("global.R")
 source("ui.R")
-source("set_code.R")
-
 
 server = function(input, output, session){
   
@@ -309,8 +308,8 @@ leaflet() %>%
     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
   addCircleMarkers(
     data = fossil_power_plants,
-    lng = ~Longitude,
-    lat = ~Latitude,
+    lng = ~longitude,
+    lat = ~latitude,
     radius = 1.75,         
     fillOpacity = 0.75,  
     opacity = 0.1,      
@@ -338,8 +337,8 @@ output$pp_ej_re <- renderLeaflet({
     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
   addCircleMarkers(
     data = Renewable_power_plants,
-    lng = ~Longitude,
-    lat = ~Latitude,
+    lng = ~longitude,
+    lat = ~latitude,
     radius = 1.75,         
     fillOpacity = 0.75,  
     opacity = 0.1,      

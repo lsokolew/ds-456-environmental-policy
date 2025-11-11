@@ -3,7 +3,7 @@
 library(shiny)
 library(bslib)
 library(leaflet)
-source("set_code.R")
+source("global.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -85,6 +85,8 @@ ui <- fluidPage(
   
   ##=================Health=================##
   
+  br(),
+  br(),
   
   h2(style = "text-align:center; font-size:22px;", strong("Asthma and Power Plants")),
   
@@ -101,6 +103,8 @@ ui <- fluidPage(
   
   
   ##=================EJ areas=================##
+  br(),
+  br(),
   h2(style = "text-align:center; font-size:22px;", strong("Demographics")),
   
   # DIV 1: choose how the text should be formated
@@ -116,6 +120,8 @@ ui <- fluidPage(
   
   
   column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
+  br(),
+  
   column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
   br(),
   column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
