@@ -3,7 +3,7 @@
 library(shiny)
 library(bslib)
 library(leaflet)
-source("set_code.R")
+source("global.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(

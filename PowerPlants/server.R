@@ -9,9 +9,8 @@ options(tigris_use_cache = TRUE)
 
 
 # Sourcing ui to know what plot is being called
+source("global.R")
 source("ui.R")
-source("set_code.R")
-
 
 server = function(input, output, session){
   
