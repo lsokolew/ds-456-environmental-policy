@@ -15,6 +15,7 @@ theme_1 <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
                  panel.background = element_blank(),     
                  plot.background = element_blank(),     
                  panel.grid = element_blank(),
+                 strip.background = element_blank(),
                  legend.background = element_rect(fill = "transparent", color = NA) )
 
 fuel_colors <- scale_fill_manual(
@@ -24,8 +25,9 @@ fuel_colors <- scale_fill_manual(
 
 # colors for ej areas
 pal1 <- colorFactor(
-  palette = c("#dc0073","#22577a", "#c44900", "#f4e285"),
-  domain = c( "ALL", "ONLY LOW INCOME", "ONLY POC", "ONLY POC & LOW INCOME"))
+  palette = c("#dc0073", "#22577a", "#c44900", "#f4e285"),
+  domain = c("ALL", "ONLY LOW INCOME", "ONLY POC", "ONLY POC & LOW INCOME")
+)
 
 # health palete
 pal3 <- colorFactor(
@@ -280,4 +282,20 @@ in the concentration of regulations in white areas.  These polluters, such as po
 surrounding air. Air quality has been monitored for years, showing a steady improvement in air quality over the years."
 
 
-ej_areas <- "context"
+ej_areas <- "Research has found power plants are more likely to be built around redlining neighborhoods, 
+particularly fossil fuel power plants/coal-powered power plants. As a result, already struggling communities 
+take on additional health burdens. This is particularly true when it comes to health effects, as there have 
+been relationships found between the implementation of power plants and high levels of bad air quality. 
+<br>
+
+The Minnesota pollution agencyhas taken on creating environmentally just environments for all, 
+particularly for those most at risk. These communities are defined as Environmental justice areas.
+These areas are census tracts which might fall on one of the following categories:
+<br>
+<br>
+1.) at least 40% of the population is people of color<br>
+2.) at least 35 percent of households have income at or below 200 percent of the federal poverty level<br>
+3.) at least 40 percent of the population has limited proficiency in English<br>
+4.) are located within Indian Country, which is defined as federally recognized reservations and other Indigenous lands<br>
+<br>
+A concern that arises is if these communities are affected more by power plants than other?"

@@ -118,16 +118,30 @@ ui <- fluidPage(
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
         ej_areas))), # close div
   
+  h2(style = "text-align:center; font-size:18px;", "Fossil Fuel Power Plants vs Enviromental Justice Areas"),
   
   column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
   br(),
-  
+  br(),
+
+  h2(style = "text-align:center; font-size:18px;", "Renewable Energy Power Plants vs Enviromental Justice Areas"),
   column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
   br(),
+  br(),
+  br(),
+  h2(style = "text-align:center; font-size:18px;", "Distribution of Power Plants"),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
   br(),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pp_pop_all", height = 400, width = 600)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pp_pop_ej", height = 400, width = 600)),
   
   
