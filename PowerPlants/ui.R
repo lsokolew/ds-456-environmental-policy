@@ -3,7 +3,7 @@
 library(shiny)
 library(bslib)
 library(leaflet)
-source("set_code.R")
+source("global.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -61,17 +61,52 @@ ui <- fluidPage(
   
   column(12, align = "center", plotOutput(outputId = "pp_dates_barplot", height = 400, width = 600)),
  
-  ##=================EJ areas=================##
-  
-  
   
   ##=================Air Quality=================##
   
+  br(),
+  h2(style = "text-align:center; font-size:22px;", strong("Air Quality")),
   
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(aq_blurb)),
+  br(),
   
+  column(12, align = "center", leafletOutput(outputId = 'aq_choropleth_by_year', height = 400, width = 600)),
+  column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),
+  
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(interactive_aq_plot_descrip)),
+  br(),
+  
+  column(12, align = "center", plotOutput(outputId = "pm_by_pp_type", height = 400, width = 600)),
+  column(12, align = "center", plotOutput(outputId = "ozone_by_pp_type", height = 400, width = 600)),
+  
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(aq_line_plot_descrip)),
+  br(),
   
   ##=================Health=================##
   
+  br(),
+  br(),
   
   h2(style = "text-align:center; font-size:22px;", strong("Asthma and Power Plants")),
   
@@ -86,57 +121,65 @@ ui <- fluidPage(
   
   column(12, align = "center", leafletOutput(outputId = "asthma_map", height = 400, width = 800)),
   
+  
+  ##=================EJ areas=================##
+  br(),
+  br(),
+  h2(style = "text-align:center; font-size:22px;", strong("Demographics")),
+  
+  # DIV 1: choose how the text should be formated
+  div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
+      
+      # highlight the source 
+      HTML(paste0(
+        "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+        ej_areas))), # close div
+  
+  
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
+  br(),
+  
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
+  br(),
+  column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
+  column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
+  br(),
+  column(12, align = "center", plotOutput(outputId = "pp_pop_all", height = 400, width = 600)),
+  column(12, align = "center", plotOutput(outputId = "pp_pop_ej", height = 400, width = 600)),
+  
+  
   ##=================Data=================##
   
   br(),
   h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
   
-  # choose how the text should be formated
-  div(
-    style = "
-    max-width: 900px; 
-    margin: 0 auto; 
-    text-align: justify; 
-    font-size: 18px; 
-    font-family: 'Tinos', serif; 
-    color: #4a4a4a;
-  ",
-    # highlight the source 
+  # DIV 1: choose how the text should be formated
+    div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
     
+    # highlight the source 
     HTML(paste0(
-      "<style> 
-      b { 
+      "<style>  b { 
         background-color: #FFF59D;  /* soft yellow highlight */
-        color: #000000;
-        font-weight: 700;
-        padding: 1px 3px;
-        border-radius: 2px;
-      } 
-    </style>",
-      data_intro
-    ))
-  ),
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+      data_intro))), # close div
   
-  # data source logos
-  div(
-    style = "
-    text-align: center;
-  ",
+  
+  # DIV 2: data source logos
+    div(style = "text-align: center;",
     tags$img(
       src = "data_sources.png",
       alt = "logos for EIA, EPA, US Census Bureau, MPCA, and MN Department of Health",
       width = 650,
-      height = 250
-    ), # close ta
+      height = 250), # close ta
+    
     br(),
+    
     tags$p(
-      style = "
-      font-family: 'Tinos', serif;
-      font-size: 16px;
-      color: #4a4a4a;
-      margin-top: 5px;
-    ",
-      "Our Data Sources") # close tag
-  )# close div
+      style = "font-family: 'Tinos', serif;font-size: 16px;color: #4a4a4a; margin-top: 5px;",
+      "Our Data Sources"))# close div
   
 ) # closing UI
