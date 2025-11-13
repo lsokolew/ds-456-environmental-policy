@@ -66,8 +66,8 @@ mn_aq_all_years <- read_csv("Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv
 mn_counties <- counties(state = "MN", cb = TRUE) %>%
   st_transform(crs = 4326)
 
-mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
-  st_transform(crs = 4326)
+# mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
+#   st_transform(crs = 4326)
 
 # join AQ data to add spatial data
 mn_counties_aq <- mn_counties %>%
@@ -272,6 +272,15 @@ to air pollution and its associated health risks. The EPA states that fossil-fue
 source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they emit significant quantities of fine particulate matter
 (PM₂.₅). These pollutants contribute to environmental damage, including acid rain, loss of biodiversity, and climate change. (Source: 
 https://www.epa.gov/power-sector/human-health-environmental-impacts-electric-power-sector)"
+
+interactive_aq_plot_descrip <- "Until 2015, PM₂.₅ stays most concentrated in the Twin Cities Area, with generally higher levels in  
+southern counties than northern ones. Southern counties also contain the most fossil fuel power plants; they are much sparser in the north.
+In 2016, we see generally better air quality levels across the state, as well as an uptick in the additions of new renewable power plants.
+In 2021, there is a spike in PM₂.₅ levels in the northwestern counties."
+
+aq_line_plot_descrip <- "These plots show the change in average PM₂.₅ and ozone levels between 2008 and 2021, with each line representing
+one county. Lines are colored red if a county has at least one fossil fuel power plant, or green if a county has only fossil fuel or no power 
+plants."
 
 health_blurb <- "Asthma, the most common chronic disease in the United States, is triggered by irritants such as air pollution. 
 Class and race are factors that affect the levels of pollutants in the surrounding environment according to the article 

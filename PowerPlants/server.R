@@ -136,15 +136,6 @@ server = function(input, output, session){
         fillOpacity = .6,
         group = "Counties"
       ) %>%
-      # putting layer of tracts
-      addPolygons(
-        data = mn_tracts,
-        fillColor = FALSE,
-        weight = 0.5,
-        color = "gray",
-        opacity = 0.5,
-        group = "Tracts"
-      ) %>%
       # putting circles for each power plant
       addCircleMarkers(
         data = filtered_mn_powerplants(),

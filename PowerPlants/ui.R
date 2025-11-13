@@ -75,12 +75,32 @@ ui <- fluidPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(aq_blurb)),
+  br(),
   
   column(12, align = "center", leafletOutput(outputId = 'aq_choropleth_by_year', height = 400, width = 600)),
   column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),
   
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(interactive_aq_plot_descrip)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pm_by_pp_type", height = 400, width = 600)),
   column(12, align = "center", plotOutput(outputId = "ozone_by_pp_type", height = 400, width = 600)),
+  
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(aq_line_plot_descrip)),
   br(),
   
   ##=================Health=================##
