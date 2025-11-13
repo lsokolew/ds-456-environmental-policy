@@ -238,12 +238,11 @@ plot
 ASTHMA & EJ & POWER PLANTS
 
 ```{r}
-ej_justice <- read_csv("csv_env_ej_mpca_census/ej_mpca_census.csv")
-ej_shapefile <- sf::st_read("shp_env_ej_mpca_census/ej_mpca_census.shp")
+ej_justice <- read_csv("Data/ej_mpca_census.csv")
+ej_shapefile <- sf::st_read("Data/ej_mpca_census.shp")
 
 ej_shapefile_cleaned <- ej_shapefile %>%
   mutate(ej_status = if_else(status200x == "YES" | statuspoc == "YES" | statuslep == "YES", TRUE, FALSE))
-
 zcta_joined <- st_transform(zcta_joined, 4326)
 ej_shapefile_cleaned <- st_transform(ej_shapefile_cleaned, 4326)
 
@@ -318,7 +317,7 @@ EJ Mile Radius
 
 ```{r}
 points_sf <- st_as_sf(mn_powerplants,
-                      coords = c("Longitude", "Latitude"),
+                      coords = c("longitude", "latitude"),
                       crs = 4326) 
 ej_areas <- ej_shapefile %>%
   filter(status200x == "YES")
