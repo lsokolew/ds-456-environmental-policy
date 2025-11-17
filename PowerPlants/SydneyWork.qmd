@@ -244,6 +244,7 @@ ej_shapefile <- sf::st_read("Data/ej_mpca_census.shp")
 ej_shapefile_cleaned <- ej_shapefile %>%
   mutate(ej_status = if_else(status200x == "YES" | statuspoc == "YES" | statuslep == "YES", TRUE, FALSE))
 zcta_joined <- st_transform(zcta_joined, 4326)
+ej_shapefile_cleaned <- st_set_crs(ej_shapefile_cleaned, 4326)
 ej_shapefile_cleaned <- st_transform(ej_shapefile_cleaned, 4326)
 
 
@@ -299,8 +300,8 @@ plot2 <- leaflet(zcta_joined) %>%
     na.label = "Not given") %>%
   addCircleMarkers(
     data = mn_powerplants,
-    lng = ~Longitude,
-    lat = ~Latitude,
+    lng = ~longitude,
+    lat = ~latitude,
     radius = 0.25,
     fillOpacity = 1,
     color = "red",
@@ -318,10 +319,11 @@ EJ Mile Radius
 ```{r}
 points_sf <- st_as_sf(mn_powerplants,
                       coords = c("longitude", "latitude"),
-                      crs = 4326) 
+                      crs = 26915) 
 ej_areas <- ej_shapefile %>%
   filter(status200x == "YES")
 
+ej_areas <- st_set_crs(ej_areas, 26915)
 ej_tracts_proj <- st_transform(ej_areas, 26915)
 pp_points_proj <- st_transform(points_sf, 26915)
 
@@ -349,24 +351,44 @@ points_sf %>%
   count()
 
 points_sf %>%
-  group_by(energy_source) %>%
+  group_by(fossil_fuel) %>%
   summarise(count_inside_or_near = sum(inside_tract | within_mile))
 
-buffers <- st_buffer(points_sf, dist = 1609) # 1609 m = 1 mile
+buffer_points <- points_sf %>%
+  st_transform(3857) %>%      # project to meters
+  st_buffer(1609.34) %>%      # 1-mile buffer
+  st_transform(4326)       
 
-# Intersect with population data
-affected <- st_intersection(buffers, ej_sf)
-
-# Calculate affected population per buffer
-affected_summary <- affected %>%
-  group_by(plant_id) %>%
-  summarise(total_pop = sum(population))
 
 # Map it
-leaflet() %>%
+leaflet(ej_areas) %>%
   addTiles() %>%
-  addPolygons(data = buffers, fillColor = "red", opacity = 0.3) %>%
-  addCircleMarkers(data = plants_sf, radius = 5, color = "black")
+    addPolygons(
+    color = ~pal2(ej_status),
+    fillColor = "transparent",
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.7,
+    highlight = highlightOptions(
+      weight = 2,
+      color = "white",
+      bringToFront = TRUE),
+    label = ~ej_status,
+    group = "EJ Tracts"
+    ) %>%
+  addCircleMarkers(
+    data = mn_powerplants,
+    lng = ~longitude,
+    lat = ~latitude,
+    radius = 1609,
+    fillOpacity = 0.3,
+    color = "red",
+    group = "Power Plants") %>%
+  addLayersControl(
+  overlayGroups = c("Asthma", "EJ Tracts", "Power Plants"),
+  options = layersControlOptions(collapsed = FALSE)
+)
+
 ```
 
 SIMPLE PLOTS
