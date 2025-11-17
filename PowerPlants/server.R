@@ -187,7 +187,8 @@ server = function(input, output, session){
       ylim(0, 12) +
       scale_color_manual(values = c("At Least One" = "#d95f02",
                                     "Only Renewable/None" = "#1b9e77")) +
-      theme_classic()
+      theme_classic()+
+      theme_1
   }, bg = "transparent")
     
   output$ozone_by_pp_type = renderPlot({
@@ -208,7 +209,8 @@ server = function(input, output, session){
       ylim(0, 42) +
       scale_color_manual(values = c("At Least One" = "#d95f02",
                                     "Only Renewable/None" = "#1b9e77")) +
-      theme_classic() 
+      theme_classic() +
+      theme_1
   }, bg = "transparent")
   
   ###================================ Health ===============================###
