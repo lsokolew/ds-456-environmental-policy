@@ -78,6 +78,10 @@ powerplant_dates_retired_mn <- powerplant_dates_retired %>%
 # join to mn_powerplants
 mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
+
+mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel"
+
+
 ```
 
 
@@ -87,7 +91,8 @@ mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% 
 american_powerPlants <- read_csv("Data/Power_Plants.csv")
 mn_powerplants <- american_powerPlants %>%
   filter(State == "Minnesota") %>% 
-  mutate(energy_source = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"))
+  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas") | Plant_Code == 10013, "Fossil Fuel", "Renewable")) %>%
+  janitor::clean_names()
 
 # Operating Years
 powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
@@ -99,7 +104,7 @@ powerplant_dates_mn <- powerplant_dates %>%
   summarise(first_op_date = min(full_date))
 
 # add years to mn_powerplants (main dataset we're using for powerplants)
-mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn, by = c("Plant_Code" = "plant_code"))
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn, by = c("plant_code" = "plant_code"))
 
 # fill in missing dates:
 # Buffalo Sun CSG - active since 2/1/2025
@@ -107,14 +112,15 @@ mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn, by = c("Plan
 # Quarry Sun CSG - active since 1/1/2025
 # via sunshare website
 mn_powerplants <- mn_powerplants %>%
-  mutate(first_op_date = case_when(Plant_Code == 66070 ~ as.Date(mdy("2/1/2025")),
-                                   Plant_Code == 66072 ~ as.Date(mdy("1/1/2025")),
-                                   Plant_Code == 66073 ~ as.Date(mdy("1/1/2025")),
+  mutate(first_op_date = case_when(plant_code == 66070 ~ as.Date(mdy("2/1/2025")),
+                                   plant_code == 66072 ~ as.Date(mdy("1/1/2025")),
+                                   plant_code == 66073 ~ as.Date(mdy("1/1/2025")),
                                    TRUE ~ first_op_date), 
          first_op_year = year(first_op_date)
          ) 
 mn_powerplants
 
+write_csv(mn_powerplants, "mn_powerplants.csv")
 
 
 # Health
@@ -314,6 +320,37 @@ plot2
 
 ```
 
+School 1 mile radius
+```{r}
+schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
+schools_sf <- st_set_crs(schools_sf, 26915)
+school_proj <- st_transform(schools_sf, 26915)
+
+school_buffer <- st_buffer(school_proj, dist = (1609.34))
+within_mile_school <- st_within(pp_points_proj, school_buffer)
+points_sf$within_mile_school <- lengths(within_mile_school) > 0
+points_sf$within_mile_school
+
+#school_in_EJ <- st_within(school_proj,ej_tracts_proj)
+#schools_sf$school_in_EJ <- lengths(school_in_EJ) > 0
+
+
+#EJ_school_proj <- st_transform(EJ_school, 26915)
+#EJ_school_buffer <- st_buffer(EJ_school_proj, dist = (1609.34))
+#within_mile_EJ_school <- st_within(pp_points_proj,EJ_school_buffer)
+#EJ_school$within_mile_EJ_school <- lengths(within_mile_EJ_school) > 0
+
+points_sf %>%
+  filter(fossil_fuel)
+
+points_sf %>%
+  ggplot(aes(x = within_mile_school)) +
+  geom_bar()
+
+```
+
+
+
 EJ Mile Radius
 
 ```{r}
@@ -361,10 +398,9 @@ buffer_points <- points_sf %>%
 
 
 # Map it
-leaflet(ej_areas) %>%
+leaflet(buffer_points) %>%
   addTiles() %>%
     addPolygons(
-    color = ~pal2(ej_status),
     fillColor = "transparent",
     weight = 1,
     opacity = 1,
@@ -377,7 +413,7 @@ leaflet(ej_areas) %>%
     group = "EJ Tracts"
     ) %>%
   addCircleMarkers(
-    data = mn_powerplants,
+    data = buffer_points,
     lng = ~longitude,
     lat = ~latitude,
     radius = 1609,
@@ -385,9 +421,10 @@ leaflet(ej_areas) %>%
     color = "red",
     group = "Power Plants") %>%
   addLayersControl(
-  overlayGroups = c("Asthma", "EJ Tracts", "Power Plants"),
+  overlayGroups = c("EJ Tracts", "Power Plants"),
   options = layersControlOptions(collapsed = FALSE)
 )
+
 
 ```
 
@@ -455,110 +492,5 @@ leaflet() %>%
                 values = mn_powerplants$prim_source, title = 'Type of Powerplant')
 ```
 
-EPA API DATA
 
-```{r}
-# Load httr package
-library(httr)
 
-# Define the API URL
-url <- "https://aqs.epa.gov/data/api/annualData/bySite"
-
-years <- 2000:2020
-all_data <- list()
-
-for (yr in years) {
-  query_params <- list(
-    email  = "sohr@macalester.edu",
-    key    = "amberbird59",    
-    param  = "88101",       # PM2.5
-    bdate  = paste0(yr, "0101"),
-    edate  = paste0(yr, "1231"),
-    state  = "27",
-    county = "123",
-    site   = "0868"
-  )
-  
-  27-053-1007
-
-  
-  response <- GET(url, query = query_params)
-  if (status_code(response) == 200) {
-    data_text <- content(response, as = "text", encoding = "UTF-8")
-    data_json <- fromJSON(data_text)
-    
-    if (length(data_json$Data) > 0) {
-      all_data[[as.character(yr)]] <- data_json$Data
-    } else {
-      message("No data for year ", yr)
-    }
-  } else {
-    message("Request failed for year ", yr, " with status: ", status_code(response))
-  }
-}
-
-# Combine all years into one data frame
-final_df <- bind_rows(all_data)
-
-df<-final_df %>%
-  filter(metric_used == "Daily Mean") %>%
-  arrange(year) %>%
-  filter(method == 'R & P Model 2025 PM-2.5 Sequential Air Sampler w/VSCC - Gravimetric'| method == 'Andersen RAAS2.5-300 PM2.5 SEQ w/WINS - GRAVIMETRIC') %>%
-  distinct(arithmetic_mean, .keep_all = TRUE) %>%
-  mutate(year = as.numeric(year))
-
-aq_copd <- df %>% left_join(copd_total_hospitalizations)
-
-aq_plot <- df %>% ggplot(aes(x = year, y = arithmetic_mean)) +
-  geom_line()
-
-copd_plot <- aq_copd %>% ggplot(aes(x = year, y = hospitalizations)) +
-  geom_line()
-
-ggarrange(aq_plot, copd_plot, 1,1)
-  
-
-```
-
-EPA API DATA PM10
-
-```{r}
-url <- "https://aqs.epa.gov/data/api/annualData/bySite"
-
-years <- 1999:2025
-all_data1 <- list()
-
-for (yr in years) {
-  query_params <- list(
-    email  = "sohr@macalester.edu",
-    key    = "taupemallard55",    
-    param  = "88101",       # PM10
-    bdate  = paste0(yr, "0101"),
-    edate  = paste0(yr, "1231"),
-    state  = "27",
-    county = "123",
-    site   = "0868"
-  )
-
-  
-
-  
-  response <- GET(url, query = query_params)
-  if (status_code(response) == 200) {
-    data_text <- content(response, as = "text", encoding = "UTF-8")
-    data_json <- fromJSON(data_text)
-    
-    if (length(data_json$Data) > 0) {
-      all_data1[[as.character(yr)]] <- data_json$Data
-    } else {
-      message("No data for year ", yr)
-    }
-  } else {
-    message("Request failed for year ", yr, " with status: ", status_code(response))
-  }
-}
-
-# Combine all years into one data frame
-final_df_PM2.5 <- bind_rows(all_data1)
-final_df_PM2.5
-```
