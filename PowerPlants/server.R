@@ -105,115 +105,131 @@ server = function(input, output, session){
   
   ###================================ Air Quality ===============================###
 
-  ## Come back - Alicia
   
-  # ----Reactive Plot------
-  # filtered_mn_aq = reactive({
-  #   mn_counties_aq %>% filter(year <= input$year_for_aq_viz, pollutant == "PM2.5") 
-  #   })
-  # filtered_mn_powerplants = reactive({
-  #   mn_powerplants %>% 
-  #     filter(first_op_year <= input$year_for_aq_viz, is.na(last_retire_year) | last_retire_year > input$year_for_aq_viz) 
-  #   })
-  # 
-  # 
-  # output$aq_choropleth_by_year = renderLeaflet({
-  #   
-  #   pal_pp <- colorFactor(
-  #     c("black",
-  #       "darkgreen"),
-  #     domain = filtered_mn_powerplants()$fossil_fuel
-  #   )
-  #   
-  #   pal_aqi <- colorNumeric("YlOrRd", domain = c(4, 12))
-  #   
-  #   leaflet() %>%
-  #     # putting layer of counties
-  #     addPolygons(
-  #       data = filtered_mn_aq(),
-  #       fillColor = ~ pal_aqi(average_concentration),
-  #       weight = 1,
-  #       color = "black",
-  #       fillOpacity = .6,
-  #       group = "Counties"
-  #     ) %>%
-  #     # putting circles for each power plant
-  #     addCircleMarkers(
-  #       data = filtered_mn_powerplants(),
-  #       lng = ~ longitude,
-  #       lat = ~ latitude,
-  #       radius = 0.25,
-  #       color = ~pal_pp(fossil_fuel),
-  #       opacity = 0.35
-  #     ) %>% 
-  #     addLegendFactor(
-  #       pal = pal_pp,
-  #       values = filtered_mn_powerplants()$fossil_fuel,
-  #       title = "Power Plants: Energy Type",
-  #       orientation = "horizontal",
-  #       position = "topright",
-  #       width = 12,
-  #       height = 12,
-  #       opacity = 0.75
-  #     )  %>% 
-  #     addLegend(
-  #       pal = pal_aqi,
-  #       values = c(4, 12),
-  #       title = str_c("PM2.5", " Concentration (", "µg/m3", ")"),
-  #       opacity = 0.75
-  #     ) 
+  AirData_sf <- st_as_sf(AirData_allyears, coords = c("longitude", "latitude"), crs = 4326)
+  mn_pp_sf <- st_as_sf(mn_powerplants, coords = c("longitude", "latitude"), crs = 4326) %>% 
+    filter(fossil_fuel == "Fossil Fuel")
+  
+  # Project to meters (UTM 15N for Minnesota)
+  AirData_proj <- st_transform(AirData_sf, 26915)
+  mn_pp_proj  <- st_transform(mn_pp_sf, 26915)
+  
+  # buffer in meters
+  buffer_distance <- 1609.34 * 3
+  air_buffers_proj <- st_buffer(AirData_proj, dist = buffer_distance)
+  
+  # Spatial relationships in projected CRS
+  within_3miles <- st_within(mn_pp_proj, air_buffers_proj)
+  mn_pp_sf$near_monitor <- lengths(within_3miles) > 0
+  
+  pp_within_each <- st_intersects(air_buffers_proj, mn_pp_proj)
+  air_buffers_proj$nearby_pp_count <- lengths(pp_within_each)
+  
+  # Transform back to WGS84 for leaflet
+  air_buffers <- st_transform(air_buffers_proj, 4326)
+  
+  output$monitor_buffers = renderLeaflet({
+    
+    leaflet() %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
+      # --- 3-mile buffers around monitors ---
+      addPolygons(
+        data = air_buffers %>% filter(year == 2015),
+        fillColor = ~if_else(nearby_pp_count > 0, "red", "blue"),
+        fillOpacity = 0.2,
+        color = ~if_else(nearby_pp_count > 0, "red", "blue"),
+        weight = 1,
+        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
+      ) %>%
+      # --- Power plants ---
+      addCircleMarkers(
+        data = mn_pp_sf,
+        radius = 2,
+        color = "gray",
+        fillOpacity = 0.8,
+        label = ~paste0("Power Plant: ", plant_name)
+      ) %>%
+      # --- Air monitors ---
+      addCircleMarkers(
+        data = AirData_sf %>% filter(year == 2015),
+        radius = .5,
+        color = "black",
+        fill = TRUE,
+        fillOpacity = 1
+      ) # TO DO: add legend; put some of this in cleaning file
+  })
+  
+  
+  
+  calc_avg_pm25 <- function(year_spec){
+    air_buffers %>% 
+      filter(year == year_spec) %>% 
+      group_by(nearby_pp_count) %>% 
+      summarise(avg_pm25 = mean(arithmetic_mean)) %>% 
+      mutate(year = year_spec)
+  }
+  
+  years <- 1999:2024 # incomplete data for 2025; would be inaccurate comparison
+  grouped_summ_pm25_allyears <- map(years, calc_avg_pm25) %>% list_rbind()
+
+  output$grouped_summ_lineplot = renderPlot({
+  ggplot(grouped_summ_pm25_allyears) +
+    geom_line(aes(x = year, y = avg_pm25, group = as.factor(nearby_pp_count), color = as.factor(nearby_pp_count))) +
+    labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
+         color = "Number of Plants \nNear Monitor",
+         title = "AQ Monitors Near More Plants Report Higher Pollutant Concentrations") +
+    theme_classic()
+  })
+  
+  
+  
+  plant_monitor_pairs <- st_intersects(air_buffers, mn_pp_sf)
+  
+  monitor_pp <- tibble(
+    site_num = air_buffers$site_num,
+    plant_index = pp_within_each_monitor
+  ) %>%
+    unnest(plant_index) %>%                             
+    mutate(
+      plant_id = mn_pp_sf$plant_code[plant_index],
+      plant_year = mn_pp_sf$first_op_year[plant_index]
+    ) %>%
+    select(-plant_index) %>% 
+    distinct() # keep only unique rows
+  
+  # Join to the air quality time series
+  aq_with_pp <- AirData_allyears %>%
+    left_join(monitor_pp, by = "site_num")
+  
+  # ---- 1 year change -----
+  aq_changes <- aq_with_pp %>%
+    filter(!is.na(plant_year)) %>%     # monitors near a plant
+    mutate(period = case_when(
+      year == plant_year - 1 ~ "before",
+      year == plant_year + 1 ~ "after",
+      TRUE ~ NA_character_
+    )) %>%
+    filter(!is.na(period))
+  
+  aq_changes_summ <- aq_changes %>%
+    group_by(site_num, plant_id) %>%
+    summarize(
+      before = arithmetic_mean[period == "before"],
+      after  = arithmetic_mean[period == "after"],
+      change = after - before
+    ) %>% 
+    pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
+
+  # output$one_yr_aq_change_lineplot = renderPlot({ggplot(aq_changes_summ) +
+  #   geom_point(aes(x = fct_relevel(period, c("before", "after")),  y = avg_pm25_annual, group = site_num, color = site_num),  show.legend = FALSE) +
+  #   geom_line(aes(x = fct_relevel(period, c("before", "after")),  y = avg_pm25_annual, group = site_num, color = site_num),  show.legend = FALSE) +
+  #   theme_minimal() +
+  #   labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
+  #        x = "Year (Relative to Plant Beginning Operations)",
+  #        y = "PM2.5 Concentration (µg/m3)")
   # })
-  
-  # ----Static Plot-----
-  
-  # ff_status <- mn_powerplants %>%
-  #   group_by(county) %>%
-  #   summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
-  #   mutate(plant_group = ifelse(has_fossil, "At Least One", "Only Renewable/None"))
   # 
-  # output$pm_by_pp_type = renderPlot({
-  #   mn_counties_aq %>%
-  #     filter(pollutant == "PM2.5") %>%
-  #     left_join(ff_status, by = c("name" = "county")) %>%
-  #     mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
-  #     ggplot(aes(x = year, y = average_concentration, group = name, color = plant_group)) +
-  #     geom_line(alpha = 0.2) + # faint individual counties
-  #     stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend
-  #     labs(
-  #       title = "Counties With Fossil Fuel Plants Tend to Have Worse Air Quality",
-  #       color = "Fossil Fuel Plant(s)?",
-  #       y = "Average PM2.5 Concentration by County (µg/m3)",
-  #       x = "Year"
-  #     ) +
-  #     ylim(0, 12) +
-  #     scale_color_manual(values = c("At Least One" = "#d95f02",
-  #                                   "Only Renewable/None" = "#1b9e77")) +
-  #     theme_classic()+
-  #     theme_1
-  # }, bg = "transparent")
-  #   
-  # output$ozone_by_pp_type = renderPlot({
-  #   mn_counties_aq %>%
-  #     filter(pollutant == "Ozone") %>%
-  #     left_join(ff_status, by = c("name" = "county")) %>%
-  #     mutate(avg_conc_jittered = average_concentration + runif(n(), min=0, max=.5)) %>% # jitter so lines don't cover each other
-  #     mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
-  #     ggplot(aes(x = year, y = avg_conc_jittered, group = name, color = plant_group)) +
-  #     geom_line(alpha = 0.15) + # faint individual counties
-  #     stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1) + # bold mean trend
-  #     labs(
-  #       title = "",
-  #       color = "County Power Plants",
-  #       y = "Average Ozone Concentration by County (ppb)",
-  #       x = "Year"
-  #     ) +
-  #     ylim(0, 42) +
-  #     scale_color_manual(values = c("At Least One" = "#d95f02",
-  #                                   "Only Renewable/None" = "#1b9e77")) +
-  #     theme_classic() +
-  #     theme_1
-  # }, bg = "transparent")
-  
   ###================================ Health ===============================###
   
   output$asthma_map <- renderLeaflet({
