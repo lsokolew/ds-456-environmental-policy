@@ -105,6 +105,7 @@ server = function(input, output, session){
   
   ###================================ Air Quality ===============================###
 
+  # Map the Buffers
   
   AirData_sf <- st_as_sf(AirData_allyears, coords = c("longitude", "latitude"), crs = 4326)
   mn_pp_sf <- st_as_sf(mn_powerplants, coords = c("longitude", "latitude"), crs = 4326) %>% 
@@ -122,8 +123,8 @@ server = function(input, output, session){
   within_3miles <- st_within(mn_pp_proj, air_buffers_proj)
   mn_pp_sf$near_monitor <- lengths(within_3miles) > 0
   
-  pp_within_each <- st_intersects(air_buffers_proj, mn_pp_proj)
-  air_buffers_proj$nearby_pp_count <- lengths(pp_within_each)
+  pp_within_each_monitor <- st_intersects(air_buffers_proj, mn_pp_proj)
+  air_buffers_proj$nearby_pp_count <- lengths(pp_within_each_monitor)
   
   # Transform back to WGS84 for leaflet
   air_buffers <- st_transform(air_buffers_proj, 4326)
@@ -136,9 +137,9 @@ server = function(input, output, session){
       # --- 3-mile buffers around monitors ---
       addPolygons(
         data = air_buffers %>% filter(year == 2015),
-        fillColor = ~if_else(nearby_pp_count > 0, "red", "blue"),
+        fillColor = ~if_else(nearby_pp_count > 0, "#d95f02", "#1b9e77"),
         fillOpacity = 0.2,
-        color = ~if_else(nearby_pp_count > 0, "red", "blue"),
+        color = ~if_else(nearby_pp_count > 0, "#d95f02", "#1b9e77"),
         weight = 1,
         label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
       ) %>%
@@ -161,6 +162,7 @@ server = function(input, output, session){
   })
   
   
+  # plot the pollutant concentrations grouped by number of nearby plants
   
   calc_avg_pm25 <- function(year_spec){
     air_buffers %>% 
@@ -175,14 +177,16 @@ server = function(input, output, session){
 
   output$grouped_summ_lineplot = renderPlot({
   ggplot(grouped_summ_pm25_allyears) +
-    geom_line(aes(x = year, y = avg_pm25, group = as.factor(nearby_pp_count), color = as.factor(nearby_pp_count))) +
+    geom_line(aes(x = year, y = avg_pm25, group = fct_rev(as.factor(nearby_pp_count)), color = fct_rev(as.factor(nearby_pp_count)))) +
     labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "AQ Monitors Near More Plants Report Higher Pollutant Concentrations") +
+      #scale_color_manual() +
     theme_classic()
-  })
+  }, bg = "transparent")
   
   
+  # compare the pollutant concentration the year before and after new plant built
   
   plant_monitor_pairs <- st_intersects(air_buffers, mn_pp_sf)
   
@@ -221,15 +225,21 @@ server = function(input, output, session){
     ) %>% 
     pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
 
-  # output$one_yr_aq_change_lineplot = renderPlot({ggplot(aq_changes_summ) +
-  #   geom_point(aes(x = fct_relevel(period, c("before", "after")),  y = avg_pm25_annual, group = site_num, color = site_num),  show.legend = FALSE) +
-  #   geom_line(aes(x = fct_relevel(period, c("before", "after")),  y = avg_pm25_annual, group = site_num, color = site_num),  show.legend = FALSE) +
-  #   theme_minimal() +
-  #   labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
-  #        x = "Year (Relative to Plant Beginning Operations)",
-  #        y = "PM2.5 Concentration (µg/m3)")
-  # })
-  # 
+  output$one_yr_aq_change_lineplot = renderPlot({ggplot(aq_changes_summ) +
+    geom_point(aes(x = fct_relevel(period, c("before", "after")),  
+                   y = avg_pm25_annual, 
+                   group = site_num, color = site_num)) +
+    geom_line(aes(x = fct_relevel(period, c("before", "after")),  
+                  y = avg_pm25_annual, 
+                  group = site_num, color = site_num)) +
+      scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Andersen School")) +
+    theme_minimal() +
+    labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
+         x = "Year (Relative to Plant Beginning Operations)",
+         y = "PM2.5 Concentration (µg/m3)")
+  }, bg = "transparent")
+ 
+
   ###================================ Health ===============================###
   
   output$asthma_map <- renderLeaflet({
