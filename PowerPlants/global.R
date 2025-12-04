@@ -8,7 +8,12 @@ library(bslib)
 mn_powerplants =  read_csv('mn_powerplants.csv') 
 
 zcta_joined =  st_read('zcta_joined.shp') 
-# mn_counties_aq =  st_read('mn_counties_aq.shp') 
+
+# mn_pp_sf <- readRDS("Data/aq_data_clean/mn_pp_sf.rds")
+# mn_pp_sf <- readRDS("Data/aq_data_clean/air_buffers.rds")
+# aq_changes_summ <- readRDS("Data/aq_data_clean/aq_changes_summ.rds")
+AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
+
 
 ###================================ Colors/Fonts/ETC ================================###
 
@@ -65,16 +70,14 @@ hispanic, and asian communities and historical redlined areas. Some examples inc
 and Philadelphia. Consequently, these communities end up being harmed by the releases of different fuels 
 and are the ones shouldering the unequal distribution of air quality as a result of these power plants."
 
-data_intro <- "We got our main data about the locations and characteristics of all power plants in Minnesota 
-from the US Energy Information Administration (EIA).  <b>The Environmental Protection Agency (EPA)</b> had data about 
-their dates of operation that we incorporated. In order to examine demographics and characteristics of Minnesota 
+data_intro <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota 
+from the US Energy Information Administration (EIA). In order to examine demographics and characteristics of Minnesota 
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau.</b> We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental 
-Justice Areas.</b> The MPCA, using their own monitors and EPA's Fused Air Quality Surfaces Using Downscaling Tool and 
-Community Multiscale Air Quality model, also provided air quality data by county. This included data about ozone 
-and PM2.5 (fine particulate matter) levels, with modeled estimates for counties without air monitors. Finally, in 
-order to explore the human-level impacts of air quality, we used <b>MN Department of Health's data</b> on hospitalizations 
-due to asthma and COPD.</b>"
+Justice Areas.</b> <b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of 
+PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota, which we used to evaluate the impacts of power 
+plants on air quality. Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's 
+data</b> on hospitalizations due to asthma and COPD.</b>"
 
 aq_blurb <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor 
 to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants are the largest stationary 

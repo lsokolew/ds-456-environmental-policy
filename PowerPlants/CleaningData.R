@@ -17,7 +17,7 @@ mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
   janitor::clean_names() 
 
 # power plant dates
-powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+powerplant_dates <- read_csv("Data/powerplant_data_eia_2024_generator_operable.csv") %>% 
   janitor::clean_names() 
 # powerplant_dates_retired <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
 #   janitor::clean_names()
@@ -25,10 +25,10 @@ powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_oper
 ###=== Air Quality ===###
 
 # air quality 
-mn_aq_all_years <- read_csv("Data/Modeled_PM25_Ozone_MN_county_data_allyears.csv") %>% 
-  mutate(county = str_split_i(county, ",", 1),
-         county = str_remove(county, "County"),
-         county = str_trim(county))
+AirData_allyears <- read_csv("Data/airdata_clean.csv") %>%
+  # filter down to 1 site_num/year
+  filter(pollutant_standard == "PM25 24-hour 2012", poc == 1) %>% # 2012 is the most recent standard with the most observations. if multiple POCs (monitors) exist at a site, keep the first 
+  mutate(county_name = ifelse(county_name == "Saint Louis", "St Louis", county_name))
 
 # load spatial/boundary info
 mn_counties <- counties(state = "MN", cb = TRUE) %>%
@@ -36,11 +36,6 @@ mn_counties <- counties(state = "MN", cb = TRUE) %>%
 
 # mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
 #   st_transform(crs = 4326)
-
-# join AQ data to add spatial data
-mn_counties_aq <- mn_counties %>%
-  left_join(mn_aq_all_years, by = c("NAME" = "county")) %>% 
-  janitor::clean_names()
 
 ###=== Healthcare ===###
 
@@ -89,15 +84,9 @@ mn_powerplants <- mn_powerplants %>%
          first_op_year = year(first_op_date)
   ) 
 
-# get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later)
-# powerplant_dates_retired_mn <- powerplant_dates_retired %>% 
-#   filter(state == "MN", plant_code != 1912) %>% #inaccurate info given for plant 1912 (it's still operational)
-#   mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>% 
-#   group_by(plant_code) %>% 
-#   summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded
+###=== Air Quality ===###
 
-# join to mn_powerplants
-# mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
+
 
 ###=== Asthma ===###
 
@@ -204,7 +193,10 @@ plants_per_pop <- plants_in_ej %>%
 write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
 
 # air quality
-# st_write(mn_counties_aq, "mn_counties_aq.shp", row.names = FALSE)
+saveRDS(mn_pp_sf, "Data/aq_data_clean/mn_pp_sf.rds")
+saveRDS(mn_pp_sf, "Data/aq_data_clean/air_buffers.rds")
+saveRDS(aq_changes_summ, "Data/aq_data_clean/aq_changes_summ.rds")
+saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 
 # health
 st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
