@@ -99,6 +99,13 @@ levels because of the inexpensive land and low wages. This is a result of past i
 in the concentration of regulations in white areas.  These polluters, such as power plants, release tons of particulate matter into the 
 surrounding air. Air quality has been monitored for years, showing a steady improvement in air quality over the years."
 
+asthma_plot <- "Looking at the plot above, you can see how asthma hospitalization rates are much higher in parts of Northside Minneapolis 
+and near downtown Saint Paul. In Northside Minneapolis, there are three nonrenewable power facilities: Covanta Hennepin Energy (changed to
+Hennepin Energy Recovery Center) and two plants belonging to the University of Minnesota. The two university plants, the Southeast Steam 
+and CHP plants are low emission plants used for heat and power in university buildings. The Hennepin Energy plant is actually a waste 
+incinerator that produces a small amount of energy and steam. 
+[interviews]"
+
 
 ej_areas <- "Research has found power plants are more likely to be built around redlining neighborhoods, 
 particularly fossil fuel power plants/coal-powered power plants. As a result, already struggling communities 

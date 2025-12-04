@@ -322,6 +322,16 @@ plot2
 
 School 1 mile radius
 ```{r}
+
+points_sf <- st_as_sf(mn_powerplants,
+                      coords = c("longitude", "latitude"),
+                      crs = 26915) 
+ej_areas <- ej_shapefile %>%
+  filter(status200x == "YES")
+
+ej_areas <- st_set_crs(ej_areas, 26915)
+ej_tracts_proj <- st_transform(ej_areas, 26915)
+pp_points_proj <- st_transform(points_sf, 26915)
 schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 schools_sf <- st_set_crs(schools_sf, 26915)
 school_proj <- st_transform(schools_sf, 26915)
@@ -331,21 +341,41 @@ within_mile_school <- st_within(pp_points_proj, school_buffer)
 points_sf$within_mile_school <- lengths(within_mile_school) > 0
 points_sf$within_mile_school
 
-#school_in_EJ <- st_within(school_proj,ej_tracts_proj)
-#schools_sf$school_in_EJ <- lengths(school_in_EJ) > 0
+school_buffer_half_mile <- st_buffer(school_proj, dist = (1609.34/2))
+within_half_mile_school <- st_within(pp_points_proj, school_buffer_half_mile)
+points_sf$within_half_mile_school <- lengths(within_half_mile_school) > 0
+points_sf$within_half_mile_school
 
 
-#EJ_school_proj <- st_transform(EJ_school, 26915)
-#EJ_school_buffer <- st_buffer(EJ_school_proj, dist = (1609.34))
-#within_mile_EJ_school <- st_within(pp_points_proj,EJ_school_buffer)
-#EJ_school$within_mile_EJ_school <- lengths(within_mile_EJ_school) > 0
+
+powerplant_buffer <- st_buffer(pp_points_proj, dist = (1609.34))
+within_mile_school <- st_within(powerplant_buffer, school_proj)
+points_sf$within_mile_school <- lengths(within_mile_school) > 0
+points_sf$within_mile_school
+
+school_buffer_half_mile <- st_buffer(school_proj, dist = (1609.34/2))
+within_half_mile_school <- st_within(school_buffer_half_mile, pp_points_proj)
+schools_sf$within_half_mile_school <- lengths(within_half_mile_school) > 0
+points_sf$within_half_mile_school
+
+
+
+
+
+
+
+
+
 
 points_sf %>%
   filter(fossil_fuel)
 
 points_sf %>%
-  ggplot(aes(x = within_mile_school)) +
-  geom_bar()
+  count(within_half_mile_school)
+points_sf %>%
+  count(within_mile_school)
+points_sf %>%
+  count(within_both)
 
 ```
 
@@ -366,9 +396,10 @@ pp_points_proj <- st_transform(points_sf, 26915)
 
 
 tracts_buffer <- st_buffer(ej_tracts_proj, dist = (1609.34))
-within_mile <- st_within(pp_points_proj, tracts_buffer)
-points_sf$within_mile <- lengths(within_mile) > 0
-points_sf$within_mile
+within_mile_EJTract <- st_within(pp_points_proj, tracts_buffer)
+points_sf$within_mile_EJTract <- lengths(within_mile_EJTract) > 0
+points_sf$within_mile_EJTract
+
 
 points_inside <- st_within(pp_points_proj, ej_tracts_proj)
 points_sf$inside_tract <- lengths(points_inside) > 0
@@ -490,6 +521,115 @@ leaflet() %>%
   # adding a legend to identify type of powerplant
    addLegend(pal = pal2,
                 values = mn_powerplants$prim_source, title = 'Type of Powerplant')
+```
+
+
+EPA API DATA
+
+```{r}
+# Load httr package
+library(httr)
+
+# Define the API URL
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 2000:2020
+all_data <- list()
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "amberbird59",    
+    param  = "88101",       # PM2.5
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "123",
+    site   = "0868"
+  )
+  
+  27-053-1007
+
+  
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df <- bind_rows(all_data)
+
+df<-final_df %>%
+  filter(metric_used == "Daily Mean") %>%
+  arrange(year) %>%
+  filter(method == 'R & P Model 2025 PM-2.5 Sequential Air Sampler w/VSCC - Gravimetric'| method == 'Andersen RAAS2.5-300 PM2.5 SEQ w/WINS - GRAVIMETRIC') %>%
+  distinct(arithmetic_mean, .keep_all = TRUE) %>%
+  mutate(year = as.numeric(year))
+
+aq_copd <- df %>% left_join(copd_total_hospitalizations)
+
+aq_plot <- df %>% ggplot(aes(x = year, y = arithmetic_mean)) +
+  geom_line()
+
+copd_plot <- aq_copd %>% ggplot(aes(x = year, y = hospitalizations)) +
+  geom_line()
+
+ggarrange(aq_plot, copd_plot, 1,1)
+  
+
+```
+
+EPA API DATA PM10
+
+```{r}
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 1999:2025
+all_data1 <- list()
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "taupemallard55",    
+    param  = "88101",       # PM10
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "123",
+    site   = "0868"
+  )
+
+  
+
+  
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data1[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df_PM2.5 <- bind_rows(all_data1)
+final_df_PM2.5
 ```
 
 

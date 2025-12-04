@@ -122,6 +122,14 @@ ui <- fluidPage(
   
   column(12, align = "center", leafletOutput(outputId = "asthma_map", height = 400, width = 800)),
   
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(asthma_plot)),
   
   ##=================EJ areas=================##
   br(),
