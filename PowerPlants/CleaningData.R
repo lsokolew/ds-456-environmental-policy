@@ -193,9 +193,6 @@ plants_per_pop <- plants_in_ej %>%
 write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
 
 # air quality
-saveRDS(mn_pp_sf, "Data/aq_data_clean/mn_pp_sf.rds")
-saveRDS(mn_pp_sf, "Data/aq_data_clean/air_buffers.rds")
-saveRDS(aq_changes_summ, "Data/aq_data_clean/aq_changes_summ.rds")
 saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 
 # health

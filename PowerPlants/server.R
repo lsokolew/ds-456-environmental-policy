@@ -158,7 +158,7 @@ server = function(input, output, session){
         color = "black",
         fill = TRUE,
         fillOpacity = 1
-      ) # TO DO: add legend; put some of this in cleaning file
+      ) # TO DO: add legend; put some of this in cleaning file; pick a year that means something
   })
   
   
@@ -182,7 +182,7 @@ server = function(input, output, session){
          color = "Number of Plants \nNear Monitor",
          title = "AQ Monitors Near More Plants Report Higher Pollutant Concentrations") +
       #scale_color_manual() +
-    theme_classic()
+    theme_minimal()
   }, bg = "transparent")
   
   
@@ -225,7 +225,8 @@ server = function(input, output, session){
     ) %>% 
     pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
 
-  output$one_yr_aq_change_lineplot = renderPlot({ggplot(aq_changes_summ) +
+  output$one_yr_aq_change_lineplot = renderPlot(
+    {ggplot(aq_changes_summ) +
     geom_point(aes(x = fct_relevel(period, c("before", "after")),  
                    y = avg_pm25_annual, 
                    group = site_num, color = site_num)) +
@@ -236,9 +237,35 @@ server = function(input, output, session){
     theme_minimal() +
     labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
          x = "Year (Relative to Plant Beginning Operations)",
-         y = "PM2.5 Concentration (µg/m3)")
+         y = "PM2.5 Concentration (µg/m3)",
+         color = "Air Monitor Site")
   }, bg = "transparent")
- 
+  
+  ff_status <- mn_powerplants %>%
+  group_by(county) %>%
+  summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
+  mutate(plant_group = ifelse(has_fossil, "Has Fossil Fuel", "Only Renewable/None"))
+
+  output$aq_by_county_type_lineplot = renderPlot({
+    AirData_allyears %>%
+      left_join(ff_status, by = c("county_name" = "county")) %>% 
+      group_by(year, county_name, plant_group) %>% 
+      summarize(avg_pm25 = mean(arithmetic_mean)) %>% 
+      mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
+      ggplot(aes(x = year, y = avg_pm25, group = county_name, color = plant_group)) +
+        geom_line(alpha = 0.4) + #  individual counties
+        stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # mean trend
+        labs(
+          title = "Average PM2.5 Concentration by County Type",
+          color = "County Plant(s) Type",
+          y = "Average PM2.5 Concentration (µg/m3)",
+          x = "Year"
+        ) +
+        ylim(0, 12) +
+        scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
+                                      "Only Renewable/None" = "#1b9e77")) +
+        theme_minimal()
+  }, bg = "transparent")
 
   ###================================ Health ===============================###
   
