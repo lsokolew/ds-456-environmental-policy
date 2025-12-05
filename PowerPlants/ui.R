@@ -119,9 +119,10 @@ ui <- fluidPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(health_blurb)),
+ 
   
   column(12, align = "center", leafletOutput(outputId = "asthma_map", height = 400, width = 800)),
-  
+  br(),
   div(
     style = "
     max-width: 900px; 
