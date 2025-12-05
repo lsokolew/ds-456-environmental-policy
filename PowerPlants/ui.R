@@ -93,6 +93,8 @@ ui <- fluidPage(
   
   column(12, align = "center", plotOutput(outputId = "grouped_summ_lineplot", height = 400, width = 600)),
   column(12, align = "center", plotOutput(outputId = "one_yr_aq_change_lineplot", height = 400, width = 600)),
+  column(12, align = "center", plotOutput(outputId = "aq_by_county_type_lineplot", height = 400, width = 600)),
+
   
   # div(
   #   style = "
