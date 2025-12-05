@@ -68,15 +68,15 @@ ui <- fluidPage(
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Air Quality")),
   
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(aq_blurb)),
-  # br(),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_blurb)),
+  br(),
   
   column(12, align = "center", leafletOutput(outputId = 'monitor_buffers', height = 400, width = 600)),
   #column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),

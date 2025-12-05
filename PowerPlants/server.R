@@ -159,7 +159,17 @@ server = function(input, output, session){
         color = "black",
         fill = TRUE,
         fillOpacity = 1
-      ) # TO DO: add legend; put some of this in cleaning file; pick a year that means something
+      ) %>%
+      addLegend(
+        position = "bottomright",
+        colors = c("#d95f02", "#1b9e77", "black"),
+        labels = c(
+          "≥1 nearby power plants",
+          " 0 nearby power plants",
+          "Air monitor"
+        ),
+        opacity = 1
+      )
   })
   
   
