@@ -72,7 +72,8 @@ server = function(input, output, session){
            y = "Number of Powerplants",
            fill = "Powerplant Type") +
       theme_classic() +
-      theme_1    
+      theme_1 +
+      fuel_colors
 
   }, bg = "transparent")
   
@@ -100,7 +101,7 @@ server = function(input, output, session){
       labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Energy produced by Source in MN Powerplants",
            fill = "Powerplant Type") +  
       theme_classic() +
-      theme_1 
+      theme_1
     }, bg = "transparent")
   
   ###================================ Air Quality ===============================###
@@ -168,7 +169,7 @@ server = function(input, output, session){
     air_buffers %>% 
       filter(year == year_spec) %>% 
       group_by(nearby_pp_count) %>% 
-      summarise(avg_pm25 = mean(arithmetic_mean)) %>% 
+      summarise(avg_pm25_grouped = mean(avg_pm25)) %>% 
       mutate(year = year_spec)
   }
   
@@ -177,10 +178,10 @@ server = function(input, output, session){
 
   output$grouped_summ_lineplot = renderPlot({
   ggplot(grouped_summ_pm25_allyears) +
-    geom_line(aes(x = year, y = avg_pm25, group = fct_rev(as.factor(nearby_pp_count)), color = fct_rev(as.factor(nearby_pp_count)))) +
+    geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(nearby_pp_count)), color = fct_rev(as.factor(nearby_pp_count)))) +
     labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
-         title = "AQ Monitors Near More Plants Report Higher Pollutant Concentrations") +
+         title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
       #scale_color_manual() +
     theme_minimal()
   }, bg = "transparent")
@@ -219,8 +220,8 @@ server = function(input, output, session){
   aq_changes_summ <- aq_changes %>%
     group_by(site_num, plant_id) %>%
     summarize(
-      before = arithmetic_mean[period == "before"],
-      after  = arithmetic_mean[period == "after"],
+      before = avg_pm25[period == "before"],
+      after  = avg_pm25[period == "after"],
       change = after - before
     ) %>% 
     pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
@@ -233,7 +234,7 @@ server = function(input, output, session){
     geom_line(aes(x = fct_relevel(period, c("before", "after")),  
                   y = avg_pm25_annual, 
                   group = site_num, color = site_num)) +
-      scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Andersen School")) +
+      scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Near Road I-35/I-94", "Andersen School")) +
     theme_minimal() +
     labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
          x = "Year (Relative to Plant Beginning Operations)",
@@ -250,9 +251,9 @@ server = function(input, output, session){
     AirData_allyears %>%
       left_join(ff_status, by = c("county_name" = "county")) %>% 
       group_by(year, county_name, plant_group) %>% 
-      summarize(avg_pm25 = mean(arithmetic_mean)) %>% 
+      summarize(avg_pm25_grouped = mean(avg_pm25)) %>% 
       mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
-      ggplot(aes(x = year, y = avg_pm25, group = county_name, color = plant_group)) +
+      ggplot(aes(x = year, y = avg_pm25_grouped, group = county_name, color = plant_group)) +
         geom_line(alpha = 0.4) + #  individual counties
         stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # mean trend
         labs(

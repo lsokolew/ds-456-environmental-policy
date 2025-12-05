@@ -30,7 +30,7 @@ theme_1 <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
                  legend.background = element_rect(fill = "transparent", color = NA) )
 
 fuel_colors <- scale_fill_manual(
-  values = c("Fossil Fuel" = "#A39081", 
+  values = c("Fossil Fuel" = "#d95f02", 
              "Renewable" = "#1C693A"))
 
 

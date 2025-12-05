@@ -25,14 +25,11 @@ powerplant_dates <- read_csv("Data/powerplant_data_eia_2024_generator_operable.c
 ###=== Air Quality ===###
 
 # air quality 
-AirData_allyears <- read_csv("Data/airdata_clean.csv") %>%
-  # filter down to 1 site_num/year
-  filter(pollutant_standard == "PM25 24-hour 2012", poc == 1) %>% # 2012 is the most recent standard with the most observations. if multiple POCs (monitors) exist at a site, keep the first 
-  mutate(county_name = ifelse(county_name == "Saint Louis", "St Louis", county_name))
+AirData_allyears <- read_csv("Data/airdata_clean.csv") 
 
 # load spatial/boundary info
-mn_counties <- counties(state = "MN", cb = TRUE) %>%
-  st_transform(crs = 4326)
+# mn_counties <- counties(state = "MN", cb = TRUE) %>%
+#   st_transform(crs = 4326)
 
 # mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
 #   st_transform(crs = 4326)
@@ -86,8 +83,13 @@ mn_powerplants <- mn_powerplants %>%
 
 ###=== Air Quality ===###
 
-
-
+AirData_allyears <- AirData_allyears %>%
+  filter(pollutant_standard == "PM25 24-hour 2012") %>% # 2012 is the most recent standard with the most observations; it doesn't change the numbers
+  group_by(site_num, parameter_code, pollutant_standard, year, longitude, latitude, local_site_name, county_name, city_name, cbsa_name) %>%
+  summarize(avg_pm25 = mean(arithmetic_mean)) %>% # if multiple POC (monitors at a site), take average
+  mutate(county_name = ifelse(county_name == "Saint Louis", "St Louis", county_name))  %>% # standardize with power plants df naming
+  ungroup()
+  
 ###=== Asthma ===###
 
 # Asthma Data and ZCTAs
