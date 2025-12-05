@@ -142,3 +142,6 @@ These areas are census tracts which might fall on one of the following categorie
 4.) are located within Indian Country, which is defined as federally recognized reservations and other Indigenous lands<br>
 <br>
 A concern that arises is if these communities are affected more by power plants than other?"
+
+acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable help in guilding the direction of our project. We
+sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks also to Professor Shilad Sen for his help."

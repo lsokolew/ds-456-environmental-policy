@@ -206,6 +206,23 @@ ui <- fluidPage(
     
     tags$p(
       style = "font-family: 'Tinos', serif;font-size: 16px;color: #4a4a4a; margin-top: 5px;",
-      "Our Data Sources"))# close div
-  
+      "Our Data Sources")), # close div
+
+
+###================================ End Matter ===============================###
+
+br(),
+h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("Acknowlegements")),
+
+div(
+  style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(acknowledgements)),
+br()
+
+
 ) # closing UI

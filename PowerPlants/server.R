@@ -164,8 +164,8 @@ server = function(input, output, session){
         position = "bottomright",
         colors = c("#d95f02", "#1b9e77", "black"),
         labels = c(
-          "≥1 nearby power plants",
-          " 0 nearby power plants",
+          "≥1 Nearby power plants",
+          " 0 Nearby power plants",
           "Air monitor"
         ),
         opacity = 1
@@ -466,3 +466,5 @@ server = function(input, output, session){
 # }, bg = "transparent")
 # 
 }
+
+
