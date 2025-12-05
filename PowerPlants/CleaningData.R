@@ -203,5 +203,7 @@ st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
 # ej areas
 st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)
 st_write(ej_sf, "ej_sf.shp", row.names = FALSE)
-# write.csv(plants_in_ej_counts, "plants_in_ej_counts.csv", row.names = FALSE)
-# write.csv(plants_per_pop, "plants_per_pop.csv", row.names = FALSE)
+st_write(plants_in_ej_counts, "plants_per_pop.shp", row.names = FALSE)
+st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
+
+
