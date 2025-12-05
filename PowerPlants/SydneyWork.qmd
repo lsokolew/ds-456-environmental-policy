@@ -81,7 +81,7 @@ mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% 
 
 mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel"
 
-
+write_csv(mn_powerplants, "mn_powerplants.csv")
 ```
 
 
@@ -322,30 +322,99 @@ plot2
 
 School 1 mile radius
 ```{r}
+##
+# Create sf points from lat/long in WGS84
+points_sf <- st_as_sf(
+  mn_powerplants,
+  coords = c("longitude", "latitude"),
+  crs = 4326   # correct CRS for lon/lat
+) %>%
+  st_transform(26915)  # project to UTM 15N for distance work
+
+
+# Schools shapefile
 schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
-schools_sf <- st_set_crs(schools_sf, 26915)
+
+# Only set CRS if missing
+if (is.na(st_crs(schools_sf))) {
+  schools_sf <- st_set_crs(schools_sf, 26915)
+}
+
 school_proj <- st_transform(schools_sf, 26915)
 
-school_buffer <- st_buffer(school_proj, dist = (1609.34))
-within_mile_school <- st_within(pp_points_proj, school_buffer)
+# 1-mile buffer around schools (1609.34 meters)
+school_buffer <- st_buffer(school_proj, dist = 1609.34)
+
+# Check which power plants fall within 1 mile of any school
+within_mile_school <- st_within(points_sf, school_buffer)
 points_sf$within_mile_school <- lengths(within_mile_school) > 0
 points_sf$within_mile_school
 
-#school_in_EJ <- st_within(school_proj,ej_tracts_proj)
-#schools_sf$school_in_EJ <- lengths(school_in_EJ) > 0
+plants_by_schools <- points_sf %>%
+  filter(within_mile_school == TRUE)
 
+# Map it
+leaflet(ej_areas) %>%
+  addTiles() %>%
+    addPolygons(
+    fillColor = "lightgreen",
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.7,
+    highlight = highlightOptions(
+      weight = 2,
+      color = "white",
+      bringToFront = TRUE),
+    group = "EJ Tracts"
+    ) %>%
+  addCircleMarkers(
+    data = plants_by_schools,
+    lng = ~x,
+    lat = ~y,
+    fillOpacity = 0.3,
+    color = "red",
+    group = "Power Plants") %>%
+  addLayersControl(
+  overlayGroups = c("EJ Tracts", "Power Plants"),
+  options = layersControlOptions(collapsed = FALSE)
+)
 
-#EJ_school_proj <- st_transform(EJ_school, 26915)
-#EJ_school_buffer <- st_buffer(EJ_school_proj, dist = (1609.34))
-#within_mile_EJ_school <- st_within(pp_points_proj,EJ_school_buffer)
-#EJ_school$within_mile_EJ_school <- lengths(within_mile_EJ_school) > 0
+# Distance matrix: schools (rows) × power plants (columns)
+school_pp_dist <- st_distance(school_proj, points_sf)
+
+# schools within 1 mile (1609.34 m) of ANY power plant
+school_proj$within_1mile_pp <- apply(school_pp_dist, 1, function(x) any(x <= 1609.34))
+table(school_proj$within_1mile_pp)
+
+schools_near_pp_and_in_ej <- school_proj %>%
+  filter(within_1mile_pp == TRUE & schools_in_ej == TRUE)
+nrow(schools_near_pp_and_in_ej)
+
+# 1/2-mile buffer around schools (804.67 meters)
+school_buffer_halfmile <- st_buffer(school_proj, dist = 804.67)
+
+# Check which power plants fall within 1 mile of any school
+within_halfmile_school <- st_within(points_sf, school_buffer_halfmile)
+points_sf$within_halfmile_school <- lengths(within_halfmile_school) > 0
+
+points_sf$within_halfmile_school
+
+points_sf %>%
+  count(within_mile_school)
+
 
 points_sf %>%
   filter(fossil_fuel)
 
 points_sf %>%
-  ggplot(aes(x = within_mile_school)) +
-  geom_bar()
+  count(within_half_mile_school)
+points_sf %>%
+  count(within_mile_school)
+points_sf %>%
+  count(within_both)
+
+
+
 
 ```
 
@@ -357,21 +426,33 @@ EJ Mile Radius
 points_sf <- st_as_sf(mn_powerplants,
                       coords = c("longitude", "latitude"),
                       crs = 26915) 
+# Environmental justice areas
 ej_areas <- ej_shapefile %>%
   filter(status200x == "YES")
 
-ej_areas <- st_set_crs(ej_areas, 26915)
-ej_tracts_proj <- st_transform(ej_areas, 26915)
-pp_points_proj <- st_transform(points_sf, 26915)
+# If ej_shapefile already has a CRS, USE IT — do not overwrite.
+# Only set CRS if it is missing:
+if (is.na(st_crs(ej_areas))) {
+  ej_areas <- st_set_crs(ej_areas, 26915)
+}
+
+schools_in_ej <- st_within(school_proj, ej_areas)
+school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
 
 
-tracts_buffer <- st_buffer(ej_tracts_proj, dist = (1609.34))
-within_mile <- st_within(pp_points_proj, tracts_buffer)
-points_sf$within_mile <- lengths(within_mile) > 0
-points_sf$within_mile
+# Ensure projected CRS
+ej_areas_proj <- st_transform(ej_areas, 26915)
 
-points_inside <- st_within(pp_points_proj, ej_tracts_proj)
+tracts_buffer <- st_buffer(ej_tracts_proj, dist = 1609.34)
+within_mile_EJTract <- st_within(points_sf, tracts_buffer)
+points_sf$within_mile_EJTract <- lengths(within_mile_EJTract) > 0
+points_sf$within_mile_EJTract
+
+
+points_inside <- st_within(points_sf, ej_tracts_proj)
 points_sf$inside_tract <- lengths(points_inside) > 0
+
+
 
 points_sf %>%
   filter(first_op_year >= 1995) %>%
@@ -388,7 +469,6 @@ points_sf %>%
   count()
 
 points_sf %>%
-  group_by(fossil_fuel) %>%
   summarise(count_inside_or_near = sum(inside_tract | within_mile))
 
 buffer_points <- points_sf %>%
@@ -397,33 +477,65 @@ buffer_points <- points_sf %>%
   st_transform(4326)       
 
 
-# Map it
-leaflet(buffer_points) %>%
-  addTiles() %>%
-    addPolygons(
-    fillColor = "transparent",
-    weight = 1,
-    opacity = 1,
-    fillOpacity = 0.7,
-    highlight = highlightOptions(
-      weight = 2,
-      color = "white",
-      bringToFront = TRUE),
-    label = ~ej_status,
-    group = "EJ Tracts"
-    ) %>%
-  addCircleMarkers(
-    data = buffer_points,
-    lng = ~longitude,
-    lat = ~latitude,
-    radius = 1609,
-    fillOpacity = 0.3,
-    color = "red",
-    group = "Power Plants") %>%
-  addLayersControl(
-  overlayGroups = c("EJ Tracts", "Power Plants"),
-  options = layersControlOptions(collapsed = FALSE)
-)
+nearest_pp_index <- apply(school_pp_dist, 1, which.min)
+
+school_proj$nearest_pp_id <- points_sf$plant_code[nearest_pp_index]
+school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
+school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
+
+schools_near_pp_and_in_ej <- school_proj %>%
+  filter(within_1mile_pp & schools_in_ej)
+
+ggplot(school_proj, aes(x = nearest_pp_dist_mi, 
+                        color = schools_in_ej)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Distance of Schools to Nearest Power Plant",
+       x = "Distance (miles)", color = "In EJ Area?")
+
+distinct_schools <- school_proj %>% 
+  distinct(GISADDR, .keep_all = TRUE) 
+
+metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422, 55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121, 55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070, 55079, 55092, 55303)
+
+school_proj <- school_proj %>% 
+  str_extract(distinct_schools$GISADDR, "\\d{5}") %>%
+  filter()
+
+  ggplot(distinct_schools,aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
+  geom_boxplot() +
+  labs(title = "Distance to Nearest Power Plant by EJ Status",
+       x = "In EJ Area?", y = "Distance (miles)")
+
+  
+  
+  
+
+# Example data frame with latitude and longitude
+site_locations <- data.frame(
+    id = c("Superior", "SLP", "Minn"),
+    lon = c(-92.079912, -93.343150, -93.269669),
+    lat = c(46.730218, 44.948050, 44.981076)
+    )
+
+# Create sf in WGS84 first
+site_locations_sf <- st_as_sf(site_locations, coords = c("lon", "lat"), crs = 4326)
+
+# Transform to UTM zone 15N (meters)
+site_locations_sf <- st_transform(site_locations_sf, 26915)
+
+# Also transform your power plant points if needed
+points_sf <- st_transform(points_sf, 26915)
+
+# Now compute distances
+site_pp_dist <- st_distance(site_locations_sf, points_sf)
+
+nearest_site_pp <- apply(site_pp_dist, 1, which.min)
+
+site_locations_sf$nearest_pp_id <- points_sf$plant_code[nearest_site_pp]
+site_locations_sf$nearest_pp_dist_m <- site_pp_dist[cbind(1:nrow(site_pp_dist), nearest_site_pp)]
+site_locations_sf$nearest_pp_dist_mi <- as.numeric(site_locations_sf$nearest_pp_dist_m) / 1609.34
+
+
 
 
 ```
@@ -490,6 +602,152 @@ leaflet() %>%
   # adding a legend to identify type of powerplant
    addLegend(pal = pal2,
                 values = mn_powerplants$prim_source, title = 'Type of Powerplant')
+```
+
+
+EPA API DATA
+
+```{r}
+# Load httr package
+library(httr)
+
+# Define the API URL
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 2000:2020
+all_data <- list()
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "amberbird59",    
+    param  = "88101",       # PM2.5
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "123",
+    site   = "0868"
+  )
+  
+  27-053-1007
+
+  
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df <- bind_rows(all_data)
+
+df<-final_df %>%
+  filter(metric_used == "Daily Mean") %>%
+  arrange(year) %>%
+  filter(method == 'R & P Model 2025 PM-2.5 Sequential Air Sampler w/VSCC - Gravimetric'| method == 'Andersen RAAS2.5-300 PM2.5 SEQ w/WINS - GRAVIMETRIC') %>%
+  distinct(arithmetic_mean, .keep_all = TRUE) %>%
+  mutate(year = as.numeric(year))
+
+aq_copd <- df %>% left_join(copd_total_hospitalizations)
+
+aq_plot <- df %>% ggplot(aes(x = year, y = arithmetic_mean)) +
+  geom_line()
+
+copd_plot <- aq_copd %>% ggplot(aes(x = year, y = hospitalizations)) +
+  geom_line()
+
+ggarrange(aq_plot, copd_plot, 1,1)
+  
+
+```
+
+EPA API DATA PM10
+
+```{r}
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 1990:2002
+all_data1 <- list()
+
+# by HERC
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "taupemallard55",    
+    param  = "81102",       # PM10
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "053",
+    site   = "0053"
+  )
+
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data1[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df_PM10_byHERC <- bind_rows(all_data1)
+final_df_PM10_byHERC
+
+# SLP
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "taupemallard55",    
+    param  = "81102",       # PM10
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "053",
+    site   = "2006"
+  )
+
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data1[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+# Combine all years into one data frame
+final_df_PM10_SLP <- bind_rows(all_data1)
+
+PM10_total_df <- final_df_PM2.5_byHERC %>% full_join(final_df_PM10_SLP)
+
+PM10_total_df %>%
+  ggplot(aes(x = year, y = arithmetic_mean, colour = site_number)) + geom_line()
+  
+
+
 ```
 
 

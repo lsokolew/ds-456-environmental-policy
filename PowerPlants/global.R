@@ -9,7 +9,9 @@ library(leaflet)
 mn_powerplants =  read_csv('mn_powerplants.csv') 
 
 zcta_joined =  st_read('zcta_joined.shp') 
-# mn_counties_aq =  st_read('mn_counties_aq.shp') 
+
+AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
+
 
 ###================================ Colors/Fonts/ETC ================================###
 
@@ -29,7 +31,7 @@ theme_1 <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
                  legend.background = element_rect(fill = "transparent", color = NA) )
 
 fuel_colors <- scale_fill_manual(
-  values = c("Fossil Fuel" = "#A39081", 
+  values = c("Fossil Fuel" = "#d95f02", 
              "Renewable" = "#1C693A"))
 
 
@@ -66,16 +68,14 @@ hispanic, and asian communities and historical redlined areas. Some examples inc
 and Philadelphia. Consequently, these communities end up being harmed by the releases of different fuels 
 and are the ones shouldering the unequal distribution of air quality as a result of these power plants."
 
-data_intro <- "We got our main data about the locations and characteristics of all power plants in Minnesota 
-from the US Energy Information Administration (EIA).  <b>The Environmental Protection Agency (EPA)</b> had data about 
-their dates of operation that we incorporated. In order to examine demographics and characteristics of Minnesota 
-counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau.</b> We made use of <b>Minnesota
+data_intro <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota as of 2024 
+from the US Energy Information Administration (EIA). In order to examine demographics and characteristics of Minnesota 
+counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from [ADD YEAR]. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental 
-Justice Areas.</b> The MPCA, using their own monitors and EPA's Fused Air Quality Surfaces Using Downscaling Tool and 
-Community Multiscale Air Quality model, also provided air quality data by county. This included data about ozone 
-and PM2.5 (fine particulate matter) levels, with modeled estimates for counties without air monitors. Finally, in 
-order to explore the human-level impacts of air quality, we used <b>MN Department of Health's data</b> on hospitalizations 
-due to asthma and COPD.</b>"
+Justice Areas.</b> <b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of 
+PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1980-2025), which we used to evaluate the impacts of power 
+plants on air quality. Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's 
+data</b> on hospitalizations due to asthma and COPD.</b>"
 
 aq_blurb <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor 
 to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants are the largest stationary 
@@ -99,6 +99,31 @@ Using the demographics of the neighborhood they studied, it was concluded that f
 levels because of the inexpensive land and low wages. This is a result of past instances of red-lining and the government’s involvement 
 in the concentration of regulations in white areas.  These polluters, such as power plants, release tons of particulate matter into the 
 surrounding air. Air quality has been monitored for years, showing a steady improvement in air quality over the years."
+
+asthma_plot_one <- "Looking at the plot above, you can see how asthma hospitalization rates are much higher in parts of Northside Minneapolis 
+and near downtown Saint Paul. In Northside Minneapolis, there are three nonrenewable power facilities: Covanta Hennepin Energy (changed to
+Hennepin Energy Recovery Center) and two plants belonging to the University of Minnesota. The two university plants, the Southeast Steam 
+and CHP plants are low emission plants used for heat and power in university buildings. The Hennepin Energy plant is actually a waste 
+incinerator that produces a small amount of energy and steam. 
+<br>
+Kim is a life-long Minneapolis resident who recently moved from Brooklyn Park to his home in North Minneapolis with his wife and his four year old son.
+He recalls how when he would wash his car in his previous home, it could stay clean for months, whereas now, a black film appears on his car in just days.
+He says the HERC is the root of this, and has been polluting the area for years. After his wife became interested in joining a climate control group out 
+of a local church, Kim became familiarized with the HERC and how the community is affected.
+<br>
+\"I don't think the community knows enough. I think that's the main problem. It's always going to come back to the community that does not know enough. 
+They can point out something that burns downtown, and they might not even know that it's burning. They might just think, oh, it's the heating system for 
+downtown, and that's why it's got the white smoke. And a lot of people are under the impression that the white smoke does, in fact, mean that it's non-pollutant. 
+But that's not the reality of it.\"
+<br>
+Kim also worked at a clinic in North Minneapolis for some time and saw a surprising amount of young people with asthma problems. At one point, the Canadian 
+wildfires were blamed, but he now believes the HERC was a root cause, as he was seeing the issue well before the fires started. 
+He is concerned about how living near the HERC will impact his young son.
+<br>
+\"He's gonna wanna go to the park and…and walk on the street, and do all of those things that normal kids should and can't do. And my fear is that the Herc 
+is not gonna turn off in 20... uh, 2027, 2028. And that he's gonna be playing in the backyard or in the park, running around, taking deep breaths, and 
+it's just gonna hurt him more. I want... I want to shut [the HERC] down for the next generation, for my kiddo, for my life, I want to be around for him longer.\""
+
 
 
 ej_areas <- "Research has found power plants are more likely to be built around redlining neighborhoods, 
