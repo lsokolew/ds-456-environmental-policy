@@ -61,6 +61,27 @@ server = function(input, output, session){
   
   ###================================ Power Plants ===============================###
   
+  output$intereactive_pp_types = renderLeaflet({
+    leaflet() %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
+      addCircleMarkers(data = mn_powerplants, 
+                       color = ~if_else(fossil_fuel == "Fossil Fuel", "#d95f02", "#1b9e77"), 
+                       radius = ~rescale(total_mw, to = c(1, 16)),
+                       #stroke = FALSE,
+                       label = ~paste0(plant_name, " (", prim_source, " - ", total_mw, " megawatt(s))")
+      ) %>%
+      addLegend(
+        position = "topright",
+        title = "Power Plants by \nProduction (MW)",
+        colors = c("#d95f02", "#1b9e77"),
+        labels = c(
+          "Fossil Fuel",
+          "Renewable"
+        )
+      )
+  })
+  
   output$pp_dates_barplot = renderPlot({
 
     mn_powerplants %>%
@@ -80,7 +101,8 @@ server = function(input, output, session){
   output$pp_type_barplot = renderPlot({
     
     mn_powerplants %>% 
-      ggplot(aes(x = fct_infreq(prim_source))) +
+      #mutate(fossil_fuel = ifelse(prim_source %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable")) %>% 
+      ggplot(aes(x = fct_infreq(prim_source), fill = fossil_fuel)) +
       geom_bar() +
       labs(x = "Energy Source", y = "Number of Powerplants", title = "Minnesota Powerplants' Energy Sources",
            fill = "Powerplant Type") +
@@ -98,7 +120,7 @@ server = function(input, output, session){
       ggplot(aes(x = fct_reorder(prim_source, prod_by_type, .desc = TRUE), y = prod_by_type, fill = fossil_fuel)) +
       geom_bar(stat = 'identity') +
       fuel_colors +
-      labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Energy produced by Source in MN Powerplants",
+      labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Electricity Produced by Energy Source in MN Powerplants",
            fill = "Powerplant Type") +  
       theme_classic() +
       theme_1

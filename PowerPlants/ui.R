@@ -50,18 +50,60 @@ ui <- fluidPage(
   
   
   ##=================Power Plants=================##
+
   
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Power Plants in Minnesota")),
 
+  column(12, align = "center", leafletOutput(outputId = "intereactive_pp_types", height = 400, width = 600)),
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_locations)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pp_type_barplot", height = 400, width = 600)),
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_energy_sources)),
   br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_type_by_mw_barplot", height = 400, width = 600)),
   br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_elec_by_source)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_dates_barplot", height = 400, width = 600)),
- 
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_by_year)),
+  br(),
+  
+  
   
   ##=================Air Quality=================##
   
