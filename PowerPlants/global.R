@@ -93,14 +93,15 @@ pp_elec_by_source <- "Indeed, we see that electricity production by fossil-fuel 
 produces around the same amount as nuclear, despite having a drastically greater number of plants. While wind makes up a 
 significant part of electricity produced, as the EPA claims, natural gas produces the most out of any energy source in the state. 
 Around one-fifth of the state's natural gas goes to electricity production, which has been increasing in recent years - Minnesota's 
-electric power sector consumed around four times more natural gas in 2024 than in 2014 (EIA profile analysis).
+electric power sector consumed around four times more natural gas in 2024 than in 2014 (EIA profile analysis). Overall, fossil fuel
+sources have the capacity to produce around 750 MW more than renewable sources.
 "
 
 pp_by_year <- "Facilities for renewable power around the turn of the 21st century, preceding a boom in their 
 construction around 2018. New fossil fuel plant construction has remained fairly constant post-1950, with a lull in the 80s and 
 spikes in the 50s, 70s, and early 2000. This implies that energy needs spiked around 2000, since many new plants of both kinds were built,
-as well as increasing eco-consciousness and efforts to shift away from reliance on fossil fuels in more recent years. 
-However, the numbers of new fossil fuel plants become nearly insignificant compared to the overwhelming amounts of new renewable plants.
+as well as increasing eco-consciousness and efforts to shift away from reliance on fossil fuels in more recent years. However, the 
+location of the remaining fossil-fuel plants, major sources of pollution, has the potential to impact some communities more than others. 
 "
 
 aq_blurb <- "Electric power plants burning fossil fuels, such as coal and natural gas, are a major contributor 

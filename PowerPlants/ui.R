@@ -147,6 +147,7 @@ ui <- fluidPage(
   #   font-family: 'Tinos', serif; 
   #   color: #4a4a4a;",HTML(aq_line_plot_descrip)),
   # br(),
+
   
   ##=================Health=================##
   
@@ -217,6 +218,10 @@ ui <- fluidPage(
   br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_pop_ej", height = 400, width = 600)),
+  
+  ###================================ AQ + EJ ===============================###
+  
+  column(12, align = "center", leafletOutput(outputId = 'pp_aq_ej', height = 400, width = 600)),
   
   
   ##=================Data=================##

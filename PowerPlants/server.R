@@ -299,6 +299,9 @@ server = function(input, output, session){
                                       "Only Renewable/None" = "#1b9e77")) +
         theme_minimal()
   }, bg = "transparent")
+  
+  
+  
 
   ###================================ Health ===============================###
   
@@ -369,7 +372,7 @@ server = function(input, output, session){
 
 ###================================ EJ ===============================###
 
-# # Plot Fossil Fuel 
+# # Plot Fossil Fuel
 # 
 # output$pp_ej_ff <- renderLeaflet({
 # leaflet() %>%
@@ -379,28 +382,28 @@ server = function(input, output, session){
 #               weight = 0.5) %>%
 #   addPolygons(
 #     data = ej_sf,
-#     fillColor = ~pal1(EJ_area), 
-#     fillOpacity = 0.7, 
-#     color = "white", 
+#     fillColor = ~pal1(EJ_area),
+#     fillOpacity = 0.7,
+#     color = "white",
 #     weight = 0.15
 #   ) %>%
 #   addLegend(
-#     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+#     pal = pal1, values = ej_sf$EJ_area, title ="Environmental Justice Area")  %>%
 #   addCircleMarkers(
 #     data = fossil_power_plants,
 #     lng = ~longitude,
 #     lat = ~latitude,
-#     radius = 1.75,         
-#     fillOpacity = 0.75,  
-#     opacity = 0.1,      
-#     color = "#000000") 
-#   
+#     radius = 1.75,
+#     fillOpacity = 0.75,
+#     opacity = 0.1,
+#     color = "#000000")
+# 
 # })
-# 
-# 
-# # Plot renable Fuel 
-# 
-# output$pp_ej_re <- renderLeaflet({ 
+# # 
+# # 
+# # # Plot renable Fuel 
+# # 
+# output$pp_ej_re <- renderLeaflet({
 #   leaflet() %>%
 #   addPolygons(data = mn_tracts,
 #               color = "black",
@@ -408,9 +411,9 @@ server = function(input, output, session){
 #               weight = 0.5) %>%
 #   addPolygons(
 #     data = ej_sf,
-#     fillColor = ~pal1(EJ_area), 
-#     fillOpacity = 0.7, 
-#     color = "white", 
+#     fillColor = ~pal1(EJ_area),
+#     fillOpacity = 0.7,
+#     color = "white",
 #     weight = 0.15
 #   ) %>%
 #   addLegend(
@@ -419,11 +422,11 @@ server = function(input, output, session){
 #     data = Renewable_power_plants,
 #     lng = ~longitude,
 #     lat = ~latitude,
-#     radius = 1.75,         
-#     fillOpacity = 0.75,  
-#     opacity = 0.1,      
-#     color = "#000000")  
-#   
+#     radius = 1.75,
+#     fillOpacity = 0.75,
+#     opacity = 0.1,
+#     color = "#000000")
+# 
 # })
 # 
 # ## Counts of power plants per census tracts
@@ -487,6 +490,48 @@ server = function(input, output, session){
 #     theme_1
 # }, bg = "transparent")
 # 
+  
+  ###================================ AQ + EJ ===============================###
+  
+  
+  output$pp_aq_ej <- renderLeaflet({
+    leaflet() %>%
+      addPolygons(data = mn_tracts,
+                  color = "black",
+                  fillOpacity = 0,
+                  weight = 0.5) %>%
+      addPolygons(
+        data = ej_sf,
+        fillColor = ~ifelse(EJ_OR_NOT, "darkgreen", "gray"),
+        fillOpacity = 0.7,
+        color = "white",
+        weight = 0.15
+      ) %>%
+      addCircleMarkers(
+        data = AirData_sf %>% filter(year == 2015),
+        radius = .5,
+        color = "blue",
+        fill = TRUE,
+        fillOpacity = 1
+      ) %>% 
+    # addCircleMarkers(
+    #   data = fossil_power_plants,
+    #   lng = ~longitude,
+    #   lat = ~latitude,
+    #   radius = 1.75,
+    #   fillOpacity = 0.75,
+    #   opacity = 0.1,
+    #   color = "red")%>%
+      addLegend(
+        position = "topright",
+        title = "AQ Monitors & EJ tracts",
+        colors = c("darkgreen", "blue"),
+        labels = c(
+          "EJ Tract",
+          "AQ Monitor"
+        ))
+    
+  })
 }
 
 
