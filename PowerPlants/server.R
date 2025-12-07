@@ -154,15 +154,25 @@ server = function(input, output, session){
   
   output$monitor_buffers = renderLeaflet({
     
-    leaflet() %>%
-      addProviderTiles("CartoDB.Positron") %>%
+    leaflet()  %>%
+      addPolygons(data = mn_tracts,
+                  color = "black",
+                  fillOpacity = 0,
+                  weight = 0.5) %>%
+      addPolygons(
+        data = ej_sf,
+        fillColor = ~ifelse(EJ_OR_NOT, "darkgreen", "white"),
+        fillOpacity = 0.3,
+        color = "white",
+        weight = 0.15
+      ) %>% 
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       # --- 3-mile buffers around monitors ---
       addPolygons(
-        data = air_buffers %>% filter(year == 2015),
-        fillColor = ~if_else(nearby_pp_count > 0, "#d95f02", "#1b9e77"),
-        fillOpacity = 0.2,
-        color = ~if_else(nearby_pp_count > 0, "#d95f02", "#1b9e77"),
+        data = air_buffers %>% filter(year == 2015, nearby_pp_count > 0),
+        fillColor = "lightblue",
+        fillOpacity = 0.4,
+        color = "steelblue",
         weight = 1,
         label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
       ) %>%
@@ -170,7 +180,7 @@ server = function(input, output, session){
       addCircleMarkers(
         data = mn_pp_sf,
         radius = 2,
-        color = "gray",
+        color = "#838383",
         fillOpacity = 0.8,
         label = ~paste0("Power Plant: ", plant_name)
       ) %>%
@@ -178,17 +188,24 @@ server = function(input, output, session){
       addCircleMarkers(
         data = AirData_sf %>% filter(year == 2015),
         radius = .5,
-        color = "black",
+        color = "steelblue",
         fill = TRUE,
         fillOpacity = 1
       ) %>%
       addLegend(
-        position = "bottomright",
-        colors = c("#d95f02", "#1b9e77", "black"),
+        position = "topright",
+        title = "Where Are Air Monitors?",
+        colors = c(
+          "darkgreen",   # EJ areas
+          "lightblue",   # Monitor buffers
+          "#838383",    # Power plants
+          "steelblue"    # Air monitors
+        ),
         labels = c(
-          "≥1 Nearby power plants",
-          " 0 Nearby power plants",
-          "Air monitor"
+          "Environmental Justice Area",
+          "3-mile Buffer (≥1 Nearby Plant)",
+          "Power Plant",
+          "Air Monitor"
         ),
         opacity = 1
       )
@@ -214,7 +231,6 @@ server = function(input, output, session){
     labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
-      #scale_color_manual() +
     theme_minimal()
   }, bg = "transparent")
   
@@ -493,45 +509,45 @@ server = function(input, output, session){
   
   ###================================ AQ + EJ ===============================###
   
-  
-  output$pp_aq_ej <- renderLeaflet({
-    leaflet() %>%
-      addPolygons(data = mn_tracts,
-                  color = "black",
-                  fillOpacity = 0,
-                  weight = 0.5) %>%
-      addPolygons(
-        data = ej_sf,
-        fillColor = ~ifelse(EJ_OR_NOT, "darkgreen", "gray"),
-        fillOpacity = 0.7,
-        color = "white",
-        weight = 0.15
-      ) %>%
-      addCircleMarkers(
-        data = AirData_sf %>% filter(year == 2015),
-        radius = .5,
-        color = "blue",
-        fill = TRUE,
-        fillOpacity = 1
-      ) %>% 
-    # addCircleMarkers(
-    #   data = fossil_power_plants,
-    #   lng = ~longitude,
-    #   lat = ~latitude,
-    #   radius = 1.75,
-    #   fillOpacity = 0.75,
-    #   opacity = 0.1,
-    #   color = "red")%>%
-      addLegend(
-        position = "topright",
-        title = "AQ Monitors & EJ tracts",
-        colors = c("darkgreen", "blue"),
-        labels = c(
-          "EJ Tract",
-          "AQ Monitor"
-        ))
-    
-  })
+  # 
+  # output$pp_aq_ej <- renderLeaflet({
+  #   leaflet() %>%
+  #     addPolygons(data = mn_tracts,
+  #                 color = "black",
+  #                 fillOpacity = 0,
+  #                 weight = 0.5) %>%
+  #     addPolygons(
+  #       data = ej_sf,
+  #       fillColor = ~ifelse(EJ_OR_NOT, "darkgreen", "gray"),
+  #       fillOpacity = 0.7,
+  #       color = "white",
+  #       weight = 0.15
+  #     ) %>%
+  #     addCircleMarkers(
+  #       data = AirData_sf, #%>% filter(year == 2015),
+  #       radius = .5,
+  #       color = "blue",
+  #       fill = TRUE,
+  #       fillOpacity = 1
+  #     ) %>% 
+  #   # addCircleMarkers(
+  #   #   data = fossil_power_plants,
+  #   #   lng = ~longitude,
+  #   #   lat = ~latitude,
+  #   #   radius = 1.75,
+  #   #   fillOpacity = 0.75,
+  #   #   opacity = 0.1,
+  #   #   color = "red")%>%
+  #     addLegend(
+  #       position = "topright",
+  #       title = "AQ Monitors & EJ tracts",
+  #       colors = c("darkgreen", "blue"),
+  #       labels = c(
+  #         "EJ Tract",
+  #         "AQ Monitor"
+  #       ))
+  #   
+  # })
 }
 
 
