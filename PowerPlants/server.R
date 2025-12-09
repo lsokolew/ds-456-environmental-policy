@@ -329,6 +329,7 @@ server = function(input, output, session){
 
   ###================================ Health ===============================###
   
+  mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----
@@ -352,13 +353,13 @@ server = function(input, output, session){
           weight = 2,
           color = "white"
         ),
-        # label = ~paste0(
-        #   "Zipcode: ", ZCTA5CE20, "<br>",
-        #   "Rate: ",
-        #   ifelse(is.na(`Age-adjusted rate per 10,000`),
-        #          "Not given due to small population",
-        #          `Age-adjusted rate per 10,000`)
-        # ),
+         label = ~paste0(
+           "Zipcode: ", ZCTA5CE, "<br>",
+           "Rate: ",
+           ifelse(is.na(A.rp10.),
+                  "Not given due to small population",
+                  A.rp10.)
+         ),
         labelOptions = labelOptions(
           style = list("white-space" = "pre-line")
         )
@@ -372,19 +373,18 @@ server = function(input, output, session){
         na.label = "Not given"
       ) %>%
       addLegend(
-        data = mn_powerplants,
-        pal = pal3,
-        values = ~fossil_fuel,
+        colors = "red",
+        labels = "Fossil Fuel Plant",
         opacity = 0.7,
-        title = "Renewable or Fossil Fuel",
-        position = "bottomright",
-        na.label = "Not given") %>%
+        title = "Fossil Fuel Plants",
+        position = "bottomright"
+      ) %>%
       addCircleMarkers(
-        data = mn_powerplants,
+        data = mn_powerplants_nonrenewable,
         lng = ~longitude,
         lat = ~latitude,
-        color = ~pal3(fossil_fuel),
-        radius = 3,        # 0.25 is too small to see
+        color = "red",
+        radius = 3,
         fillOpacity = 1,
         label = ~paste0(
           "Plant Name: ", plant_name, "<br>",
