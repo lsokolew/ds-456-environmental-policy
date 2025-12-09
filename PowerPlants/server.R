@@ -4,6 +4,7 @@ library(bslib)
 library(leaflegend)
 library(sf)
 library(tigris)
+library(scales)
 
 options(tigris_use_cache = TRUE)
 
@@ -166,6 +167,12 @@ server = function(input, output, session){
         color = "white",
         weight = 0.15
       ) %>% 
+      addPolygons(
+        data = tribal_shp_wgs,
+        color = "darkgreen",         
+        fillOpacity = 0.3,     
+        weight = 1,           
+      ) %>%
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       # --- 3-mile buffers around monitors ---
       addPolygons(
@@ -323,14 +330,14 @@ server = function(input, output, session){
   ###================================ Health ===============================###
   
   output$asthma_map <- renderLeaflet({
-    
+
     # ---- Color palette for polygons ----
     pal <- colorFactor(
       palette = c("lightblue", "steelblue", "royalblue4", "navy"),
       levels = c("0-2", "2-4", "4-7", "7+"),
       na.color = "grey"
     )
-    
+
     # ---- Palette for power plants ----
     leaflet(zcta_joined) %>%
       setView(lng = -93.265, lat = 44.9778, zoom = 8) %>%
@@ -389,8 +396,8 @@ server = function(input, output, session){
 
 ###================================ EJ ===============================###
 
-# # Plot Fossil Fuel
-# 
+# Plot Fossil Fuel
+
 # output$pp_ej_ff <- renderLeaflet({
 # leaflet() %>%
 #   addPolygons(data = mn_tracts,
@@ -405,7 +412,7 @@ server = function(input, output, session){
 #     weight = 0.15
 #   ) %>%
 #   addLegend(
-#     pal = pal1, values = ej_sf$EJ_area, title ="Environmental Justice Area")  %>%
+#     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
 #   addCircleMarkers(
 #     data = fossil_power_plants,
 #     lng = ~longitude,
@@ -416,36 +423,76 @@ server = function(input, output, session){
 #     color = "#000000")
 # 
 # })
-# # 
-# # 
-# # # Plot renable Fuel 
-# # 
-# output$pp_ej_re <- renderLeaflet({
-#   leaflet() %>%
-#   addPolygons(data = mn_tracts,
-#               color = "black",
-#               fillOpacity = 0,
-#               weight = 0.5) %>%
-#   addPolygons(
-#     data = ej_sf,
-#     fillColor = ~pal1(EJ_area),
-#     fillOpacity = 0.7,
-#     color = "white",
-#     weight = 0.15
-#   ) %>%
-#   addLegend(
-#     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-#   addCircleMarkers(
-#     data = Renewable_power_plants,
-#     lng = ~longitude,
-#     lat = ~latitude,
-#     radius = 1.75,
-#     fillOpacity = 0.75,
-#     opacity = 0.1,
-#     color = "#000000")
-# 
-# })
-# 
+
+
+
+output$pp_ej_ff = renderLeaflet({
+  leaflet() %>%
+    addProviderTiles("CartoDB.Positron") %>%
+    addPolygons(
+      data = ej_sf,
+      fillColor = ~pal1(EJ_area),
+      fillOpacity = 0.7,
+      color = "white",
+      weight = 0.15
+    ) %>%
+    addPolygons(
+      data = tribal_shp_wgs,
+      color = "red",         
+      fillOpacity = 0.3,    
+      weight = 1,            
+    ) %>%
+    addLegend(
+      pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+    setView(lng = -94.6, lat = 46.4, zoom = 6) 
+})
+
+
+# Plot renable Fuel
+
+mn_tracts_wgs <- st_transform(mn_tracts, crs = 4326)
+ej_sf_wgs <- st_transform(ej_sf, crs = 4326)
+tribal_shp_wgs <- st_transform(tribal_shp, crs = 4326)
+
+output$pp_ej_re <- renderLeaflet({
+  leaflet() %>%
+    addProviderTiles("CartoDB.Positron") %>%
+    addPolygons(
+      data = ej_sf,
+      fillColor = ~pal1(EJ_area),
+      fillOpacity = 0.7,
+      color = "white",
+      weight = 0.15
+    ) %>%
+    addPolygons(
+      data = tribal_shp_wgs,
+      color = "red",         
+      fillOpacity = 0.3,     
+      weight = 1,           
+    ) %>%
+    addLegend(
+      pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+    setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
+    addCircleMarkers(data = mn_powerplants, 
+                     color = ~if_else(fossil_fuel == "Fossil Fuel", "#d95f02", "#1b9e77"), 
+                     radius = ~rescale(total_mw, to = c(1, 16)),
+                     #stroke = FALSE,
+                     label = ~paste0(plant_name, " (", prim_source, " - ", total_mw, " megawatt(s))")
+    ) %>%
+    
+    addLegend(
+      position = "topright",
+      title = "Power Plants by \nProduction (MW)",
+      colors = c("#d95f02", "#1b9e77"),
+      labels = c(
+        "Fossil Fuel",
+        "Renewable"
+      )
+    )
+
+})
+
+
 # ## Counts of power plants per census tracts
 # 
 # output$pp_count_all = renderPlot({
@@ -510,7 +557,7 @@ server = function(input, output, session){
   
   ###================================ AQ + EJ ===============================###
   
-  # 
+
   # output$pp_aq_ej <- renderLeaflet({
   #   leaflet() %>%
   #     addPolygons(data = mn_tracts,
@@ -524,21 +571,20 @@ server = function(input, output, session){
   #       color = "white",
   #       weight = 0.15
   #     ) %>%
+  #     addPolygons(
+  #       data = tribal_shp_wgs,
+  #       color = "red",         
+  #       fillOpacity = 0.3,     
+  #       weight = 1,           
+  #     ) %>%
   #     addCircleMarkers(
   #       data = AirData_sf, #%>% filter(year == 2015),
   #       radius = .5,
   #       color = "blue",
   #       fill = TRUE,
   #       fillOpacity = 1
-  #     ) %>% 
-  #   # addCircleMarkers(
-  #   #   data = fossil_power_plants,
-  #   #   lng = ~longitude,
-  #   #   lat = ~latitude,
-  #   #   radius = 1.75,
-  #   #   fillOpacity = 0.75,
-  #   #   opacity = 0.1,
-  #   #   color = "red")%>%
+  #     ) %>%
+  # 
   #     addLegend(
   #       position = "topright",
   #       title = "AQ Monitors & EJ tracts",
@@ -547,7 +593,24 @@ server = function(input, output, session){
   #         "EJ Tract",
   #         "AQ Monitor"
   #       ))
-  #   
+  # 
+  #   addCircleMarkers(data = mn_powerplants, 
+  #                    color = ~if_else(fossil_fuel == "Fossil Fuel", "#d95f02", "#1b9e77"), 
+  #                    radius = ~rescale(total_mw, to = c(1, 16)),
+  #                    #stroke = FALSE,
+  #                    label = ~paste0(plant_name, " (", prim_source, " - ", total_mw, " megawatt(s))")
+  #   ) %>%
+  #     
+  #     addLegend(
+  #       position = "topright",
+  #       title = "Power Plants by \nProduction (MW)",
+  #       colors = c("#d95f02", "#1b9e77"),
+  #       labels = c(
+  #         "Fossil Fuel",
+  #         "Renewable"
+  #       )
+  #     )
+  # 
   # })
 }
 

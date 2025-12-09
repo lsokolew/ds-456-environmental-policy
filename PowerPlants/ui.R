@@ -175,7 +175,7 @@ ui <- fluidPage(
     text-align: justify; 
     font-size: 18px; 
     font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(asthma_plot)),
+    color: #4a4a4a;",HTML(asthma_plot_one)),
   
   ##=================EJ areas=================##
   br(),
