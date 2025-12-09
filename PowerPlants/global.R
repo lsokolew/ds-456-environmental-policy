@@ -14,6 +14,7 @@ AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
 
 mn_tracts <- st_read("mn_tracts.shp")
 ej_sf <- st_read("ej_sf.shp")
+ej_shp <- st_read("Data/ej_mpca_census.shp")
 # plants_in_ej_counts <- st_read("plants_in_ej_counts.shp")
 
 
