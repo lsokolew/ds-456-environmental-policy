@@ -169,7 +169,7 @@ server = function(input, output, session){
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       # --- 3-mile buffers around monitors ---
       addPolygons(
-        data = air_buffers %>% filter(year == 2015, nearby_pp_count > 0),
+        data = air_buffers %>% filter(year == 2015),
         fillColor = "lightblue",
         fillOpacity = 0.4,
         color = "steelblue",
@@ -203,7 +203,7 @@ server = function(input, output, session){
         ),
         labels = c(
           "Environmental Justice Area",
-          "3-mile Buffer (≥1 Nearby Plant)",
+          "3-mile Buffer",
           "Power Plant",
           "Air Monitor"
         ),
@@ -217,7 +217,8 @@ server = function(input, output, session){
   calc_avg_pm25 <- function(year_spec){
     air_buffers %>% 
       filter(year == year_spec) %>% 
-      group_by(nearby_pp_count) %>% 
+      mutate(grouped_nearby_pp_count = ifelse(nearby_pp_count > 1, "2+", as.character(nearby_pp_count))) %>% 
+      group_by(grouped_nearby_pp_count) %>% 
       summarise(avg_pm25_grouped = mean(avg_pm25)) %>% 
       mutate(year = year_spec)
   }
@@ -227,7 +228,7 @@ server = function(input, output, session){
 
   output$grouped_summ_lineplot = renderPlot({
   ggplot(grouped_summ_pm25_allyears) +
-    geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(nearby_pp_count)), color = fct_rev(as.factor(nearby_pp_count)))) +
+    geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
     labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +

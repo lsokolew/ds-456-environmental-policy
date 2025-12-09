@@ -19,8 +19,6 @@ mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
 # power plant dates
 powerplant_dates <- read_csv("Data/powerplant_data_eia_2024_generator_operable.csv") %>% 
   janitor::clean_names() 
-# powerplant_dates_retired <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
-#   janitor::clean_names()
 
 ###=== Air Quality ===###
 
