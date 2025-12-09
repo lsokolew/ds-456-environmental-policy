@@ -178,15 +178,15 @@ plants_in_ej_counts <- st_join(Power_Plants_with_tract, ej_sf, join = st_within)
   summarize(plant_count = n())  
 
 # Getting population data
-total_pop <- get_acs(geography = "tract", variables = "B01003_001", state = "MN", year = 2023, geometry = FALSE)
+# total_pop <- get_acs(geography = "tract", variables = "B01003_001", state = "MN", year = 2023, geometry = FALSE)
 
 # Joining power plant + ej areas with population data
-plants_per_pop <- plants_in_ej %>%
-  left_join(total_pop %>% select(GEOID, estimate), by = "GEOID") %>%
-  rename(total_population = estimate) %>%
-  group_by(GEOID, fossil_fuel, EJ_OR_NOT) %>%
-  summarize(plant_count = n(), total_population = first(total_population), 
-            plants_per_10k = (plant_count / total_population) * 10000)
+# plants_per_pop <- ej_tracts %>%
+#   left_join(total_pop %>% select(GEOID, estimate), by = "GEOID") %>%
+#   rename(total_population = estimate) %>%
+#   group_by(GEOID, fossil_fuel, EJ_OR_NOT) %>%
+#   summarize(plant_count = n(), total_population = first(total_population), 
+#             plants_per_10k = (plant_count / total_population) * 10000)
 
 
 ###==================== Write as csv ===================###
@@ -203,7 +203,7 @@ st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
 # ej areas
 st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)
 st_write(ej_sf, "ej_sf.shp", row.names = FALSE)
-st_write(plants_in_ej_counts, "plants_per_pop.shp", row.names = FALSE)
-st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
+st_write(plants_in_ej_counts, "plants_in_ej_counts.shp", row.names = FALSE)
+# st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
 
 

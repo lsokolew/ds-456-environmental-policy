@@ -281,14 +281,14 @@ server = function(input, output, session){
   ###================================ Health ===============================###
   
   output$asthma_map <- renderLeaflet({
-    
+
     # ---- Color palette for polygons ----
     pal <- colorFactor(
       palette = c("lightblue", "steelblue", "royalblue4", "navy"),
       levels = c("0-2", "2-4", "4-7", "7+"),
       na.color = "grey"
     )
-    
+
     # ---- Palette for power plants ----
     leaflet(zcta_joined) %>%
       setView(lng = -93.265, lat = 44.9778, zoom = 8) %>%
@@ -347,62 +347,62 @@ server = function(input, output, session){
 
 ###================================ EJ ===============================###
 
-# # Plot Fossil Fuel 
-# 
-# output$pp_ej_ff <- renderLeaflet({
-# leaflet() %>%
-#   addPolygons(data = mn_tracts,
-#               color = "black",
-#               fillOpacity = 0,
-#               weight = 0.5) %>%
-#   addPolygons(
-#     data = ej_sf,
-#     fillColor = ~pal1(EJ_area), 
-#     fillOpacity = 0.7, 
-#     color = "white", 
-#     weight = 0.15
-#   ) %>%
-#   addLegend(
-#     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-#   addCircleMarkers(
-#     data = fossil_power_plants,
-#     lng = ~longitude,
-#     lat = ~latitude,
-#     radius = 1.75,         
-#     fillOpacity = 0.75,  
-#     opacity = 0.1,      
-#     color = "#000000") 
-#   
-# })
-# 
-# 
-# # Plot renable Fuel 
-# 
-# output$pp_ej_re <- renderLeaflet({ 
-#   leaflet() %>%
-#   addPolygons(data = mn_tracts,
-#               color = "black",
-#               fillOpacity = 0,
-#               weight = 0.5) %>%
-#   addPolygons(
-#     data = ej_sf,
-#     fillColor = ~pal1(EJ_area), 
-#     fillOpacity = 0.7, 
-#     color = "white", 
-#     weight = 0.15
-#   ) %>%
-#   addLegend(
-#     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-#   addCircleMarkers(
-#     data = Renewable_power_plants,
-#     lng = ~longitude,
-#     lat = ~latitude,
-#     radius = 1.75,         
-#     fillOpacity = 0.75,  
-#     opacity = 0.1,      
-#     color = "#000000")  
-#   
-# })
+# Plot Fossil Fuel
+
+output$pp_ej_ff <- renderLeaflet({
+leaflet() %>%
+  addPolygons(data = mn_tracts,
+              color = "black",
+              fillOpacity = 0,
+              weight = 0.5) %>%
+  addPolygons(
+    data = ej_sf,
+    fillColor = ~pal1(EJ_area),
+    fillOpacity = 0.7,
+    color = "white",
+    weight = 0.15
+  ) %>%
+  addLegend(
+    pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+  addCircleMarkers(
+    data = fossil_power_plants,
+    lng = ~longitude,
+    lat = ~latitude,
+    radius = 1.75,
+    fillOpacity = 0.75,
+    opacity = 0.1,
+    color = "#000000")
+
+})
+
+
+# Plot renable Fuel
+
+output$pp_ej_re <- renderLeaflet({
+  leaflet() %>%
+  addPolygons(data = mn_tracts,
+              color = "black",
+              fillOpacity = 0,
+              weight = 0.5) %>%
+  addPolygons(
+    data = ej_sf,
+    fillColor = ~pal1(EJ_area),
+    fillOpacity = 0.7,
+    color = "white",
+    weight = 0.15
+  ) %>%
+  addLegend(
+    pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+  addCircleMarkers(
+    data = Renewable_power_plants,
+    lng = ~longitude,
+    lat = ~latitude,
+    radius = 1.75,
+    fillOpacity = 0.75,
+    opacity = 0.1,
+    color = "#000000")
+
+})
 # 
 # ## Counts of power plants per census tracts
 # 

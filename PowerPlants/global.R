@@ -12,6 +12,10 @@ zcta_joined =  st_read('zcta_joined.shp')
 
 AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
 
+mn_tracts <- st_read("mn_tracts.shp")
+ej_sf <- st_read("ej_sf.shp")
+# plants_in_ej_counts <- st_read("plants_in_ej_counts.shp")
+
 
 ###================================ Colors/Fonts/ETC ================================###
 
