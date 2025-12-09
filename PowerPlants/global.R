@@ -81,11 +81,38 @@ PM2.5 (fine particulate matter) concentration from around 50 monitors in Minneso
 plants on air quality. Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's 
 data</b> on hospitalizations due to asthma and COPD.</b>"
 
-aq_blurb <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor 
+pp_locations <- "Power plants draw from several sources of energy aside from traditional fossil fuels. Wind farms, particularly on the state's open 
+western and southern prairies, allow for wind energy to provide 25% of the state's total net electricity generation in 2024 (EIA profile analysis). 
+The state's flat terrain offers little opportunities for hydroelectric generation; however, several small plants in the northeast produce roughly 1% 
+of the state's electricity. Most solid waste biomass plants are in highly populated areas of southern Minnesota, while wood-fueled plants tend to be in the more forested parts of northern
+Minnesota (EIA profile analysis).
+"
+
+pp_energy_sources <- "There are far more solar-fired power plants in Minnesota than any other kind - by nearly 5 times. However, as we 
+see in the map above, many are very small, with a capacity between 1 to 5 MW. Wind plants are the second-most-common, and tend to have a 
+higher capacity (around 40 MW on average). Notably, Minnesota has only 8 coal and 2 nuclear plants. Yet, these plants have capacities of 
+several hundred MW, meaning that one coal plant produces, on average, as much as 10 wind plants and more than 100 solar plants."
+
+pp_elec_by_source <- "Indeed, we see that electricity production by fossil-fuel plants outstrips wind and solar. Solar
+produces around the same amount as nuclear, despite having a drastically greater number of plants. While wind makes up a 
+significant part of electricity produced, as the EPA claims, natural gas produces the most out of any energy source in the state. 
+Around one-fifth of the state's natural gas goes to electricity production, which has been increasing in recent years - Minnesota's 
+electric power sector consumed around four times more natural gas in 2024 than in 2014 (EIA profile analysis). Overall, fossil fuel
+sources have the capacity to produce around 750 MW more than renewable sources.
+"
+
+pp_by_year <- "Facilities for renewable power around the turn of the 21st century, preceding a boom in their 
+construction around 2018. New fossil fuel plant construction has remained fairly constant post-1950, with a lull in the 80s and 
+spikes in the 50s, 70s, and early 2000. This implies that energy needs spiked around 2000, since many new plants of both kinds were built,
+as well as increasing eco-consciousness and efforts to shift away from reliance on fossil fuels in more recent years. However, the 
+location of the remaining fossil-fuel plants, major sources of pollution, has the potential to impact some communities more than others. 
+"
+
+aq_blurb <- "Electric power plants burning fossil fuels, such as coal and natural gas, are a major contributor 
 to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants are the largest stationary 
 source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they emit significant quantities of fine particulate matter
-(PM₂.₅). These pollutants contribute to environmental damage, including acid rain, loss of biodiversity, and climate change. (Source: 
-https://www.epa.gov/power-sector/human-health-environmental-impacts-electric-power-sector)"
+(PM₂.₅) (EPA Human Health & Environment). These pollutants contribute to environmental damage, including acid rain, loss of biodiversity,
+and climate change (EPA Human Health & Environment)."
 
 interactive_aq_plot_descrip <- "Until 2015, PM₂.₅ stays most concentrated in the Twin Cities Area, with generally higher levels in  
 southern counties than northern ones. Southern counties also contain the most fossil fuel power plants; they are much sparser in the north.
@@ -147,3 +174,6 @@ These areas are census tracts which might fall on one of the following categorie
 4.) are located within Indian Country, which is defined as federally recognized reservations and other Indigenous lands<br>
 <br>
 A concern that arises is if these communities are affected more by power plants than other?"
+
+acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable help in guilding the direction of our project. We
+sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks also to Professor Shilad Sen for his help."

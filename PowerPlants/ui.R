@@ -50,18 +50,60 @@ ui <- fluidPage(
   
   
   ##=================Power Plants=================##
+
   
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Power Plants in Minnesota")),
 
+  column(12, align = "center", leafletOutput(outputId = "intereactive_pp_types", height = 400, width = 600)),
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_locations)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "pp_type_barplot", height = 400, width = 600)),
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_energy_sources)),
   br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_type_by_mw_barplot", height = 400, width = 600)),
   br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_elec_by_source)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_dates_barplot", height = 400, width = 600)),
- 
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(pp_by_year)),
+  br(),
+  
+  
   
   ##=================Air Quality=================##
   
@@ -92,7 +134,7 @@ ui <- fluidPage(
   # br(),
   
   column(12, align = "center", plotOutput(outputId = "grouped_summ_lineplot", height = 400, width = 600)),
-  column(12, align = "center", plotOutput(outputId = "one_yr_aq_change_lineplot", height = 400, width = 600)),
+  #column(12, align = "center", plotOutput(outputId = "one_yr_aq_change_lineplot", height = 400, width = 600)),
   column(12, align = "center", plotOutput(outputId = "aq_by_county_type_lineplot", height = 400, width = 600)),
 
   
@@ -105,6 +147,7 @@ ui <- fluidPage(
   #   font-family: 'Tinos', serif; 
   #   color: #4a4a4a;",HTML(aq_line_plot_descrip)),
   # br(),
+
   
   ##=================Health=================##
   
@@ -176,6 +219,10 @@ ui <- fluidPage(
   
   column(12, align = "center", plotOutput(outputId = "pp_pop_ej", height = 400, width = 600)),
   
+  ###================================ AQ + EJ ===============================###
+  
+  column(12, align = "center", leafletOutput(outputId = 'pp_aq_ej', height = 400, width = 600)),
+  
   
   ##=================Data=================##
   
@@ -206,6 +253,23 @@ ui <- fluidPage(
     
     tags$p(
       style = "font-family: 'Tinos', serif;font-size: 16px;color: #4a4a4a; margin-top: 5px;",
-      "Our Data Sources"))# close div
-  
+      "Our Data Sources")), # close div
+
+
+###================================ End Matter ===============================###
+
+br(),
+h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("Acknowlegements")),
+
+div(
+  style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(acknowledgements)),
+br()
+
+
 ) # closing UI
