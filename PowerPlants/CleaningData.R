@@ -198,9 +198,6 @@ powerplants_with_ej <- st_join(
 
 metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
   
-your_points <- st_as_sf(your_data, coords = c("lon", "lat"), crs = 4326)
-
-
 
 tt <- powerplants_with_ej %>%
   filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%  #metro areas
