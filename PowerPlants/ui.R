@@ -7,10 +7,10 @@ source("global.R")
 
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- navbarPage(
   ###=========================theme=========================###
-  
   # theme
+  title = "", 
   theme = bs_theme(
     # background color
     bg = light_blue,
@@ -20,18 +20,23 @@ ui <- fluidPage(
     code_font = font_google("JetBrains Mono")
   ),
   
+  ###=============================================    Tab #1   =================================================###
+  
+  
   ###=========================Introduction=========================###
   
-
+  tabPanel(
+    title = "Article",
     # Application title
+    fluidPage(
     br(),
     br(), 
     br(),
     br(),
     h1(style = "text-align:center; font-size:80px;", strong("Power Plants in Minnesota")),
     h2(style = "text-align:center; font-size:22px;", "Where are they? Whom do they impact? How do they impact people?"),
-    h2(style = "text-align:center; font-size:13px;", "By: Alicia Severiano Perez, Sydney Ohr, and Lilabeth Sokolewicz"),
-    
+    h2(style = "text-align:center; font-size:13px;", "By Alicia Severiano Perez, Sydney Ohr, and Lilabeth Sokolewicz"),
+
 
     # main
       column(12, align = "center", leafletOutput(outputId = 'map', height = 400, width = 600)),
@@ -223,53 +228,58 @@ ui <- fluidPage(
   
   column(12, align = "center", leafletOutput(outputId = 'pp_aq_ej', height = 400, width = 600)),
   
-  
-  ##=================Data=================##
-  
-  br(),
-  h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
-  
-  # DIV 1: choose how the text should be formated
+    ) # closing fluidpage
+  ), # Closing tab #1
+
+###=============================================    Tab #2  =================================================###
+
+tabPanel(
+  title = "Methods & Sources",
+  fluidPage(
+    ##=================Data=================##
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
+    
+    # DIV 1: choose how the text should be formated
     div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
       font-family: 'Tinos', serif; color: #4a4a4a;",
-    
-    # highlight the source 
-    HTML(paste0(
-      "<style>  b { 
+        
+        # highlight the source 
+        HTML(paste0(
+          "<style>  b { 
         background-color: #FFF59D;  /* soft yellow highlight */
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
-      data_intro))), # close div
-  
-  
-  # DIV 2: data source logos
+          data_intro))), # close div
+    
+    
+    # DIV 2: data source logos
     div(style = "text-align: center;",
-    tags$img(
-      src = "data_sources.png",
-      alt = "logos for EIA, EPA, US Census Bureau, MPCA, and MN Department of Health",
-      width = 650,
-      height = 250), # close ta
+        tags$img(
+          src = "data_sources.png",
+          alt = "logos for EIA, EPA, US Census Bureau, MPCA, and MN Department of Health",
+          width = 650,
+          height = 250), # close ta
+        
+        br(),
+        
+        tags$p(
+          style = "font-family: 'Tinos', serif;font-size: 16px;color: #4a4a4a; margin-top: 5px;",
+          "Our Data Sources")), # close div
+    
+    ###================================ End Matter ===============================###
     
     br(),
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("Acknowlegements")),
     
-    tags$p(
-      style = "font-family: 'Tinos', serif;font-size: 16px;color: #4a4a4a; margin-top: 5px;",
-      "Our Data Sources")), # close div
-
-
-###================================ End Matter ===============================###
-
-br(),
-h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("Acknowlegements")),
-
-div(
-  style = "
-    max-width: 900px; 
-    margin: 0 auto; 
-    text-align: justify; 
-    font-size: 18px; 
-    font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(acknowledgements)),
-br()
-
-
+    div(
+      style = "max-width: 900px; 
+               margin: 0 auto; 
+               text-align: justify; 
+               font-size: 18px; 
+               font-family: 'Tinos', serif; 
+               color: #4a4a4a;",
+      HTML(acknowledgements)
+      ), #  close div
+    
+    ) #closing navpage
+  ) # closing tab #2
 ) # closing UI
