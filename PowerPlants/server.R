@@ -376,7 +376,65 @@ server = function(input, output, session){
         )
       )
   })
-
+  
+  ###================================ Schools ===============================###
+  if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
+    schools_sf <- st_set_crs(schools_sf, 26915)}
+  
+  points_sf_crs <- st_as_sf(
+    mn_powerplants,
+    coords = c("longitude", "latitude"),
+    crs = 4326) %>%
+    st_transform(26915) 
+  
+  schools_sf <- schools_sf %>%
+    filter(is.na(GRADERANGE))
+  
+  
+  school_proj <- st_transform(schools_sf, 26915)
+  
+  # 1 mile buffer around schools
+  school_buffer <- st_buffer(school_proj, dist = 1609.34)
+  
+  school_pp_dist <- st_distance(school_proj, points_sf_crs)
+  
+  # schools within 1 mile of any power plant
+  school_proj$within_1mile_pp <- apply(school_pp_dist, 1, function(x) any(x <= 1609.34))
+  table(school_proj$within_1mile_pp)
+  
+  schools_in_ej <- st_within(school_proj, ej_areas)
+  school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
+  
+  schools_near_pp_and_in_ej <- school_proj %>%
+    filter(within_1mile_pp == TRUE & schools_in_ej == TRUE)
+  nrow(schools_near_pp_and_in_ej)
+  
+  nearest_pp_index <- apply(school_pp_dist, 1, which.min)
+  
+  school_proj$nearest_pp_id <- points_sf$plant_code[nearest_pp_index]
+  school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
+  school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
+  
+  schools_near_pp_and_in_ej <- school_proj %>%
+    filter(within_1mile_pp & schools_in_ej)
+  
+  
+  distinct_schools <- school_proj %>% 
+    distinct(GISADDR, .keep_all = TRUE)
+  
+  
+  distinct_schools_metro <- distinct_schools %>% 
+    mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) 
+  
+  output$school_pp_plot = renderPlot({
+    distinct_schools_metro %>%
+      ggplot(aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
+      geom_violin() +
+      labs(title = "Distance to Nearest Power Plant by EJ Status",
+           x = "In EJ Area?", y = "Distance (miles)") +
+      stat_summary(fun = median, geom = "point", size = 2, color = "red")
+  }, bg = "transparent")
+  
 
 ###================================ EJ ===============================###
 
