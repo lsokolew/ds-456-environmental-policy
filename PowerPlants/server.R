@@ -5,6 +5,8 @@ library(leaflegend)
 library(sf)
 library(tigris)
 library(scales)
+library(gganimate)
+
 
 options(tigris_use_cache = TRUE)
 
@@ -16,49 +18,19 @@ source("ui.R")
 server = function(input, output, session){
   
 ###================================ Opening ===============================###
+
+
+  output$animated_map <- renderImage({
+    list(
+      src = "www/animations/powerplants_animation.gif",
+      contentType = "image/gif",
+      width = 600,
+      height = 500
+    )
+  }, deleteFile = FALSE)
   
-  map_df = reactive({
-
-    mn_powerplants %>%
-      filter(first_op_year == as.numeric(input$numeric[1]))%>%
-      filter(!is.na(longitude) & !is.na(latitude)) %>%
-      group_by(plant_code, longitude,latitude) %>%
-      summarize (count = n()) %>%
-      st_as_sf(coords = c('longitude', 'latitude')) %>%
-      st_set_crs(4326)
-
-  })
-
-
-  map_lp = reactive({
-
-    mn_powerplants %>%
-      filter(first_op_year < as.numeric(input$numeric[1]))%>%
-      filter(!is.na(longitude) & !is.na(latitude)) %>%
-      group_by(plant_code, longitude,latitude) %>%
-      summarize (count = n()) %>%
-      st_as_sf(coords = c('longitude', 'latitude')) %>%
-      st_set_crs(4326)
-    })
-
-  output$map = renderLeaflet({
-
-    leaflet() %>%
-      addTiles() %>%
-      setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
-      addCircleMarkers(data = map_df(), color = "red", radius = 3) %>%
-      addCircleMarkers(data = map_lp(), color = "grey", radius = 1) %>%
-      addCircleMarkers(data = map_lp(), color = "grey", radius = 1) %>%
-      addLegendFactor(
-        pal = colorFactor(my_colors, domain = values),
-        values = values,
-        orientation = "horizontal",
-        opacity = 0.75,
-        position = "topright",
-        width = 12,
-        height = 12)
-    })
   
+ 
   ###================================ Power Plants ===============================###
   
   output$intereactive_pp_types = renderLeaflet({
@@ -488,8 +460,6 @@ herc_buffer <- st_transform(herc_buffer, crs = 4326)
 income_cols <- c("#519465","#CF74B6", "#FFFFFF","#F7F4BA", "#FCF688") 
 
 new_palette <- colorBin(palette = income_cols, domain = metro_area$prppoc, bins = 5)
-
-
 
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%

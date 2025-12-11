@@ -2,6 +2,7 @@
 # Libraries
 library(shiny)
 library(bslib)
+library(tidyverse)
 library(leaflet)
 source("global.R")
 
@@ -23,27 +24,24 @@ ui <- navbarPage(
   ###=============================================    Tab #1   =================================================###
   
   
-  ###=========================Introduction=========================###
+  ###=========================Start Story=========================###
   
   tabPanel(
     title = "Article",
-    # Application title
     fluidPage(
-    br(),
-    br(), 
-    br(),
-    br(),
-    h1(style = "text-align:center; font-size:80px;", strong("Power Plants in Minnesota")),
-    h2(style = "text-align:center; font-size:22px;", "Where are they? Whom do they impact? How do they impact people?"),
-    h2(style = "text-align:center; font-size:13px;", "By Alicia Severiano Perez, Sydney Ohr, and Lilabeth Sokolewicz"),
-
+    
+    # story title & authors  
+      h1(style = "text-align:center; font-size:80px;", strong("Power Plants in Minnesota")),
+      h2(style = "text-align:center; font-size:22px;", "Where are they? Whom do they impact? How do they impact people?"),
+      h2(style = "text-align:center; font-size:13px;", "By Alicia Severiano Perez, Sydney Ohr, and Lilabeth Sokolewicz"),
 
     # main
-      column(12, align = "center", leafletOutput(outputId = 'map', height = 400, width = 600)),
-      column(12, align = "center", sliderInput('numeric', 'Year', min = 1906, max = 2025, value = c(1907), sep = "")),
+      column(12, align = "center", imageOutput(outputId = 'animated_map', height = 400, width = 600)),
 
-
-  ##=================Context=================##
+  br(),
+  br(),
+  br(),
+  ##=================Introduction=================##
   div(
     style = "
     max-width: 900px; 
@@ -52,7 +50,6 @@ ui <- navbarPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(context)),
-  
   
   ##=================Power Plants=================##
 
@@ -108,6 +105,38 @@ ui <- navbarPage(
     color: #4a4a4a;",HTML(pp_by_year)),
   br(),
   
+  ##=================EJ areas=================##
+  br(),
+  br(),
+  h2(style = "text-align:center; font-size:22px;", strong("Demographics")),
+  
+  # DIV 1: choose how the text should be formated
+  div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
+      
+      # highlight the source 
+      HTML(paste0(
+        "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+        ej_areas))), # close div
+  
+  h2(style = "text-align:center; font-size:18px;", "Fossil Fuel Power Plants vs Enviromental Justice Areas"),
+  
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
+  br(),
+  br(),
+  
+  h2(style = "text-align:center; font-size:18px;", "Renewable Energy Power Plants vs Enviromental Justice Areas"),
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
+  
+  h2(style = "text-align:center; font-size:18px;", "Distribution of Power Plants"),
+  br(),
+  
+  column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
+  br(),
+  
+  column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
   
   
   ##=================Air Quality=================##
@@ -182,49 +211,9 @@ ui <- navbarPage(
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(asthma_plot_one)),
   
-  ##=================EJ areas=================##
-  br(),
-  br(),
-  h2(style = "text-align:center; font-size:22px;", strong("Demographics")),
-  
-  # DIV 1: choose how the text should be formated
-  div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
-      font-family: 'Tinos', serif; color: #4a4a4a;",
-      
-      # highlight the source 
-      HTML(paste0(
-        "<style>  b { 
-        background-color: #FFF59D;  /* soft yellow highlight */
-        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
-        ej_areas))), # close div
-  
-  h2(style = "text-align:center; font-size:18px;", "Fossil Fuel Power Plants vs Enviromental Justice Areas"),
-  
-  column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
-  br(),
-  br(),
 
-  h2(style = "text-align:center; font-size:18px;", "Renewable Energy Power Plants vs Enviromental Justice Areas"),
-  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
-  br(),
-  br(),
-  br(),
-  h2(style = "text-align:center; font-size:18px;", "Distribution of Power Plants"),
-  br(),
-  
-  column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
-  br(),
-  
-  column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
-  br(),
-  br(),
-  
-  column(12, align = "center", plotOutput(outputId = "pp_pop_all", height = 400, width = 600)),
-  br(),
-  
-  column(12, align = "center", plotOutput(outputId = "pp_pop_ej", height = 400, width = 600)),
-  
-  ###================================ AQ + EJ ===============================###
+ 
+  ###================================ HERC ===============================###
   
   column(12, align = "center", leafletOutput(outputId = 'pp_aq_ej', height = 400, width = 600)),
   

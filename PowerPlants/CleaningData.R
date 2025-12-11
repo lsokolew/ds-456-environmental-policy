@@ -3,7 +3,10 @@ library(tidycensus)
 library(dplyr)
 library(tidyverse)
 library(sf)
-
+library(ggthemes)
+library(ggplot2)
+library(gganimate)
+library(gifski)
 
 ###==================== Load in data ===================###
 
@@ -58,6 +61,10 @@ mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
   mutate(GEOID = as.double(GEOID),
          County = gsub(" County", "", NAMELSADCO))  %>%
   select(GEOID, geometry, County) 
+
+mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
+
+
 
 ###==================== Wrangling ====================###
 
@@ -244,6 +251,54 @@ herc <- powerplants_with_ej %>%
 #             plants_per_10k = (plant_count / total_population) * 10000)
 
 
+# Animations for powerplant
+max_year <- 2025
+
+mn_powerplants_over_time <- mn_powerplants %>%
+  select(plant_code, longitude, latitude, first_op_date, first_op_year) %>%
+  filter(!is.na(longitude) & !is.na(latitude)) %>%
+  rowwise() %>%
+  mutate(years_active = list(first_op_year:max_year)) %>% 
+  unnest(years_active) %>%                                 
+  rename(year = years_active) %>%
+  mutate(is_current_year = ifelse(year == first_op_year, "New", "Old"))
+
+
+p_map <-ggplot() +
+  geom_sf(data = mn_counties, fill = NA, color = "black", size = 0.1) +
+  geom_point(data = mn_powerplants_over_time, 
+             aes(longitude, latitude,color = is_current_year),
+             size = 1, alpha = 2) +
+  scale_color_manual(values = c("New" = "#D14F0F", "Old" = "grey")) +
+  coord_sf() +
+  
+  theme_void() +
+  theme(
+    legend.position = "top",
+    panel.background = element_rect(fill = "transparent", color = NA),
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.grid = element_blank(),
+    strip.background = element_blank(),
+    legend.background = element_rect(fill = "transparent", color = NA),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  labs(title = "Year: {frame_time}", color = "") +
+  transition_time(year) +
+  ease_aes("linear") 
+
+
+animate(
+  p_map,
+  fps = 10,
+  duration = 20,
+  width = 600,
+  height = 500,
+  renderer = gifski_renderer("www/animations/powerplants_animation.gif"),
+  bg = 'transparent'
+)
+
+
 ###==================== Write as csv ===================###
 
 # overall
@@ -264,3 +319,4 @@ st_write(plants_in_ej_counts, "plants_in_ej_counts.shp", row.names = FALSE)
 st_write(metro_area_pp, "metro_area_pp.shp", row.names = FALSE)
 
 st_write(powerplants_sf, "powerplants_sf.shp", row.names = FALSE)
+
