@@ -189,7 +189,7 @@ server = function(input, output, session){
         radius = 2,
         color = "#838383",
         fillOpacity = 0.8,
-        label = ~paste0("Power Plant: ", plant_name)
+        label = ~paste0("Power Plant: ", plant_name, " (", prim_source, ")")
       ) %>%
       # --- Air monitors ---
       addCircleMarkers(
@@ -201,17 +201,17 @@ server = function(input, output, session){
       ) %>%
       addLegend(
         position = "topright",
-        title = "Where Are Air Monitors?",
+        title = "What's in the Twin Cities?",
         colors = c(
           "darkgreen",   # EJ areas
-          "lightblue",   # Monitor buffers
           "#838383",    # Power plants
+          "lightblue",   # Monitor buffers
           "steelblue"    # Air monitors
         ),
         labels = c(
           "Environmental Justice Area",
-          "3-mile Buffer",
           "Power Plant",
+          "3-mile Buffer",
           "Air Monitor"
         ),
         opacity = 1
@@ -234,12 +234,17 @@ server = function(input, output, session){
   grouped_summ_pm25_allyears <- map(years, calc_avg_pm25) %>% list_rbind()
 
   output$grouped_summ_lineplot = renderPlot({
-  ggplot(grouped_summ_pm25_allyears) +
-    geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
-    labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
+    ggplot(grouped_summ_pm25_allyears) +
+      geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
+      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      annotate("text", x = 2015,
+               y = 9.4, hjust = 0,
+               label = "National Standard \nfor Annual PM2.5",
+               color = "darkgray") +
+      labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
-    theme_minimal()
+      theme_minimal()
   }, bg = "transparent")
   
   
