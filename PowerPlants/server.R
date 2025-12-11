@@ -153,6 +153,10 @@ server = function(input, output, session){
   air_buffers <- st_transform(air_buffers_proj, 4326)
   
   output$monitor_buffers = renderLeaflet({
+    pal_buffers <- colorNumeric(
+      palette = "Blues",        # built-in blue gradient
+      domain = air_buffers$nearby_pp_count
+    )
     
     leaflet()  %>%
       addPolygons(data = mn_tracts,
@@ -175,10 +179,10 @@ server = function(input, output, session){
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       # --- 3-mile buffers around monitors ---
       addPolygons(
-        data = air_buffers %>% filter(year == 2015, nearby_pp_count > 0),
-        fillColor = "lightblue",
-        fillOpacity = 0.4,
-        color = "steelblue",
+        data = air_buffers %>% filter(year == 2015),
+        fillColor = ~pal_buffers(nearby_pp_count),
+        fillOpacity = 0.5,
+        color = "darkblue",
         weight = 1,
         label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
       ) %>%
@@ -186,35 +190,35 @@ server = function(input, output, session){
       addCircleMarkers(
         data = mn_pp_sf,
         radius = 2,
-        color = "#838383",
+        color = "black",
         fillOpacity = 0.8,
-        label = ~paste0("Power Plant: ", plant_name)
+        label = ~paste0("Power Plant: ", plant_name, " (", prim_source, ")")
       ) %>%
       # --- Air monitors ---
       addCircleMarkers(
         data = AirData_sf %>% filter(year == 2015),
         radius = .5,
-        color = "steelblue",
+        color = "darkblue",
         fill = TRUE,
         fillOpacity = 1
       ) %>%
       addLegend(
         position = "topright",
-        title = "Where Are Air Monitors?",
+        title = "What's in the Twin Cities?",
         colors = c(
           "darkgreen",   # EJ areas
+          "black" ,  # Power plants
           "lightblue",   # Monitor buffers
-          "#838383",    # Power plants
-          "steelblue"    # Air monitors
+          "darkblue"    # Air monitors
         ),
         labels = c(
           "Environmental Justice Area",
-          "3-mile Buffer (≥1 Nearby Plant)",
           "Power Plant",
+          "3-mile Buffer",
           "Air Monitor"
         ),
         opacity = 1
-      )
+      ) 
   })
   
   
@@ -223,7 +227,8 @@ server = function(input, output, session){
   calc_avg_pm25 <- function(year_spec){
     air_buffers %>% 
       filter(year == year_spec) %>% 
-      group_by(nearby_pp_count) %>% 
+      mutate(grouped_nearby_pp_count = ifelse(nearby_pp_count > 1, "2+", as.character(nearby_pp_count))) %>% 
+      group_by(grouped_nearby_pp_count) %>% 
       summarise(avg_pm25_grouped = mean(avg_pm25)) %>% 
       mutate(year = year_spec)
   }
@@ -232,12 +237,17 @@ server = function(input, output, session){
   grouped_summ_pm25_allyears <- map(years, calc_avg_pm25) %>% list_rbind()
 
   output$grouped_summ_lineplot = renderPlot({
-  ggplot(grouped_summ_pm25_allyears) +
-    geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(nearby_pp_count)), color = fct_rev(as.factor(nearby_pp_count)))) +
-    labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
+    ggplot(grouped_summ_pm25_allyears) +
+      geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
+      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      annotate("text", x = 2015,
+               y = 9.2, hjust = 0,
+               label = "National Standard",
+               color = "darkgray") +
+      labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
-    theme_minimal()
+      theme_minimal()
   }, bg = "transparent")
   
   
@@ -271,30 +281,30 @@ server = function(input, output, session){
     )) %>%
     filter(!is.na(period))
   
-  aq_changes_summ <- aq_changes %>%
-    group_by(site_num, plant_id) %>%
-    summarize(
-      before = avg_pm25[period == "before"],
-      after  = avg_pm25[period == "after"],
-      change = after - before
-    ) %>% 
-    pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
-
-  output$one_yr_aq_change_lineplot = renderPlot(
-    {ggplot(aq_changes_summ) +
-    geom_point(aes(x = fct_relevel(period, c("before", "after")),  
-                   y = avg_pm25_annual, 
-                   group = site_num, color = site_num)) +
-    geom_line(aes(x = fct_relevel(period, c("before", "after")),  
-                  y = avg_pm25_annual, 
-                  group = site_num, color = site_num)) +
-      scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Near Road I-35/I-94", "Andersen School")) +
-    theme_minimal() +
-    labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
-         x = "Year (Relative to Plant Beginning Operations)",
-         y = "PM2.5 Concentration (µg/m3)",
-         color = "Air Monitor Site")
-  }, bg = "transparent")
+  # aq_changes_summ <- aq_changes %>%
+  #   group_by(site_num, plant_id) %>%
+  #   summarize(
+  #     before = avg_pm25[period == "before"],
+  #     after  = avg_pm25[period == "after"],
+  #     change = after - before
+  #   ) %>% 
+  #   pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
+  # 
+  # output$one_yr_aq_change_lineplot = renderPlot(
+  #   {ggplot(aq_changes_summ) +
+  #   geom_point(aes(x = fct_relevel(period, c("before", "after")),  
+  #                  y = avg_pm25_annual, 
+  #                  group = site_num, color = site_num)) +
+  #   geom_line(aes(x = fct_relevel(period, c("before", "after")),  
+  #                 y = avg_pm25_annual, 
+  #                 group = site_num, color = site_num)) +
+  #     scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Near Road I-35/I-94", "Andersen School")) +
+  #   theme_minimal() +
+  #   labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
+  #        x = "Year (Relative to Plant Beginning Operations)",
+  #        y = "PM2.5 Concentration (µg/m3)",
+  #        color = "Air Monitor Site")
+  # }, bg = "transparent")
   
   ff_status <- mn_powerplants %>%
   group_by(county) %>%
@@ -309,6 +319,11 @@ server = function(input, output, session){
       mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
       ggplot(aes(x = year, y = avg_pm25_grouped, group = county_name, color = plant_group)) +
         geom_line(alpha = 0.4) + #  individual counties
+      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      annotate("text", x = 2015,
+               y = 9.3, hjust = 0,
+               label = "National Standard",
+               color = "darkgray") +
         stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # mean trend
         labs(
           title = "Average PM2.5 Concentration by County Type",
@@ -327,6 +342,7 @@ server = function(input, output, session){
 
   ###================================ Health ===============================###
   
+  mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----
@@ -350,13 +366,13 @@ server = function(input, output, session){
           weight = 2,
           color = "white"
         ),
-        # label = ~paste0(
-        #   "Zipcode: ", ZCTA5CE20, "<br>",
-        #   "Rate: ",
-        #   ifelse(is.na(`Age-adjusted rate per 10,000`),
-        #          "Not given due to small population",
-        #          `Age-adjusted rate per 10,000`)
-        # ),
+         label = ~paste0(
+           "Zipcode: ", ZCTA5CE, "<br>",
+           "Rate: ",
+           ifelse(is.na(A.rp10.),
+                  "Not given due to small population",
+                  A.rp10.)
+         ),
         labelOptions = labelOptions(
           style = list("white-space" = "pre-line")
         )
@@ -370,19 +386,17 @@ server = function(input, output, session){
         na.label = "Not given"
       ) %>%
       addLegend(
-        data = mn_powerplants,
-        pal = pal3,
-        values = ~fossil_fuel,
+        colors = "red",
+        labels = "Fossil Fuel Plant",
         opacity = 0.7,
-        title = "Renewable or Fossil Fuel",
-        position = "bottomright",
-        na.label = "Not given") %>%
+        position = "bottomright"
+      ) %>%
       addCircleMarkers(
-        data = mn_powerplants,
+        data = mn_powerplants_nonrenewable,
         lng = ~longitude,
         lat = ~latitude,
-        color = ~pal3(fossil_fuel),
-        radius = 3,        # 0.25 is too small to see
+        color = "red",
+        radius = 3,
         fillOpacity = 1,
         label = ~paste0(
           "Plant Name: ", plant_name, "<br>",
