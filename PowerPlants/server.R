@@ -19,7 +19,6 @@ server = function(input, output, session){
   
 ###================================ Opening ===============================###
 
-
   output$animated_map <- renderImage({
     list(
       src = "www/animations/powerplants_animation.gif",
@@ -30,7 +29,6 @@ server = function(input, output, session){
   }, deleteFile = FALSE)
   
   
- 
   ###================================ Power Plants ===============================###
   
   output$intereactive_pp_types = renderLeaflet({
@@ -447,19 +445,6 @@ output$pp_ej_re <- renderLeaflet({
 
 })
 
-herc<- powerplants %>% filter(plnt_cd == 10013)
-
-#plants_proj <- st_transform(herc, crs = 26915)
-plants_proj <- st_transform(herc, crs = 26915)
-
-buffer_distance <- 1609.34 * 1
-herc_buffer <- st_buffer(plants_proj, dist = buffer_distance)
-
-herc_buffer <- st_transform(herc_buffer, crs = 4326)
-
-income_cols <- c("#519465","#CF74B6", "#FFFFFF","#F7F4BA", "#FCF688") 
-
-new_palette <- colorBin(palette = income_cols, domain = metro_area$prppoc, bins = 5)
 
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%
@@ -467,7 +452,7 @@ output$pp_ej_re <- renderLeaflet({
     addProviderTiles("CartoDB.Positron") %>%
     addPolygons(
       data = metro_area,
-      fillColor = ~new_palette(prppoc), 
+      fillColor = ~herc_cols(prppoc), 
       fillOpacity = 0.7, 
       color = "white", 
       weight = 1
@@ -485,5 +470,3 @@ output$pp_ej_re <- renderLeaflet({
                      color = "#d95f02", radius = 1) 
   })
 }
-
-

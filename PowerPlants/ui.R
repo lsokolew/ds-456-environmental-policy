@@ -30,17 +30,21 @@ ui <- navbarPage(
     title = "Article",
     fluidPage(
     
-    # story title & authors  
+    # story title
       h1(style = "text-align:center; font-size:80px;", strong("Power Plants in Minnesota")),
-      h2(style = "text-align:center; font-size:22px;", "Where are they? Whom do they impact? How do they impact people?"),
-      h2(style = "text-align:center; font-size:13px;", "By Alicia Severiano Perez, Sydney Ohr, and Lilabeth Sokolewicz"),
-
     # main
       column(12, align = "center", imageOutput(outputId = 'animated_map', height = 400, width = 600)),
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    
+    h2(style = "text-align:center; font-size:22px;", "Where are they? Whom do they impact? How do they impact people?"),
+    h2(style = "text-align:center; font-size:13px;", "By: Alicia Severiano Perez, Sydney Ohr, Lilabeth Sokolewicz"),
+    br(),
+    br(),
 
-  br(),
-  br(),
-  br(),
   ##=================Introduction=================##
   div(
     style = "
@@ -49,13 +53,13 @@ ui <- navbarPage(
     text-align: justify; 
     font-size: 18px; 
     font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(context)),
+    color: #4a4a4a;",HTML(intro)),
   
   ##=================Power Plants=================##
 
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("Power Plants in Minnesota")),
+  h2(style = "text-align:center; font-size:22px;", strong("How do the Plants Work? and what types are in MN")),
 
   column(12, align = "center", leafletOutput(outputId = "intereactive_pp_types", height = 400, width = 600)),
   br(),
@@ -108,7 +112,7 @@ ui <- navbarPage(
   ##=================EJ areas=================##
   br(),
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("Demographics")),
+  h2(style = "text-align:center; font-size:22px;", strong("How is Minnesota Protecting the most vulnerable?")),
   
   # DIV 1: choose how the text should be formated
   div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -126,23 +130,20 @@ ui <- navbarPage(
   column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
   br(),
   br(),
-  
-  h2(style = "text-align:center; font-size:18px;", "Renewable Energy Power Plants vs Enviromental Justice Areas"),
-  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
-  
-  h2(style = "text-align:center; font-size:18px;", "Distribution of Power Plants"),
-  br(),
-  
-  column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
-  br(),
-  
-  column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
-  
+
+  # h2(style = "text-align:center; font-size:18px;", "Distribution of Power Plants"),
+  # br(),
+  # 
+  # column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
+  # br(),
+  # 
+  # column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
+  # 
   
   ##=================Air Quality=================##
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("Air Quality")),
+  h2(style = "text-align:center; font-size:22px;", strong("What is going on with the Air quality?")),
   
   div(
     style = "
@@ -188,7 +189,7 @@ ui <- navbarPage(
   br(),
   br(),
   
-  h2(style = "text-align:center; font-size:22px;", strong("Asthma and Power Plants")),
+  h2(style = "text-align:center; font-size:22px;", strong("How are people's health impacted?")),
   
   div(
     style = "
@@ -214,8 +215,16 @@ ui <- navbarPage(
 
  
   ###================================ HERC ===============================###
+  br(),
+  br(),
+  h2(style = "text-align:center; font-size:22px;", strong("Diving into the HERC")),
   
-  column(12, align = "center", leafletOutput(outputId = 'pp_aq_ej', height = 400, width = 600)),
+  h2(style = "text-align:center; font-size:18px;", "Where is it located"),
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
+  
+
+  
+  h2(style = "text-align:center; font-size:22px;", strong("So what now?")),
   
     ) # closing fluidpage
   ), # Closing tab #1

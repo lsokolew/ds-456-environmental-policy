@@ -258,23 +258,23 @@ mn_powerplants_over_time <- mn_powerplants %>%
   select(plant_code, longitude, latitude, first_op_date, first_op_year) %>%
   filter(!is.na(longitude) & !is.na(latitude)) %>%
   rowwise() %>%
-  mutate(years_active = list(first_op_year:max_year)) %>% 
-  unnest(years_active) %>%                                 
-  rename(year = years_active) %>%
-  mutate(is_current_year = ifelse(year == first_op_year, "New", "Old"))
+  mutate(year = list(first_op_year:max_year)) %>% 
+  unnest(year) %>%                                 
+  mutate(is_current_year = ifelse(year == first_op_year, "New", "Old")) %>%
+  mutate(display = year >= first_op_year) %>%
+  arrange(year)
 
 
 p_map <-ggplot() +
-  geom_sf(data = mn_counties, fill = NA, color = "black", size = 0.1) +
-  geom_point(data = mn_powerplants_over_time, 
-             aes(longitude, latitude,color = is_current_year),
-             size = 1, alpha = 2) +
-  scale_color_manual(values = c("New" = "#D14F0F", "Old" = "grey")) +
+  geom_sf(data = mn_counties, fill = NA, color = "#454545", size = 0.1) +
+  geom_point(
+    data = mn_powerplants_over_time %>% filter(display),
+    aes(longitude, latitude, color = is_current_year),
+    size = 1.75, alpha = 0.9) +
+  scale_color_manual(values = c("New" = "#F2447E", "Old" = "#A19F9F")) +
   coord_sf() +
-  
   theme_void() +
   theme(
-    legend.position = "top",
     panel.background = element_rect(fill = "transparent", color = NA),
     plot.background = element_rect(fill = "transparent", color = NA),
     panel.grid = element_blank(),
@@ -283,17 +283,16 @@ p_map <-ggplot() +
     axis.text = element_blank(),
     axis.ticks = element_blank()
   ) +
-  labs(title = "Year: {frame_time}", color = "") +
-  transition_time(year) +
-  ease_aes("linear") 
+  labs(title = "Year: {current_frame}", color = "") +
+  transition_manual(year) 
 
 
 animate(
   p_map,
   fps = 10,
-  duration = 20,
+  duration = 30,
   width = 600,
-  height = 500,
+  height = 400,
   renderer = gifski_renderer("www/animations/powerplants_animation.gif"),
   bg = 'transparent'
 )
