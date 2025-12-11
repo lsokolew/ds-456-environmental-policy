@@ -79,9 +79,7 @@ powerplant_dates_retired_mn <- powerplant_dates_retired %>%
 mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
 
-mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel"
 
-write_csv(mn_powerplants, "mn_powerplants.csv")
 ```
 
 
@@ -120,8 +118,9 @@ mn_powerplants <- mn_powerplants %>%
          ) 
 mn_powerplants
 
-write_csv(mn_powerplants, "mn_powerplants.csv")
+mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel"
 
+write_csv(mn_powerplants, "mn_powerplants.csv")
 
 # Health
 copd <- read_csv("Data/copd.csv")
@@ -185,22 +184,18 @@ copd_total_hospitalizations %>%
 ASTHMA
 
 ```{r}
-
+mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
 pal <- colorFactor(
   palette = c("lightblue", "steelblue", "royalblue4", "navy"),  
   levels = c("0-2", "2-4", "4-7", "7+"),
   na.color = "grey")
-
-pal3 <- colorFactor(
-  palette = c("red", "green"),
-  domain = mn_powerplants$fossil_fuel)
 
 
 plot <- leaflet(zcta_joined) %>%
   setView(lng = -93.265, lat = 44.9778, zoom = 10) %>%
   addTiles() %>%
   addPolygons(
-    fillColor = ~pal(value_cat),
+    fillColor = ~pal(valu_ct),
     color = "black",
     weight = 1,
     opacity = 1,
@@ -209,32 +204,32 @@ plot <- leaflet(zcta_joined) %>%
       weight = 2,
       color = "white"),
     label = ~paste0(
-      "Zipcode: ", ZCTA5CE20, "\n",
-      "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`))) %>%
+      "Zipcode: ", ZCTA5CE, "\n",
+      "Rate: ", ifelse(is.na(A.rp10.), "Not given due to small population", A.rp10.))) %>%
   addLegend(
     pal = pal,
-    values = ~value_cat,
+    values = zcta_joined$valu_ct,
     opacity = 0.7,
-    title = "Asthma related hospitalizations per 10,000 between 2017-2021",
+    title = "Asthma hospitalizations per 10,000 (2017–2021)",
     position = "bottomright",
-    na.label = "Not given") %>%
-   addLegend(
-    data = mn_powerplants,
-    pal = pal3,
-    values = ~fossil_fuel,
+    na.label = "Not given"
+  ) %>%
+ addLegend(
+    colors = "red",
+    labels = "Fossil Fuel Plant",
     opacity = 0.7,
-    title = "Renewable or Fossil Fuel",
-    position = "bottomright",
-    na.label = "Not given") %>%
+    position = "bottomright"
+  ) %>%
   addCircleMarkers(
-    color = ~pal3(fossil_fuel),
-    data = mn_powerplants,
+    data = mn_powerplants_nonrenewable,
     lng = ~longitude,
     lat = ~latitude,
-    radius = 0.25,
+    color = "red",
+    radius = 3,
     fillOpacity = 1,
-    label = ~paste0("Plant Name: ", plant_name, "\n", 
-                    "Plant Code:", plant_code))
+    label = ~paste0(
+      "Plant Name: ", plant_name, "<br>",
+      "Plant Code: ", plant_code))
 
 plot
 
@@ -486,25 +481,19 @@ school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
 schools_near_pp_and_in_ej <- school_proj %>%
   filter(within_1mile_pp & schools_in_ej)
 
-ggplot(school_proj, aes(x = nearest_pp_dist_mi, 
-                        color = schools_in_ej)) +
-  geom_point(alpha = 0.7) +
-  labs(title = "Distance of Schools to Nearest Power Plant",
-       x = "Distance (miles)", color = "In EJ Area?")
 
 distinct_schools <- school_proj %>% 
   distinct(GISADDR, .keep_all = TRUE) 
 
 metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422, 55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121, 55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070, 55079, 55092, 55303)
 
-school_proj <- school_proj %>% 
-  str_extract(distinct_schools$GISADDR, "\\d{5}") %>%
-  filter()
+distinct_schools <- distinct_schools %>% mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips)
 
   ggplot(distinct_schools,aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
-  geom_boxplot() +
+  geom_violin() +
   labs(title = "Distance to Nearest Power Plant by EJ Status",
-       x = "In EJ Area?", y = "Distance (miles)")
+       x = "In EJ Area?", y = "Distance (miles)") +
+    stat_summary(fun = median, geom = "point", size = 2, color = "red")
 
   
   

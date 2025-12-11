@@ -376,7 +376,6 @@ server = function(input, output, session){
         colors = "red",
         labels = "Fossil Fuel Plant",
         opacity = 0.7,
-        title = "Fossil Fuel Plants",
         position = "bottomright"
       ) %>%
       addCircleMarkers(
