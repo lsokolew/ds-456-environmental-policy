@@ -123,7 +123,7 @@ ui <- navbarPage(
         "<style>  b { 
         background-color: #FFF59D;  /* soft yellow highlight */
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
-        ej_areas))), # close div
+        ej_text))), # close div
   
   h2(style = "text-align:center; font-size:18px;", "Fossil Fuel Power Plants vs Enviromental Justice Areas"),
   
@@ -220,7 +220,7 @@ ui <- navbarPage(
   h2(style = "text-align:center; font-size:22px;", strong("Diving into the HERC")),
   
   h2(style = "text-align:center; font-size:18px;", "Where is it located"),
-  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
+   column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
   
 
   

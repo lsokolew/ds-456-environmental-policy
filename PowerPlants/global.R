@@ -25,9 +25,20 @@ powerplants <- st_read("powerplants_sf.shp")
 
 # plants_in_ej_counts <- st_read("plants_in_ej_counts.shp")
 
+metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 
+                55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422,
+                55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 
+                55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 
+                55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121,
+                55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 
+                55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 
+                55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 
+                55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 
+                55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070,
+                55079, 55092, 55303)
+
 
 ###================================ Colors/Fonts/ETC ================================###
-
 
 
 # Colors/Fonts
@@ -108,7 +119,7 @@ location of the remaining fossil-fuel plants, major sources of pollution, has th
 "
 
 
-ej_areas <- "Research has found power plants are more likely to be built around redlining neighborhoods,
+ej_text <- "Research has found power plants are more likely to be built around redlining neighborhoods,
 particularly fossil fuel power plants/coal-powered power plants. As a result, already struggling communities
 take on additional health burdens. This is particularly true when it comes to health effects, as there have
 been relationships found between the implementation of power plants and high levels of bad air quality.
