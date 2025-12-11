@@ -17,7 +17,6 @@ server = function(input, output, session){
   
 ###================================ Opening ===============================###
   
-
   map_df = reactive({
 
     mn_powerplants %>%
@@ -395,56 +394,27 @@ server = function(input, output, session){
 
 ###================================ EJ ===============================###
 
-# Plot Fossil Fuel
-
-# output$pp_ej_ff <- renderLeaflet({
-# leaflet() %>%
-#   addPolygons(data = mn_tracts,
-#               color = "black",
-#               fillOpacity = 0,
-#               weight = 0.5) %>%
-#   addPolygons(
-#     data = ej_sf,
-#     fillColor = ~pal1(EJ_area),
-#     fillOpacity = 0.7,
-#     color = "white",
-#     weight = 0.15
-#   ) %>%
-#   addLegend(
-#     pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-#   addCircleMarkers(
-#     data = fossil_power_plants,
-#     lng = ~longitude,
-#     lat = ~latitude,
-#     radius = 1.75,
-#     fillOpacity = 0.75,
-#     opacity = 0.1,
-#     color = "#000000")
-# 
-# })
-
-
-
-output$pp_ej_ff = renderLeaflet({
-  leaflet() %>%
-    addProviderTiles("CartoDB.Positron") %>%
-    addPolygons(
-      data = ej_sf,
-      fillColor = ~pal1(EJ_area),
-      fillOpacity = 0.7,
-      color = "white",
-      weight = 0.15
-    ) %>%
-    addPolygons(
-      data = tribal_shp_wgs,
-      color = "red",         
-      fillOpacity = 0.3,    
-      weight = 1,            
-    ) %>%
-    addLegend(
-      pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-    setView(lng = -94.6, lat = 46.4, zoom = 6) 
-})
+ # EJ Areas
+  output$pp_ej_ff = renderLeaflet({
+    leaflet() %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      addPolygons(
+        data = ej_sf,
+        fillColor = ~pal1(EJ_area),
+        fillOpacity = 0.7,
+        color = "white",
+        weight = 0.15
+      ) %>%
+      addPolygons(
+        data = tribal_shp_wgs,
+        color = "red",         
+        fillOpacity = 0.3,    
+        weight = 1,            
+      ) %>%
+      addLegend(
+        pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+      setView(lng = -94.6, lat = 46.4, zoom = 6) 
+  })
 
 
 # Plot renable Fuel
@@ -491,126 +461,45 @@ output$pp_ej_re <- renderLeaflet({
 
 })
 
+herc<- powerplants %>% filter(plnt_cd == 10013)
 
-# ## Counts of power plants per census tracts
-# 
-# output$pp_count_all = renderPlot({
-# 
-#   plants_in_ej_counts %>%
-#     ggplot(aes(x = plant_count)) +
-#     geom_histogram(binwidth = 1, fill = "#c44900", color = "white") +
-#     theme_classic() +
-#     facet_wrap(~fossil_fuel + EJ_OR_NOT) +
-#     labs(title = "Distribution of Power Plants per Census Tract",
-#          subtitle = "Comparison by energy type and Environmental Justice area status",
-#          x = "Number of Power Plants per Census Tract", y = "Number of Census Tracts") +
-#     theme_1
-#     }, bg = "transparent")
-# 
-# 
-#   output$pp_count_ej = renderPlot({
-#     
-#     plants_in_ej_counts %>%
-#     filter(EJ_OR_NOT == TRUE) %>%
-#     ggplot(aes(x = plant_count)) +
-#     geom_histogram(binwidth = 1, fill = "#22577a", color = "white") +
-#     theme_classic() +
-#     facet_wrap(~fossil_fuel) +
-#     labs(title = "Distribution of Power Plants per Census Tract",
-#        subtitle = "Comparison by energy type for Enviromental Justice Areas",
-#        x = "Number of Power Plants per Census Tract", y = "Number of Census Tracts") +
-#       theme_1
-#     }, bg = "transparent")
-#   
-# ## Populations to where power plants are at
-# 
-# # Plot all
-# 
-# output$pp_pop_all = renderPlot({
-#   
-#   plants_per_pop %>%
-#     ggplot(aes(x = plants_per_10k)) +
-#     geom_histogram( fill = "#c44900", color = "white") +
-#     theme_classic() +
-#     facet_wrap(~fossil_fuel + EJ_OR_NOT) +
-#     labs(title = "Distribution of Power Plants per 10,000 People",
-#          subtitle = "For type of power plants and environmental justice designation",
-#          x = "Power Plants per 10,000 Resident in Census Tract", y = "Count of Census Tracts") +
-#     theme_1
-#   }, bg = "transparent")
-# 
-# # Plot on EJ
-# output$pp_pop_ej = renderPlot({
-#   plants_per_pop %>%
-#     filter(EJ_OR_NOT == TRUE) %>%
-#     ggplot(aes(x = plants_per_10k)) +
-#     geom_histogram( fill = "#22577a", color = "white") +
-#     theme_classic() +
-#     facet_wrap(~fossil_fuel) +
-#     labs(title = "Distribution of Power Plants per 10,000 People",
-#          subtitle = "For each type of power plants in enviromental Justice Areas",
-#          x = "Power Plants per 10,000 Resident in Census Tract", y = "Count of Census Tracts") +
-#     theme_1
-# }, bg = "transparent")
-# 
-  
-  ###================================ AQ + EJ ===============================###
-  
+#plants_proj <- st_transform(herc, crs = 26915)
+plants_proj <- st_transform(herc, crs = 26915)
 
-  # output$pp_aq_ej <- renderLeaflet({
-  #   leaflet() %>%
-  #     addPolygons(data = mn_tracts,
-  #                 color = "black",
-  #                 fillOpacity = 0,
-  #                 weight = 0.5) %>%
-  #     addPolygons(
-  #       data = ej_sf,
-  #       fillColor = ~ifelse(EJ_OR_NOT, "darkgreen", "gray"),
-  #       fillOpacity = 0.7,
-  #       color = "white",
-  #       weight = 0.15
-  #     ) %>%
-  #     addPolygons(
-  #       data = tribal_shp_wgs,
-  #       color = "red",         
-  #       fillOpacity = 0.3,     
-  #       weight = 1,           
-  #     ) %>%
-  #     addCircleMarkers(
-  #       data = AirData_sf, #%>% filter(year == 2015),
-  #       radius = .5,
-  #       color = "blue",
-  #       fill = TRUE,
-  #       fillOpacity = 1
-  #     ) %>%
-  # 
-  #     addLegend(
-  #       position = "topright",
-  #       title = "AQ Monitors & EJ tracts",
-  #       colors = c("darkgreen", "blue"),
-  #       labels = c(
-  #         "EJ Tract",
-  #         "AQ Monitor"
-  #       ))
-  # 
-  #   addCircleMarkers(data = mn_powerplants, 
-  #                    color = ~if_else(fossil_fuel == "Fossil Fuel", "#d95f02", "#1b9e77"), 
-  #                    radius = ~rescale(total_mw, to = c(1, 16)),
-  #                    #stroke = FALSE,
-  #                    label = ~paste0(plant_name, " (", prim_source, " - ", total_mw, " megawatt(s))")
-  #   ) %>%
-  #     
-  #     addLegend(
-  #       position = "topright",
-  #       title = "Power Plants by \nProduction (MW)",
-  #       colors = c("#d95f02", "#1b9e77"),
-  #       labels = c(
-  #         "Fossil Fuel",
-  #         "Renewable"
-  #       )
-  #     )
-  # 
-  # })
+buffer_distance <- 1609.34 * 1
+herc_buffer <- st_buffer(plants_proj, dist = buffer_distance)
+
+herc_buffer <- st_transform(herc_buffer, crs = 4326)
+
+income_cols <- c("#519465","#CF74B6", "#FFFFFF","#F7F4BA", "#FCF688") 
+
+new_palette <- colorBin(palette = income_cols, domain = metro_area$prppoc, bins = 5)
+
+
+
+output$pp_ej_re <- renderLeaflet({
+  leaflet() %>%
+    setView(lng = -93.265, lat = 44.9778, zoom = 13) %>%
+    addProviderTiles("CartoDB.Positron") %>%
+    addPolygons(
+      data = metro_area,
+      fillColor = ~new_palette(prppoc), 
+      fillOpacity = 0.7, 
+      color = "white", 
+      weight = 1
+    ) %>%
+    addLegend(pal = new_palette, values = metro_area$prppoc) %>%
+
+    addPolygons(
+      data = herc_buffer ,
+      fillColor = "lightblue",
+      fillOpacity = 0.4,
+      color = "steelblue",
+      weight = 1
+    )  %>%
+    addCircleMarkers(data = mn_powerplants %>% filter (plant_code == 10013), 
+                     color = "#d95f02", radius = 1) 
+  })
 }
 
 

@@ -194,9 +194,14 @@ ej_tracts_sf <- st_transform(ej_tracts_sf, st_crs(powerplants_sf))
 ## Join data
 powerplants_with_ej <- st_join(
   ej_tracts_sf,
-  powerplants_sf %>% select(plant_name, total_mw, fossil_fuel, county, zip),
+  powerplants_sf %>% select(plant_name, total_mw, fossil_fuel, county, zip, plant_code),
   join = st_contains) %>%
   mutate(power_plant_or_not = !is.na(plant_name))
+
+metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
+  
+your_points <- st_as_sf(your_data, coords = c("lon", "lat"), crs = 4326)
+
 
 
 tt <- powerplants_with_ej %>%
@@ -208,6 +213,10 @@ full <- powerplants_with_ej %>%
   group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
   summarize(count = n())
 
+
+herc <- powerplants_with_ej %>%
+  filter(plant_code == 10013) %>%
+  select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
 
 
 
@@ -257,4 +266,6 @@ st_write(ej_sf, "ej_sf.shp", row.names = FALSE)
 st_write(plants_in_ej_counts, "plants_in_ej_counts.shp", row.names = FALSE)
 # st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
 
+st_write(metro_area_pp, "metro_area_pp.shp", row.names = FALSE)
 
+st_write(powerplants_sf, "powerplants_sf.shp", row.names = FALSE)
