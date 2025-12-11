@@ -23,6 +23,8 @@ ej_shp <- st_read("Data/ej_mpca_census.shp")
 metro_area <- st_read("metro_area_pp.shp")
 powerplants <- st_read("powerplants_sf.shp")
 
+tribal_shp_wgs <- st_read ("Data/tribal_areas/census_tribal_areas.shp")
+
 # plants_in_ej_counts <- st_read("plants_in_ej_counts.shp")
 
 metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 

@@ -399,7 +399,7 @@ server = function(input, output, session){
   school_proj$within_1mile_pp <- apply(school_pp_dist, 1, function(x) any(x <= 1609.34))
   table(school_proj$within_1mile_pp)
 
-  
+  # New Line- ALICA
   school_proj <- st_transform(school_proj, st_crs(ej_sf))
   
   schools_in_ej <- st_within(school_proj, ej_sf)
@@ -433,7 +433,7 @@ server = function(input, output, session){
       labs(title = "Distance to Nearest Power Plant by EJ Status",
            x = "In EJ Area?", y = "Distance (miles)") +
       stat_summary(fun = median, geom = "point", size = 2, color = "red")+
-      theme
+      theme_1
   }, bg = "transparent")
   
 
@@ -462,49 +462,49 @@ server = function(input, output, session){
   })
 
 
-# Plot renable Fuel
-
-mn_tracts_wgs <- st_transform(mn_tracts, crs = 4326)
-ej_sf_wgs <- st_transform(ej_sf, crs = 4326)
-tribal_shp_wgs <- st_transform(tribal_shp, crs = 4326)
-
-output$pp_ej_re <- renderLeaflet({
-  leaflet() %>%
-    addProviderTiles("CartoDB.Positron") %>%
-    addPolygons(
-      data = ej_sf,
-      fillColor = ~pal1(EJ_area),
-      fillOpacity = 0.7,
-      color = "white",
-      weight = 0.15
-    ) %>%
-    addPolygons(
-      data = tribal_shp_wgs,
-      color = "red",         
-      fillOpacity = 0.3,     
-      weight = 1,           
-    ) %>%
-    addLegend(
-      pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-    setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
-    addCircleMarkers(data = mn_powerplants, 
-                     color = ~if_else(fossil_fuel == "Fossil Fuel", "#d95f02", "#1b9e77"), 
-                     radius = ~rescale(total_mw, to = c(1, 16)),
-                     #stroke = FALSE,
-                     label = ~paste0(plant_name, " (", prim_source, " - ", total_mw, " megawatt(s))")
-    ) %>%
-    
-    addLegend(
-      position = "topright",
-      title = "Power Plants by \nProduction (MW)",
-      colors = c("#d95f02", "#1b9e77"),
-      labels = c(
-        "Fossil Fuel",
-        "Renewable"
-      )
-    )
-
-})
+# # Plot renable Fuel
+# 
+# mn_tracts_wgs <- st_transform(mn_tracts, crs = 4326)
+# ej_sf_wgs <- st_transform(ej_sf, crs = 4326)
+# tribal_shp_wgs <- st_transform(tribal_shp, crs = 4326)
+# 
+# output$pp_ej_re <- renderLeaflet({
+#   leaflet() %>%
+#     addProviderTiles("CartoDB.Positron") %>%
+#     addPolygons(
+#       data = ej_sf,
+#       fillColor = ~pal1(EJ_area),
+#       fillOpacity = 0.7,
+#       color = "white",
+#       weight = 0.15
+#     ) %>%
+#     addPolygons(
+#       data = tribal_shp_wgs,
+#       color = "red",         
+#       fillOpacity = 0.3,     
+#       weight = 1,           
+#     ) %>%
+#     addLegend(
+#       pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+#     setView(lng = -94.6, lat = 46.4, zoom = 6) %>%
+#     addCircleMarkers(data = mn_powerplants, 
+#                      color = ~if_else(fossil_fuel == "Fossil Fuel", "#d95f02", "#1b9e77"), 
+#                      radius = ~rescale(total_mw, to = c(1, 16)),
+#                      #stroke = FALSE,
+#                      label = ~paste0(plant_name, " (", prim_source, " - ", total_mw, " megawatt(s))")
+#     ) %>%
+#     
+#     addLegend(
+#       position = "topright",
+#       title = "Power Plants by \nProduction (MW)",
+#       colors = c("#d95f02", "#1b9e77"),
+#       labels = c(
+#         "Fossil Fuel",
+#         "Renewable"
+#       )
+#     )
+# 
+# })
 
 
 output$pp_ej_re <- renderLeaflet({
@@ -518,7 +518,7 @@ output$pp_ej_re <- renderLeaflet({
       color = "white", 
       weight = 1
     ) %>%
-    addLegend(pal = new_palette, values = metro_area$prppoc) %>%
+    addLegend(pal = herc_cols, values = metro_area$prppoc) %>%
 
     addPolygons(
       data = herc_buffer ,
