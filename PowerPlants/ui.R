@@ -212,10 +212,10 @@ ui <- navbarPage(
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(asthma_plot_one)),
   
-  
   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
   
   
+
  
   ###================================ HERC ===============================###
   br(),
