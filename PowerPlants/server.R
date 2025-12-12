@@ -221,61 +221,6 @@ server = function(input, output, session){
   }, bg = "transparent")
   
   
-  # compare the pollutant concentration the year before and after new plant built
-  
-  # plant_monitor_pairs <- st_intersects(air_buffers, mn_pp_sf)
-  # 
-  # monitor_pp <- tibble(
-  #   site_num = air_buffers$site_num,
-  #   plant_index = pp_within_each_monitor
-  # ) %>%
-  #   unnest(plant_index) %>%                             
-  #   mutate(
-  #     plant_id = mn_pp_sf$plant_code[plant_index],
-  #     plant_year = mn_pp_sf$first_op_year[plant_index]
-  #   ) %>%
-  #   select(-plant_index) %>% 
-  #   distinct() # keep only unique rows
-  # 
-  # # Join to the air quality time series
-  # aq_with_pp <- AirData_allyears %>%
-  #   left_join(monitor_pp, by = "site_num")
-  # 
-  # # ---- 1 year change -----
-  # aq_changes <- aq_with_pp %>%
-  #   filter(!is.na(plant_year)) %>%     # monitors near a plant
-  #   mutate(period = case_when(
-  #     year == plant_year - 1 ~ "before",
-  #     year == plant_year + 1 ~ "after",
-  #     TRUE ~ NA_character_
-  #   )) %>%
-  #   filter(!is.na(period))
-  
-  # aq_changes_summ <- aq_changes %>%
-  #   group_by(site_num, plant_id) %>%
-  #   summarize(
-  #     before = avg_pm25[period == "before"],
-  #     after  = avg_pm25[period == "after"],
-  #     change = after - before
-  #   ) %>% 
-  #   pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
-  # 
-  # output$one_yr_aq_change_lineplot = renderPlot(
-  #   {ggplot(aq_changes_summ) +
-  #   geom_point(aes(x = fct_relevel(period, c("before", "after")),  
-  #                  y = avg_pm25_annual, 
-  #                  group = site_num, color = site_num)) +
-  #   geom_line(aes(x = fct_relevel(period, c("before", "after")),  
-  #                 y = avg_pm25_annual, 
-  #                 group = site_num, color = site_num)) +
-  #     scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Near Road I-35/I-94", "Andersen School")) +
-  #   theme_minimal() +
-  #   labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
-  #        x = "Year (Relative to Plant Beginning Operations)",
-  #        y = "PM2.5 Concentration (µg/m3)",
-  #        color = "Air Monitor Site")
-  # }, bg = "transparent")
-  
   ff_status <- mn_powerplants %>%
   group_by(county) %>%
   summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
@@ -506,14 +451,6 @@ server = function(input, output, session){
 # 
 # })
 
-  
-  # choose the specific power plant (example: row 1)
-  target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
-  # find which air buffers intersect this plant's location
-  hits <- st_intersects(air_buffers_proj, target_pp)
-  # keep only buffers that intersect
-  air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
-
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%
     setView(lng = -93.265, lat = 44.9778, zoom = 13) %>%
@@ -537,4 +474,36 @@ output$pp_ej_re <- renderLeaflet({
     addCircleMarkers(data = mn_powerplants %>% filter (plant_code == 10013), 
                      color = "#d95f02", radius = 1) 
   })
+
+# choose the specific power plant
+target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
+# find which air buffers intersect this plant's location
+hits <- st_intersects(air_buffers_proj, target_pp)
+# keep only buffers that intersect
+air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
+air_buffers_near_target <- st_transform(air_buffers_near_target, 4326)
+
+herc_monitor_avgs <- air_buffers_near_target %>% 
+  group_by(year) %>% 
+  summarize(pm25_avg_by_year = mean(avg_pm25)) %>% 
+  mutate(id = "Near HERC")
+
+all_monitor_avgs <- air_buffers %>% 
+  group_by(year) %>% 
+  summarize(pm25_avg_by_year = mean(avg_pm25)) %>% 
+  mutate(id = "Whole State")
+
+all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
+
+output$herc_lineplot <- renderPlot({
+  # diff between avg of all air monitors in the state and air monitors just near the plant
+  ggplot(all_avgs) +
+    geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
+    scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
+    labs(title = "PM2.5 Concentrations Are Consistently Higher near the HERC",
+         y = "Annual Average PM2.5 Concentration (µg/m3)",
+         x = "Year",
+         color = "Location of Monitor") +
+    theme_classic()
+})
 }

@@ -78,919 +78,919 @@ mn_powerplants <- mn_powerplants %>%
 mn_powerplants %>% filter(plant_code == 1912)
 ```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # read in dataset containing powerplant retirement date, if applicable -->
+# read in dataset containing powerplant retirement date, if applicable
 
-<!-- # powerplant_dates_retired_mn <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>%  -->
+# powerplant_dates_retired_mn <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>%
 
-<!-- #   janitor::clean_names() %>%  -->
+#   janitor::clean_names() %>%
 
-<!-- #   filter(state == "MN") -->
+#   filter(state == "MN")
 
-<!-- # if retired utility code not in  -->
+# if retired utility code not in
 
-<!-- # # get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later) -->
+# # get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later)
 
-<!-- # powerplant_dates_retired_mn <- powerplant_dates_retired_mn %>%  -->
+# powerplant_dates_retired_mn <- powerplant_dates_retired_mn %>%
 
-<!-- #   mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>%  -->
+#   mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>%
 
-<!-- #   group_by(plant_code) %>%  -->
+#   group_by(plant_code) %>%
 
-<!-- #   summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded -->
+#   summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded
 
-<!-- #  -->
+#
 
-<!-- # # join to mn_powerplants -->
+# # join to mn_powerplants
 
-<!-- # mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date)) -->
+# mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
-<!-- ``` -->
+```
 
-<!-- ```{r warning=FALSE, message=FALSE,results='hide'} -->
+```{r warning=FALSE, message=FALSE,results='hide'}
 
-<!-- # load spatial/boundary info -->
+# load spatial/boundary info
 
-<!-- mn_counties <- counties(state = "MN", cb = TRUE) %>% -->
+mn_counties <- counties(state = "MN", cb = TRUE) %>%
 
-<!--   st_transform(crs = 4326) -->
+  st_transform(crs = 4326)
 
-<!-- mn_tracts <- tracts(state = "MN", cb = TRUE) %>% -->
+mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
 
-<!--   st_transform(crs = 4326) -->
+  st_transform(crs = 4326)
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # join AQ data to add spatial data -->
+# join AQ data to add spatial data
 
-<!-- mn_counties_aq <- mn_counties %>% -->
+mn_counties_aq <- mn_counties %>%
 
-<!--   left_join(mn_aq_all_years, by = c("NAME" = "county")) %>%  -->
+  left_join(mn_aq_all_years, by = c("NAME" = "county")) %>%
 
-<!--   janitor::clean_names() %>%  -->
+  janitor::clean_names() %>%
 
-<!--   mutate(unit_short = ifelse(unit == "micrograms per cubic meter", "µg/m3", "ppb")) -->
+  mutate(unit_short = ifelse(unit == "micrograms per cubic meter", "µg/m3", "ppb"))
 
-<!-- ``` -->
+```
 
-<!-- # Visualizations -->
+# Visualizations
 
-<!-- ```{r} -->
+```{r}
 
-<!-- pal_pp <- colorFactor( -->
+pal_pp <- colorFactor(
 
-<!--   c("black", -->
+  c("black",
 
-<!--     "darkgreen"), -->
+    "darkgreen"),
 
-<!--   domain = mn_powerplants$fossil_fuel -->
+  domain = mn_powerplants$fossil_fuel
 
-<!-- ) -->
+)
 
-<!-- # Plotting all power plants that have existed in MN -->
+# Plotting all power plants that have existed in MN
 
-<!-- leaflet() %>% -->
+leaflet() %>%
 
-<!--   # putting layer of counties -->
+  # putting layer of counties
 
-<!--   addPolygons( -->
+  addPolygons(
 
-<!--     data = mn_counties, -->
+    data = mn_counties,
 
-<!--     fillColor = "lightgray", -->
+    fillColor = "lightgray",
 
-<!--     weight = 1, -->
+    weight = 1,
 
-<!--     color = "darkgray", -->
+    color = "darkgray",
 
-<!--     fillOpacity = .6, -->
+    fillOpacity = .6,
 
-<!--     group = "Counties" -->
+    group = "Counties"
 
-<!--   ) %>% -->
+  ) %>%
 
-<!--   # putting layer of tracts -->
+  # putting layer of tracts
 
-<!--   addPolygons( -->
+  addPolygons(
 
-<!--     data = mn_tracts, -->
+    data = mn_tracts,
 
-<!--     fillColor = FALSE, -->
+    fillColor = FALSE,
 
-<!--     weight = 0.5, -->
+    weight = 0.5,
 
-<!--     color = "gray", -->
+    color = "gray",
 
-<!--     opacity = 0.5, -->
+    opacity = 0.5,
 
-<!--     group = "Tracts" -->
+    group = "Tracts"
 
-<!--   ) %>% -->
+  ) %>%
 
-<!--   # putting circles for each power plant -->
+  # putting circles for each power plant
 
-<!--   addCircleMarkers( -->
+  addCircleMarkers(
 
-<!--     data = mn_powerplants, -->
+    data = mn_powerplants,
 
-<!--     lng = ~ longitude, -->
+    lng = ~ longitude,
 
-<!--     lat = ~ latitude, -->
+    lat = ~ latitude,
 
-<!--     radius = 0.25, -->
+    radius = 0.25,
 
-<!--     color = ~pal_pp(fossil_fuel), -->
+    color = ~pal_pp(fossil_fuel),
 
-<!--     opacity = 0.35 -->
+    opacity = 0.35
 
-<!--   ) %>%  -->
+  ) %>%
 
-<!--   addLegend( -->
+  addLegend(
 
-<!--   pal = pal_pp, -->
+  pal = pal_pp,
 
-<!--   values = mn_powerplants$fossil_fuel, -->
+  values = mn_powerplants$fossil_fuel,
 
-<!--   title = "Power Plants: Energy Type" -->
+  title = "Power Plants: Energy Type"
 
-<!--   )  -->
+  )
 
-<!-- ``` -->
+```
 
-<!-- This map shows the locations of all powerplants that have been built in Minnesota since 1900, with black points being fossil-fuel powered and green points being renewable-powered. The power plants seem clustered in the southern half of the state, particularly renewable plants, which seem to outnumber fossil-fuel plants.  -->
+This map shows the locations of all powerplants that have been built in Minnesota since 1900, with black points being fossil-fuel powered and green points being renewable-powered. The power plants seem clustered in the southern half of the state, particularly renewable plants, which seem to outnumber fossil-fuel plants.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- map_mn_aq <- function(year_spec, pollutant_spec){ -->
+map_mn_aq <- function(year_spec, pollutant_spec){
 
-<!--   # filter df based on user specs -->
+  # filter df based on user specs
 
-<!--   filtered_mn_aq <- mn_counties_aq %>% filter(year <= year_spec, pollutant == pollutant_spec) -->
+  filtered_mn_aq <- mn_counties_aq %>% filter(year <= year_spec, pollutant == pollutant_spec)
 
-<!--   filtered_mn_powerplants <- mn_powerplants %>% filter(first_op_year <= year_spec, is.na(last_retire_year) | last_retire_year > year_spec) -->
+  filtered_mn_powerplants <- mn_powerplants %>% filter(first_op_year <= year_spec, is.na(last_retire_year) | last_retire_year > year_spec)
 
-<!--   unit_spec <- ifelse(pollutant_spec == "Ozone", "ppb", "µg/m3") -->
+  unit_spec <- ifelse(pollutant_spec == "Ozone", "ppb", "µg/m3")
 
-<!--     pal_pp <- colorFactor( -->
+    pal_pp <- colorFactor(
 
-<!--     c("black", -->
+    c("black",
 
-<!--       "darkgreen"), -->
+      "darkgreen"),
 
-<!--     domain = filtered_mn_powerplants$fossil_fuel -->
+    domain = filtered_mn_powerplants$fossil_fuel
 
-<!--   ) -->
+  )
 
-<!--   pal_aqi <- colorNumeric("YlOrRd", domain = filtered_mn_aq$average_concentration) -->
+  pal_aqi <- colorNumeric("YlOrRd", domain = filtered_mn_aq$average_concentration)
 
-<!--   # Plotting power plants -->
+  # Plotting power plants
 
-<!--   leaflet() %>% -->
+  leaflet() %>%
 
-<!--     # putting layer of counties -->
+    # putting layer of counties
 
-<!--     addPolygons( -->
+    addPolygons(
 
-<!--       data = filtered_mn_aq, -->
+      data = filtered_mn_aq,
 
-<!--       fillColor = ~ pal_aqi(average_concentration), -->
+      fillColor = ~ pal_aqi(average_concentration),
 
-<!--       weight = 1, -->
+      weight = 1,
 
-<!--       color = "black", -->
+      color = "black",
 
-<!--       fillOpacity = .6, -->
+      fillOpacity = .6,
 
-<!--       group = "Counties" -->
+      group = "Counties"
 
-<!--     ) %>% -->
+    ) %>%
 
-<!--     # putting layer of tracts -->
+    # putting layer of tracts
 
-<!--     addPolygons( -->
+    addPolygons(
 
-<!--       data = mn_tracts, -->
+      data = mn_tracts,
 
-<!--       fillColor = FALSE, -->
+      fillColor = FALSE,
 
-<!--       weight = 0.5, -->
+      weight = 0.5,
 
-<!--       color = "gray", -->
+      color = "gray",
 
-<!--       opacity = 0.5, -->
+      opacity = 0.5,
 
-<!--       group = "Tracts" -->
+      group = "Tracts"
 
-<!--     ) %>% -->
+    ) %>%
 
-<!--     # putting circles for each power plant -->
+    # putting circles for each power plant
 
-<!--     addCircleMarkers( -->
+    addCircleMarkers(
 
-<!--       data = filtered_mn_powerplants, -->
+      data = filtered_mn_powerplants,
 
-<!--       lng = ~ longitude, -->
+      lng = ~ longitude,
 
-<!--       lat = ~ latitude, -->
+      lat = ~ latitude,
 
-<!--       radius = 0.25, -->
+      radius = 0.25,
 
-<!--       color = ~pal_pp(fossil_fuel), -->
+      color = ~pal_pp(fossil_fuel),
 
-<!--       opacity = 0.35 -->
+      opacity = 0.35
 
-<!--     ) %>%  -->
+    ) %>%
 
-<!--     addLegend( -->
+    addLegend(
 
-<!--     pal = pal_pp, -->
+    pal = pal_pp,
 
-<!--     values = filtered_mn_powerplants$fossil_fuel, -->
+    values = filtered_mn_powerplants$fossil_fuel,
 
-<!--     title = "Power Plants: Energy Type" -->
+    title = "Power Plants: Energy Type"
 
-<!--     )  %>%  -->
+    )  %>%
 
-<!--     addLegend( -->
+    addLegend(
 
-<!--     pal = pal_aqi, -->
+    pal = pal_aqi,
 
-<!--     values = filtered_mn_aq$average_concentration, -->
+    values = filtered_mn_aq$average_concentration,
 
-<!--     title = str_c(pollutant_spec, " Concentration (", unit_spec, ")") -->
+    title = str_c(pollutant_spec, " Concentration (", unit_spec, ")")
 
-<!--     )  -->
+    )
 
-<!-- } -->
+}
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- map_mn_aq(2008, "Ozone") -->
+map_mn_aq(2008, "Ozone")
 
-<!-- map_mn_aq(2015, "Ozone") -->
+map_mn_aq(2015, "Ozone")
 
-<!-- map_mn_aq(2021, "Ozone") -->
+map_mn_aq(2021, "Ozone")
 
-<!-- map_mn_aq(2008, "PM2.5") -->
+map_mn_aq(2008, "PM2.5")
 
-<!-- map_mn_aq(2010, "PM2.5") -->
+map_mn_aq(2010, "PM2.5")
 
-<!-- map_mn_aq(2015, "PM2.5") -->
+map_mn_aq(2015, "PM2.5")
 
-<!-- map_mn_aq(2018, "PM2.5") -->
+map_mn_aq(2018, "PM2.5")
 
-<!-- map_mn_aq(2021, "PM2.5") -->
+map_mn_aq(2021, "PM2.5")
 
-<!-- ``` -->
+```
 
-<!-- This plot allows for a user-specified year and pollutant, to the end of becoming an interactive plot with a slider for year. We can see a lot more renewable plants getting built in later years, but air quality doesn't seem to follow clear patterns over time. Connections between air quality and presence of power plants are not immediately apparent. -->
+This plot allows for a user-specified year and pollutant, to the end of becoming an interactive plot with a slider for year. We can see a lot more renewable plants getting built in later years, but air quality doesn't seem to follow clear patterns over time. Connections between air quality and presence of power plants are not immediately apparent.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- mn_powerplants %>%  -->
+mn_powerplants %>%
 
-<!--   ggplot(aes(x = first_op_year, fill = fossil_fuel)) + -->
+  ggplot(aes(x = first_op_year, fill = fossil_fuel)) +
 
-<!--   geom_bar() + -->
+  geom_bar() +
 
-<!--   facet_wrap(~fossil_fuel) + -->
+  facet_wrap(~fossil_fuel) +
 
-<!--   labs(title = "When have different kinds of powerplants been built in Minnesota?", -->
+  labs(title = "When have different kinds of powerplants been built in Minnesota?",
 
-<!--        x="First Year of Operation", -->
+       x="First Year of Operation",
 
-<!--        y = "Number of Powerplants", -->
+       y = "Number of Powerplants",
 
-<!--        fill = "Powerplant Type") + -->
+       fill = "Powerplant Type") +
 
-<!--   theme_classic() + -->
+  theme_classic() +
 
-<!--   theme(axis.text.x = element_text(angle = 90, vjust = 1)) -->
+  theme(axis.text.x = element_text(angle = 90, vjust = 1))
 
-<!-- # interesting that earliest powerplants are renewable - they're all hydroelectric power -->
+# interesting that earliest powerplants are renewable - they're all hydroelectric power
 
-<!-- mn_powerplants %>% filter(first_op_year < 1920) -->
+mn_powerplants %>% filter(first_op_year < 1920)
 
-<!-- # TO DO: make plot of de-op pps - when do they get decomissioned? -->
+# TO DO: make plot of de-op pps - when do they get decomissioned?
 
-<!-- ``` -->
+```
 
-<!-- The plots show the shift to renewable power around the turn of the century, preceding a huge boom in their construction around 2018. We can see that fossil fuel plant construction has remained fairly constant post-1950, with a lull in the 80s and a spike in the early 2000s. However, the numbers of new fossil fuel plants become nearly insignificant compared to the overwhelming amounts of new renewable plants. -->
+The plots show the shift to renewable power around the turn of the century, preceding a huge boom in their construction around 2018. We can see that fossil fuel plant construction has remained fairly constant post-1950, with a lull in the 80s and a spike in the early 2000s. However, the numbers of new fossil fuel plants become nearly insignificant compared to the overwhelming amounts of new renewable plants.
 
-<!-- The earliest plants were also renewable ones, making use of exclusively hydroelectric power as shown in the table.  -->
+The earliest plants were also renewable ones, making use of exclusively hydroelectric power as shown in the table.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- mn_powerplants %>%  -->
+mn_powerplants %>%
 
-<!--   ggplot(aes(x = fct_infreq(prim_source))) + -->
+  ggplot(aes(x = fct_infreq(prim_source))) +
 
-<!--   geom_bar() + -->
+  geom_bar() +
 
-<!--   labs(x = "Energy Source", y = "Number of Powerplants", title = "Minnesota Powerplants' Energy Sources", -->
+  labs(x = "Energy Source", y = "Number of Powerplants", title = "Minnesota Powerplants' Energy Sources",
 
-<!--       fill = "Powerplant Type") + -->
+      fill = "Powerplant Type") +
 
-<!--   theme_classic() + -->
+  theme_classic() +
 
-<!--   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) -->
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-<!-- mn_powerplants %>%  -->
+mn_powerplants %>%
 
-<!--   group_by(prim_source) %>%  -->
+  group_by(prim_source) %>%
 
-<!--   summarise(prod_by_type = sum(total_mw)) %>%  -->
+  summarise(prod_by_type = sum(total_mw)) %>%
 
-<!--   mutate(fossil_fuel = ifelse(prim_source %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable")) %>%  -->
+  mutate(fossil_fuel = ifelse(prim_source %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable")) %>%
 
-<!--   ggplot(aes(x = fct_reorder(prim_source, prod_by_type, .desc = TRUE), y = prod_by_type, fill = fossil_fuel)) + -->
+  ggplot(aes(x = fct_reorder(prim_source, prod_by_type, .desc = TRUE), y = prod_by_type, fill = fossil_fuel)) +
 
-<!--   geom_bar(stat = 'identity') + -->
+  geom_bar(stat = 'identity') +
 
-<!--   labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Energy produced by Source in MN Powerplants", -->
+  labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Energy produced by Source in MN Powerplants",
 
-<!--        fill = "Powerplant Type") +   -->
+       fill = "Powerplant Type") +
 
-<!--   theme_classic() + -->
+  theme_classic() +
 
-<!--   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) -->
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-<!-- # TO DOs: -->
+# TO DOs:
 
-<!-- # consider time frame - specific year? this is just showing all that have ever existed -->
+# consider time frame - specific year? this is just showing all that have ever existed
 
-<!-- ``` -->
+```
 
-<!-- Across all plants built in MN, we can see that by far the most (by nearly five times) solar-fueled plants have been built, by numbers alone. There seem to be very few coal plants, although petroleum and natural gas have a notable amount. However, looking at the actual energy produced by each fuel type, natural gas produces the most, followed by wind and coal, suggesting that fossil-fuel plants are either larger and/or more efficient - a single fossil-fuel plant can produce more energy than a renewable one. Solar power produces only about 1800 MWs, less than a third of natural gas's production, despite having over 10x the number of plants.  -->
+Across all plants built in MN, we can see that by far the most (by nearly five times) solar-fueled plants have been built, by numbers alone. There seem to be very few coal plants, although petroleum and natural gas have a notable amount. However, looking at the actual energy produced by each fuel type, natural gas produces the most, followed by wind and coal, suggesting that fossil-fuel plants are either larger and/or more efficient - a single fossil-fuel plant can produce more energy than a renewable one. Solar power produces only about 1800 MWs, less than a third of natural gas's production, despite having over 10x the number of plants.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # which counties to look at? ones with new fossil fuel plants in our time range -->
+# which counties to look at? ones with new fossil fuel plants in our time range
 
-<!-- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel", first_op_year > 2007) %>% count(county) %>% arrange(desc(n)) %>% head() -->
+mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel", first_op_year > 2007) %>% count(county) %>% arrange(desc(n)) %>% head()
 
-<!-- ``` -->
+```
 
-<!-- This table shows which counties have the most new fossil fuel plants built within the time frame of our air quality data (2008-2021), for the sake of analysis. -->
+This table shows which counties have the most new fossil fuel plants built within the time frame of our air quality data (2008-2021), for the sake of analysis.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # line chart of county or groups of counties - showing air quality over time; vertical lines when plants were built -->
+# line chart of county or groups of counties - showing air quality over time; vertical lines when plants were built
 
-<!-- #county_spec <- "Dakota" -->
+#county_spec <- "Dakota"
 
-<!-- county_spec <- "Olmsted" -->
+county_spec <- "Olmsted"
 
-<!-- pollutant_spec <- "Ozone" -->
+pollutant_spec <- "Ozone"
 
-<!-- #pollutant_spec <- "PM2.5" -->
+#pollutant_spec <- "PM2.5"
 
-<!-- unit_spec <- ifelse(pollutant_spec == "Ozone", "ppb", "µg/m3") -->
+unit_spec <- ifelse(pollutant_spec == "Ozone", "ppb", "µg/m3")
 
-<!-- mn_powerplants_filtered <- mn_powerplants %>%  -->
+mn_powerplants_filtered <- mn_powerplants %>%
 
-<!--   filter(county == county_spec, first_op_year >= 2008, first_op_year <= 2021) %>%  -->
+  filter(county == county_spec, first_op_year >= 2008, first_op_year <= 2021) %>%
 
-<!--   mutate(first_op_date_jittered = first_op_date + ifelse(fossil_fuel == "Fossil Fuel", 7, -7)) # jitter so lines don't cover each other -->
+  mutate(first_op_date_jittered = first_op_date + ifelse(fossil_fuel == "Fossil Fuel", 7, -7)) # jitter so lines don't cover each other
 
-<!-- ggplot() + -->
+ggplot() +
 
-<!--   geom_line(data = mn_counties_aqi %>% filter(name == county_spec, pollutant == pollutant_spec) %>%  -->
+  geom_line(data = mn_counties_aqi %>% filter(name == county_spec, pollutant == pollutant_spec) %>%
 
-<!--     mutate(year = as.Date(paste0(year, "-01-01"))), aes(x = year, y = average_concentration)) + -->
+    mutate(year = as.Date(paste0(year, "-01-01"))), aes(x = year, y = average_concentration)) +
 
-<!--   geom_vline(data = mn_powerplants_filtered, aes(xintercept = first_op_date_jittered, color = fossil_fuel)) +  -->
+  geom_vline(data = mn_powerplants_filtered, aes(xintercept = first_op_date_jittered, color = fossil_fuel)) +
 
-<!--   scale_color_manual( -->
+  scale_color_manual(
 
-<!--     name = "Plant Fuel Type", -->
+    name = "Plant Fuel Type",
 
-<!--     values = c("Renewable" = "aquamarine3", "Fossil Fuel" = "#EE6A50") -->
+    values = c("Renewable" = "aquamarine3", "Fossil Fuel" = "#EE6A50")
 
-<!--   ) + -->
+  ) +
 
-<!--   labs(title = str_c("Average ", pollutant_spec, " Concentration & Power Plants Built in ", county_spec, " County"),  -->
+  labs(title = str_c("Average ", pollutant_spec, " Concentration & Power Plants Built in ", county_spec, " County"),
 
-<!--        y = str_c("Average ", pollutant_spec, " Concentration (", unit_spec, ")"), -->
+       y = str_c("Average ", pollutant_spec, " Concentration (", unit_spec, ")"),
 
-<!--        x = "Year") + -->
+       x = "Year") +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- ``` -->
+```
 
-<!-- This plot is also designed to be interactive. In this case, there appears little connection between air quality and fossil fuel plants being built.  -->
+This plot is also designed to be interactive. In this case, there appears little connection between air quality and fossil fuel plants being built.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- #Overall trends in AQ -->
+#Overall trends in AQ
 
-<!-- mn_counties_aqi %>%  -->
+mn_counties_aqi %>%
 
-<!--   filter(pollutant == "Ozone") %>%  -->
+  filter(pollutant == "Ozone") %>%
 
-<!--   ggplot() + -->
+  ggplot() +
 
-<!--     geom_line(aes(x = year, y = average_concentration, group = name, color = name), show.legend = FALSE) + -->
+    geom_line(aes(x = year, y = average_concentration, group = name, color = name), show.legend = FALSE) +
 
-<!--   labs(title = "Average Ozone Concentration By County") + -->
+  labs(title = "Average Ozone Concentration By County") +
 
-<!--   ylim(0,40) + -->
+  ylim(0,40) +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- mn_counties_aqi %>%  -->
+mn_counties_aqi %>%
 
-<!--   filter(pollutant == "Ozone") %>%  -->
+  filter(pollutant == "Ozone") %>%
 
-<!--   group_by(year) %>%  -->
+  group_by(year) %>%
 
-<!--   summarise(avg_conc_by_year = mean(average_concentration)) %>%  -->
+  summarise(avg_conc_by_year = mean(average_concentration)) %>%
 
-<!--   ggplot() + -->
+  ggplot() +
 
-<!--     geom_line(aes(x = year, y = avg_conc_by_year)) + -->
+    geom_line(aes(x = year, y = avg_conc_by_year)) +
 
-<!--   labs(title = "Ozone Concentration (Average of All MN Counties)") + -->
+  labs(title = "Ozone Concentration (Average of All MN Counties)") +
 
-<!--   ylim(0,38) + -->
+  ylim(0,38) +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- ``` -->
+```
 
-<!-- Average ozone concentration does not seems to change too drastically in this time frame; although it dips somewhat around 2016 before rising again. All counties seems to follow the overall trend, with a more distinctive high around 2013 and low around 2015-2016.  -->
+Average ozone concentration does not seems to change too drastically in this time frame; although it dips somewhat around 2016 before rising again. All counties seems to follow the overall trend, with a more distinctive high around 2013 and low around 2015-2016.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- mn_counties_aqi %>%  -->
+mn_counties_aqi %>%
 
-<!--   filter(pollutant == "PM2.5") %>%  -->
+  filter(pollutant == "PM2.5") %>%
 
-<!--   ggplot() + -->
+  ggplot() +
 
-<!--     geom_line(aes(x = year, y = average_concentration, group = name, color = name), show.legend = FALSE) + -->
+    geom_line(aes(x = year, y = average_concentration, group = name, color = name), show.legend = FALSE) +
 
-<!--   labs(title = "Average PM2.5 Concentration By County") + -->
+  labs(title = "Average PM2.5 Concentration By County") +
 
-<!--   ylim(0, 12) + -->
+  ylim(0, 12) +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- mn_counties_aqi %>%  -->
+mn_counties_aqi %>%
 
-<!--   filter(pollutant == "PM2.5") %>%  -->
+  filter(pollutant == "PM2.5") %>%
 
-<!--   group_by(year) %>%  -->
+  group_by(year) %>%
 
-<!--   summarise(avg_conc_by_year = mean(average_concentration)) %>%  -->
+  summarise(avg_conc_by_year = mean(average_concentration)) %>%
 
-<!--   ggplot() + -->
+  ggplot() +
 
-<!--     geom_line(aes(x = year, y = avg_conc_by_year)) + -->
+    geom_line(aes(x = year, y = avg_conc_by_year)) +
 
-<!--   labs(title = "PM2.5 Concentration (Average of All MN Counties)") + -->
+  labs(title = "PM2.5 Concentration (Average of All MN Counties)") +
 
-<!--   ylim(0, 10) + -->
+  ylim(0, 10) +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- # What's causing the 2021 spike? -->
+# What's causing the 2021 spike?
 
-<!-- ``` -->
+```
 
-<!-- There seems to be more variation in PM2.5, and a distinct pattern shared across counties that suggests larger-scale factors (such as large wildfires) affect each county's air quality more than individual elements like the addition of powerplants. The is a zig-zag pattern between 2014 and 2020, in which PM2.5 jumps and then drops every few years. 2021 measurements seems to be rising back to, or even exceeding pre-2014 levels.  -->
+There seems to be more variation in PM2.5, and a distinct pattern shared across counties that suggests larger-scale factors (such as large wildfires) affect each county's air quality more than individual elements like the addition of powerplants. The is a zig-zag pattern between 2014 and 2020, in which PM2.5 jumps and then drops every few years. 2021 measurements seems to be rising back to, or even exceeding pre-2014 levels.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # combine the two -->
+# combine the two
 
-<!-- #pollutant_spec <- "Ozone" -->
+#pollutant_spec <- "Ozone"
 
-<!-- pollutant_spec <- "PM2.5" -->
+pollutant_spec <- "PM2.5"
 
-<!-- unit_spec <- ifelse(pollutant_spec == "Ozone", "ppb", "µg/m3") -->
+unit_spec <- ifelse(pollutant_spec == "Ozone", "ppb", "µg/m3")
 
-<!-- summary_df <- mn_counties_aq %>% -->
+summary_df <- mn_counties_aq %>%
 
-<!--   filter(pollutant == pollutant_spec) %>%  -->
+  filter(pollutant == pollutant_spec) %>%
 
-<!--   group_by(name) %>% -->
+  group_by(name) %>%
 
-<!--   summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>% -->
+  summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
 
-<!--   left_join( -->
+  left_join(
 
-<!--     mn_powerplants %>% -->
+    mn_powerplants %>%
 
-<!--       group_by(county) %>%  -->
+      group_by(county) %>%
 
-<!--       count(fossil_fuel) %>%  -->
+      count(fossil_fuel) %>%
 
-<!--       filter(fossil_fuel == "Fossil Fuel"), -->
+      filter(fossil_fuel == "Fossil Fuel"),
 
-<!--     by = c("name" = "county") -->
+    by = c("name" = "county")
 
-<!--   ) %>%  -->
+  ) %>%
 
-<!--   mutate(num_fossil = ifelse(is.na(n), 0, n)) -->
+  mutate(num_fossil = ifelse(is.na(n), 0, n))
 
-<!-- ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) + -->
+ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) +
 
-<!--   geom_point(color = "red") + -->
+  geom_point(color = "red") +
 
-<!--   geom_smooth(method = 'lm',color = "black") + -->
+  geom_smooth(method = 'lm',color = "black") +
 
-<!--   labs(title = str_c("MN Counties' Air Quality vs Number of Fossil Fuel Plants"), -->
+  labs(title = str_c("MN Counties' Air Quality vs Number of Fossil Fuel Plants"),
 
-<!--        x = "Number of Fossil Fuel Plants", -->
+       x = "Number of Fossil Fuel Plants",
 
-<!--        y = str_c("Mean ", pollutant_spec, " Concentration (", unit_spec, ")")) + -->
+       y = str_c("Mean ", pollutant_spec, " Concentration (", unit_spec, ")")) +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- # renewables  -->
+# renewables
 
-<!-- summary_df <- mn_counties_aq %>% -->
+summary_df <- mn_counties_aq %>%
 
-<!--   filter(pollutant == pollutant_spec) %>%  -->
+  filter(pollutant == pollutant_spec) %>%
 
-<!--   group_by(name) %>% -->
+  group_by(name) %>%
 
-<!--   summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>% -->
+  summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
 
-<!--   left_join( -->
+  left_join(
 
-<!--     mn_powerplants %>% -->
+    mn_powerplants %>%
 
-<!--       group_by(county) %>%  -->
+      group_by(county) %>%
 
-<!--       count(fossil_fuel) %>%  -->
+      count(fossil_fuel) %>%
 
-<!--       filter(fossil_fuel == "Renewable"), -->
+      filter(fossil_fuel == "Renewable"),
 
-<!--     by = c("name" = "county") -->
+    by = c("name" = "county")
 
-<!--   ) %>%  -->
+  ) %>%
 
-<!--   mutate(num_fossil = ifelse(is.na(n), 0, n)) -->
+  mutate(num_fossil = ifelse(is.na(n), 0, n))
 
-<!-- ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) + -->
+ggplot(summary_df, aes(x = num_fossil, y = mean_aqi)) +
 
-<!--   geom_point(color = "turquoise") + -->
+  geom_point(color = "turquoise") +
 
-<!--   geom_smooth(color = "black") + -->
+  geom_smooth(color = "black") +
 
-<!--   labs(title = str_c("MN Counties' Air Quality vs Number of Renewable Plants"), -->
+  labs(title = str_c("MN Counties' Air Quality vs Number of Renewable Plants"),
 
-<!--        x = "Number of Renewable Plants", -->
+       x = "Number of Renewable Plants",
 
-<!--        y = str_c("Mean ", pollutant_spec, " Concentration (", unit_spec, ")")) + -->
+       y = str_c("Mean ", pollutant_spec, " Concentration (", unit_spec, ")")) +
 
-<!--   theme_classic() -->
+  theme_classic()
 
-<!-- ``` -->
+```
 
-<!-- A county having more fossil fuel plants appears to be associated with higher PM2.5 concentrations on average. However, having fewer renewable power plants seems associated with better air quality also, which calls this analysis into question, as renewable plants should not be affecting the air quality.  -->
+A county having more fossil fuel plants appears to be associated with higher PM2.5 concentrations on average. However, having fewer renewable power plants seems associated with better air quality also, which calls this analysis into question, as renewable plants should not be affecting the air quality.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- summary_df <- mn_counties_aq %>% -->
+summary_df <- mn_counties_aq %>%
 
-<!--   filter(pollutant == pollutant_spec) %>%  -->
+  filter(pollutant == pollutant_spec) %>%
 
-<!--   group_by(name) %>% -->
+  group_by(name) %>%
 
-<!--   summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>% -->
+  summarize(mean_aqi = mean(average_concentration, na.rm = TRUE)) %>%
 
-<!--   left_join( -->
+  left_join(
 
-<!--     mn_powerplants %>% -->
+    mn_powerplants %>%
 
-<!--       group_by(county) %>%  -->
+      group_by(county) %>%
 
-<!--       summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")), -->
+      summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")),
 
-<!--     by = c("name" = "county") -->
+    by = c("name" = "county")
 
-<!--   ) %>% -->
+  ) %>%
 
-<!--   mutate(has_fossil = ifelse(is.na(has_fossil), FALSE, has_fossil), -->
+  mutate(has_fossil = ifelse(is.na(has_fossil), FALSE, has_fossil),
 
-<!--          plant_group = ifelse(has_fossil, "Contains Fossil Fuel Plants", "No Fossil Fuel Plants")) -->
+         plant_group = ifelse(has_fossil, "Contains Fossil Fuel Plants", "No Fossil Fuel Plants"))
 
-<!-- ggplot(summary_df, aes(x = plant_group, y = mean_aqi, fill = plant_group)) + -->
+ggplot(summary_df, aes(x = plant_group, y = mean_aqi, fill = plant_group)) +
 
-<!--   geom_boxplot(alpha = 0.7, outlier.color = "gray40") + -->
+  geom_boxplot(alpha = 0.7, outlier.color = "gray40") +
 
-<!--   geom_jitter(width = 0.15, alpha = 0.6) + -->
+  geom_jitter(width = 0.15, alpha = 0.6) +
 
-<!--   labs( -->
+  labs(
 
-<!--     title = str_c("Mean ", pollutant_spec, " Concentration by County Type"), -->
+    title = str_c("Mean ", pollutant_spec, " Concentration by County Type"),
 
-<!--     x = NULL, -->
+    x = NULL,
 
-<!--     y = str_c("Mean ", pollutant_spec, " Concentration (", unit_spec, ")") -->
+    y = str_c("Mean ", pollutant_spec, " Concentration (", unit_spec, ")")
 
-<!--   ) + -->
+  ) +
 
-<!--   ylim(0,10) + -->
+  ylim(0,10) +
 
-<!--   scale_fill_manual(values = c("Contains Fossil Fuel Plants" = "#d95f02", -->
+  scale_fill_manual(values = c("Contains Fossil Fuel Plants" = "#d95f02",
 
-<!--                                "No Fossil Fuel Plants" = "#1b9e77")) + -->
+                               "No Fossil Fuel Plants" = "#1b9e77")) +
 
-<!--   theme_classic() + -->
+  theme_classic() +
 
-<!--   theme(legend.position = "none") -->
+  theme(legend.position = "none")
 
-<!-- mn_powerplants %>% group_by(county) %>% count(fossil_fuel) -->
+mn_powerplants %>% group_by(county) %>% count(fossil_fuel)
 
-<!-- ``` -->
+```
 
-<!-- This plot suggests that counties containing fossil fuel plants have higher concentrations of pm2.5 than those containing only renewable or no powerplants.  -->
+This plot suggests that counties containing fossil fuel plants have higher concentrations of pm2.5 than those containing only renewable or no powerplants.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # look at lagged air quality - what does the aq do the year after a new ff pp installed? 3 years? -->
+# look at lagged air quality - what does the aq do the year after a new ff pp installed? 3 years?
 
-<!-- mn_powerplants_lagged_aq <- mn_powerplants %>%  -->
+mn_powerplants_lagged_aq <- mn_powerplants %>%
 
-<!--   filter(fossil_fuel == "Fossil Fuel", -->
+  filter(fossil_fuel == "Fossil Fuel",
 
-<!--          first_op_year >= 2008, first_op_year <= 2021) %>%  -->
+         first_op_year >= 2008, first_op_year <= 2021) %>%
 
-<!--   mutate(year_after_pp_installed = first_op_year + 1, -->
+  mutate(year_after_pp_installed = first_op_year + 1,
 
-<!--          year_3_after_pp_installed = first_op_year + 3) %>%  -->
+         year_3_after_pp_installed = first_op_year + 3) %>%
 
-<!--   left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "first_op_year" = "year")) %>%  -->
+  left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "first_op_year" = "year")) %>%
 
-<!--   rename(average_conc_baseline = average_concentration) %>%  -->
+  rename(average_conc_baseline = average_concentration) %>%
 
-<!--   left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "year_after_pp_installed" = "year", "pollutant", "geometry", "unit")) %>%  -->
+  left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "year_after_pp_installed" = "year", "pollutant", "geometry", "unit")) %>%
 
-<!--   rename(average_conc_year1 = average_concentration) %>%  -->
+  rename(average_conc_year1 = average_concentration) %>%
 
-<!--     left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "year_3_after_pp_installed" = "year", "pollutant", "geometry", "unit")) %>%  -->
+    left_join(mn_counties_aq %>% select(year, name, pollutant, average_concentration, unit, geometry), by = c("county" = "name", "year_3_after_pp_installed" = "year", "pollutant", "geometry", "unit")) %>%
 
-<!--   rename(average_conc_year3 = average_concentration) %>%  -->
+  rename(average_conc_year3 = average_concentration) %>%
 
-<!--   mutate(year1_diff = average_conc_year1 - average_conc_baseline, -->
+  mutate(year1_diff = average_conc_year1 - average_conc_baseline,
 
-<!--          year3_diff = average_conc_year3 - average_conc_baseline)  -->
+         year3_diff = average_conc_year3 - average_conc_baseline)
 
-<!-- mn_powerplants_lagged_aq %>%  -->
+mn_powerplants_lagged_aq %>%
 
-<!--   group_by(pollutant) %>%  -->
+  group_by(pollutant) %>%
 
-<!--   summarise(mean(year1_diff), mean(year3_diff, na.rm = TRUE)) # have to exclude the year three lag for plant 65405 since that falls in 2022, outside of aq range -->
+  summarise(mean(year1_diff), mean(year3_diff, na.rm = TRUE)) # have to exclude the year three lag for plant 65405 since that falls in 2022, outside of aq range
 
-<!-- ``` -->
+```
 
-<!-- It appears that air quality improves (pollutant concentration goes down) after fossil fuel plants are added; however, looking at the overall air quality  -->
+It appears that air quality improves (pollutant concentration goes down) after fossil fuel plants are added; however, looking at the overall air quality
 
-<!-- ```{r} -->
+```{r}
 
-<!-- ff_status <- mn_powerplants %>% -->
+ff_status <- mn_powerplants %>%
 
-<!--   group_by(county) %>% -->
+  group_by(county) %>%
 
-<!--   summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>% -->
+  summarize(has_fossil = any(fossil_fuel == "Fossil Fuel")) %>%
 
-<!--   mutate(plant_group = ifelse(has_fossil, "Has Fossil Fuel", "Only Renewable/None")) -->
+  mutate(plant_group = ifelse(has_fossil, "Has Fossil Fuel", "Only Renewable/None"))
 
-<!-- mn_counties_aq %>% -->
+mn_counties_aq %>%
 
-<!--   filter(pollutant == "PM2.5") %>% -->
+  filter(pollutant == "PM2.5") %>%
 
-<!--   left_join(ff_status, by = c("name" = "county")) %>% -->
+  left_join(ff_status, by = c("name" = "county")) %>%
 
-<!--   mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>% -->
+  mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
 
-<!--   ggplot(aes(x = year, y = average_concentration, group = name, color = plant_group)) + -->
+  ggplot(aes(x = year, y = average_concentration, group = name, color = plant_group)) +
 
-<!--     geom_line(alpha = 0.2) + # faint individual counties -->
+    geom_line(alpha = 0.2) + # faint individual counties
 
-<!--     stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend -->
+    stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # bold mean trend
 
-<!--     labs( -->
+    labs(
 
-<!--       title = "Average PM2.5 Concentration by County Type", -->
+      title = "Average PM2.5 Concentration by County Type",
 
-<!--       color = "County Plant(s) Type", -->
+      color = "County Plant(s) Type",
 
-<!--       y = "Average PM2.5 Concentration (µg/m3)", -->
+      y = "Average PM2.5 Concentration (µg/m3)",
 
-<!--       x = "Year" -->
+      x = "Year"
 
-<!--     ) + -->
+    ) +
 
-<!--     ylim(0, 12) + -->
+    ylim(0, 12) +
 
-<!--     scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02", -->
+    scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
 
-<!--                                   "Only Renewable/None" = "#1b9e77")) + -->
+                                  "Only Renewable/None" = "#1b9e77")) +
 
-<!--     theme_classic() -->
+    theme_classic()
 
-<!-- mn_counties_aq %>% -->
+mn_counties_aq %>%
 
-<!--   filter(pollutant == "Ozone") %>% -->
+  filter(pollutant == "Ozone") %>%
 
-<!--   left_join(ff_status, by = c("name" = "county")) %>% -->
+  left_join(ff_status, by = c("name" = "county")) %>%
 
-<!--   mutate(avg_conc_jittered = average_concentration + runif(n(), min=0, max=.5)) %>% # jitter so lines don't cover each other -->
+  mutate(avg_conc_jittered = average_concentration + runif(n(), min=0, max=.5)) %>% # jitter so lines don't cover each other
 
-<!--   mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>% -->
+  mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
 
-<!--   ggplot(aes(x = year, y = avg_conc_jittered, group = name, color = plant_group)) + -->
+  ggplot(aes(x = year, y = avg_conc_jittered, group = name, color = plant_group)) +
 
-<!--     geom_line(alpha = 0.15) + # faint individual counties -->
+    geom_line(alpha = 0.15) + # faint individual counties
 
-<!--     stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1) + # bold mean trend -->
+    stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1) + # bold mean trend
 
-<!--     labs( -->
+    labs(
 
-<!--       title = "Average Ozone Concentration by County Type", -->
+      title = "Average Ozone Concentration by County Type",
 
-<!--       color = "County Plant(s) Type", -->
+      color = "County Plant(s) Type",
 
-<!--       y = "Average Ozone Concentration (ppb)", -->
+      y = "Average Ozone Concentration (ppb)",
 
-<!--       x = "Year" -->
+      x = "Year"
 
-<!--     ) + -->
+    ) +
 
-<!--     ylim(20, 42) + -->
+    ylim(20, 42) +
 
-<!--     scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02", -->
+    scale_color_manual(values = c("Has Fossil Fuel" = "#d95f02",
 
-<!--                                   "Only Renewable/None" = "lightgreen")) + -->
+                                  "Only Renewable/None" = "lightgreen")) +
 
-<!--     theme_classic() -->
+    theme_classic()
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # mn_powerplants %>% filter(!is.na(last_retire_date)) %>% group_by(fossil_fuel) %>% count(last_retire_year) %>%  -->
+# mn_powerplants %>% filter(!is.na(last_retire_date)) %>% group_by(fossil_fuel) %>% count(last_retire_year) %>%
 
-<!-- #   ggplot(aes(x=last_retire_year, fill=fossil_fuel, y = n)) + -->
+#   ggplot(aes(x=last_retire_year, fill=fossil_fuel, y = n)) +
 
-<!-- #   labs(title = "When Have MN Power Plants Been Retired?") + -->
+#   labs(title = "When Have MN Power Plants Been Retired?") +
 
-<!-- #   geom_bar(stat="identity") + -->
+#   geom_bar(stat="identity") +
 
-<!-- #   theme_classic() -->
+#   theme_classic()
 
-<!-- #Fossil fuel generators started being retired around 2000, at a pretty constant rate of 1-3 per year.  -->
+#Fossil fuel generators started being retired around 2000, at a pretty constant rate of 1-3 per year.
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # pps and community tool data - from egrid and ACS - pp, emissions, and demographic info -->
+# pps and community tool data - from egrid and ACS - pp, emissions, and demographic info
 
-<!-- unif_buffers <- read_csv("../../uniform-buffers.csv") %>% janitor::clean_names()  -->
+unif_buffers <- read_csv("../../uniform-buffers.csv") %>% janitor::clean_names()
 
-<!-- unif_buffers %>% filter(plant_state_abbreviation == "MN") -->
+unif_buffers %>% filter(plant_state_abbreviation == "MN")
 
-<!-- # plant_id = plant_code in mn_pps -->
+# plant_id = plant_code in mn_pps
 
-<!-- left_join(mn_powerplants, unif_buffers, by = join_by(plant_code == plant_id)) %>% count(is.na(plant_county_name)) -->
+left_join(mn_powerplants, unif_buffers, by = join_by(plant_code == plant_id)) %>% count(is.na(plant_county_name))
 
-<!-- # 4 excluded -->
+# 4 excluded
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # emissions data -->
+# emissions data
 
-<!-- NEI <- read_csv("../../2021_NEI_Facility_summary.csv") -->
+NEI <- read_csv("../../2021_NEI_Facility_summary.csv")
 
-<!-- NEI %>% filter(state == "MN") -->
+NEI %>% filter(state == "MN")
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # new aq data - 2024 only!!! -->
+# new aq data - 2024 only!!!
 
-<!-- AirData <- read_csv("../../annual_conc_by_monitor_2024.csv") %>% janitor::clean_names() %>% filter(state_code == 27)  -->
+AirData <- read_csv("../../annual_conc_by_monitor_2024.csv") %>% janitor::clean_names() %>% filter(state_code == 27)
 
-<!-- AirData %>%  group_by(state_code, county_code, site_num) %>% -->
+AirData %>%  group_by(state_code, county_code, site_num) %>%
 
-<!--   slice(1) %>% ungroup() -->
+  slice(1) %>% ungroup()
 
-<!-- AirData <- AirData %>% -->
+AirData <- AirData %>%
 
-<!--   mutate(popup = paste0( -->
+  mutate(popup = paste0(
 
-<!--     "<strong>", local_site_name, "</strong><br/>", -->
+    "<strong>", local_site_name, "</strong><br/>",
 
-<!--     "Parameter: ", parameter_name, "<br/>", -->
+    "Parameter: ", parameter_name, "<br/>",
 
-<!--     #"Sample Duration: ", `Sample Duration`, "<br/>", -->
+    #"Sample Duration: ", `Sample Duration`, "<br/>",
 
-<!--     "City: ", city_name, ", ", state_name, "<br/>", -->
+    "City: ", city_name, ", ", state_name, "<br/>",
 
-<!--     "Obs Count: ", observation_count)) -->
+    "Obs Count: ", observation_count))
 
-<!-- # only 51 sites - have to pick pollutant. deal with datums -->
+# only 51 sites - have to pick pollutant. deal with datums
 
-<!-- leaflet(AirData %>% filter(parameter_name == "PM2.5 - Local Conditions")) %>% -->
+leaflet(AirData %>% filter(parameter_name == "PM2.5 - Local Conditions")) %>%
 
-<!--   addProviderTiles(providers$CartoDB.Positron) %>% -->
+  addProviderTiles(providers$CartoDB.Positron) %>%
 
-<!--   addCircleMarkers( -->
+  addCircleMarkers(
 
-<!--     lng = ~longitude, lat = ~latitude, -->
+    lng = ~longitude, lat = ~latitude,
 
-<!--     radius = 5, -->
+    radius = 5,
 
-<!--     stroke = FALSE, -->
+    stroke = FALSE,
 
-<!--     fillOpacity = 0.8, -->
+    fillOpacity = 0.8,
 
-<!--     popup = ~popup, -->
+    popup = ~popup,
 
-<!--     label = ~paste0(local_site_name, " (", parameter_name, ")") -->
+    label = ~paste0(local_site_name, " (", parameter_name, ")")
 
-<!--   )  %>% -->
+  )  %>%
 
-<!--   # putting circles for each power plant -->
+  # putting circles for each power plant
 
-<!--   addCircleMarkers( -->
+  addCircleMarkers(
 
-<!--     data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"), -->
+    data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"),
 
-<!--     lng = ~ longitude, -->
+    lng = ~ longitude,
 
-<!--     lat = ~ latitude, -->
+    lat = ~ latitude,
 
-<!--     radius = 0.25, -->
+    radius = 0.25,
 
-<!--     color = ~pal_pp(fossil_fuel), -->
+    color = ~pal_pp(fossil_fuel),
 
-<!--     opacity = 0.35, -->
+    opacity = 0.35,
 
-<!--     label = ~paste0(plant_name, ", ", utility_name, " (", plant_code, ")") -->
+    label = ~paste0(plant_name, ", ", utility_name, " (", plant_code, ")")
 
-<!--   )  -->
+  )
 
-<!-- AirData %>% filter(parameter_name == "PM2.5 - Local Conditions") %>% count(`Site Num`)  -->
+AirData %>% filter(parameter_name == "PM2.5 - Local Conditions") %>% count(`Site Num`)
 
-<!-- ``` -->
+```
 
-<!-- ```{r} -->
+```{r}
 
-<!-- # plants built in 1998 & 2017 - look at aq before and after -->
+# plants built in 1998 & 2017 - look at aq before and after
 
-<!-- mn_powerplants %>% filter(plant_code %in% c(59197, 57966)) -->
+mn_powerplants %>% filter(plant_code %in% c(59197, 57966))
 
-<!-- # aq monitors in the vicinity - near I35 is closer, should show stronger emissions (likely confounded by highway proxmity) -->
+# aq monitors in the vicinity - near I35 is closer, should show stronger emissions (likely confounded by highway proxmity)
 
-<!-- AirData %>% filter(site_num %in% c("0963", "0962", "1904"),  -->
+AirData %>% filter(site_num %in% c("0963", "0962", "1904"),
 
-<!--                    parameter_name == "PM2.5 - Local Conditions",  -->
+                   parameter_name == "PM2.5 - Local Conditions",
 
-<!--                    pollutant_standard == "PM25 24-hour 2006",  -->
+                   pollutant_standard == "PM25 24-hour 2006",
 
-<!--                    is.na(method_name) -->
+                   is.na(method_name)
 
-<!--                    ) -->
+                   )
 
-<!-- # really strange that Andersen School has more Pm2.5 - it's right next to a park & hospital; whereas the monitor near the highways & powerplant has the lowest emissions. Don't know how to explain this   -->
+# really strange that Andersen School has more Pm2.5 - it's right next to a park & hospital; whereas the monitor near the highways & powerplant has the lowest emissions. Don't know how to explain this
 
-<!-- # plant in ramsey - 1912 built in 2008, further away from aq monitors but bigger emissions -->
+# plant in ramsey - 1912 built in 2008, further away from aq monitors but bigger emissions
 
-<!-- mn_powerplants %>% filter(plant_code %in% c(55824, 1912)) -->
+mn_powerplants %>% filter(plant_code %in% c(55824, 1912))
 
-<!-- # aq monitors in the vicinity (likely confounded by highway proximity) -->
+# aq monitors in the vicinity (likely confounded by highway proximity)
 
-<!-- AirData %>% filter(site_num %in% c("0871", "0868"),   -->
+AirData %>% filter(site_num %in% c("0871", "0868"),
 
-<!--                    parameter_name == "PM2.5 - Local Conditions", -->
+                   parameter_name == "PM2.5 - Local Conditions",
 
-<!--                    sample_duration == "24 HOUR", -->
+                   sample_duration == "24 HOUR",
 
-<!--                    pollutant_standard == "PM25 24-hour 2024", # why are there two? different pocs - two monitors at same site -->
+                   pollutant_standard == "PM25 24-hour 2024", # why are there two? different pocs - two monitors at same site
 
-<!--                    #is.na(method_name) -->
+                   #is.na(method_name)
 
-<!--                    ) -->
+                   )
 
-<!-- # harding is further away, not in city center, should be better aq - true  -->
+# harding is further away, not in city center, should be better aq - true
 
-<!-- ``` -->
+```
 
 Read in airdata for all years
 
@@ -1434,14 +1434,29 @@ air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
 # if want WGS84 again 
 air_buffers_near_target <- st_transform(air_buffers_near_target, 4326)
 
-air_buffers_near_target %>% ggplot() + geom_sf(alpha = .5, fill = "blue")
 
-
-air_buffers_near_target %>% 
+herc_monitor_avgs <- air_buffers_near_target %>% 
   group_by(year) %>% 
   summarize(pm25_avg_by_year = mean(avg_pm25)) %>% 
-  ggplot() +
-  geom_line(aes(y=pm25_avg_by_year, x=year))
+  mutate(id = "Near HERC")
+
+all_monitor_avgs <- air_buffers %>% 
+  group_by(year) %>% 
+  summarize(pm25_avg_by_year = mean(avg_pm25)) %>% 
+  mutate(id = "Whole State")
+
+all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
+
+# diff between avg of all air monitors in the state and air monitors just near the plant
+ggplot(all_avgs) +
+  geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
+  scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
+  labs(title = "PM2.5 Concentrations Are Consistently Higher near the HERC",
+       y = "Annual Average PM2.5 Concentration (µg/m3)",
+       x = "Year",
+       color = "Location of Monitor") +
+  theme_classic()
+
 ```
 
 

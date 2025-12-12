@@ -112,7 +112,7 @@ ui <- navbarPage(
   ##=================EJ areas=================##
   br(),
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("How is Minnesota Protecting the Most Vulnerable?")),
+  h2(style = "text-align:center; font-size:22px;", strong("Where Are Minnesota's Most Vulnerable Communities in Relation to Power Plants?")),
   
   # DIV 1: choose how the text should be formated
   div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -225,7 +225,7 @@ ui <- navbarPage(
   h2(style = "text-align:center; font-size:18px;", "Where is it located"),
    column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
   
-
+  column(12, align = "center", plotOutput(outputId = 'herc_lineplot', height = 400, width = 600)),
   
   h2(style = "text-align:center; font-size:22px;", strong("So, What Now?")),
   
