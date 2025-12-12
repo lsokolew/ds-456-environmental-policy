@@ -112,7 +112,7 @@ ui <- navbarPage(
   ##=================EJ areas=================##
   br(),
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("How is Minnesota Protecting the most vulnerable?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How is Minnesota Protecting the Most Vulnerable?")),
   
   # DIV 1: choose how the text should be formated
   div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -143,7 +143,7 @@ ui <- navbarPage(
   ##=================Air Quality=================##
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("What is going on with the Air quality?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How do Power Plants Impact Air Quality?")),
   
   div(
     style = "
@@ -189,7 +189,7 @@ ui <- navbarPage(
   br(),
   br(),
   
-  h2(style = "text-align:center; font-size:22px;", strong("How are people's health impacted?")),
+  h2(style = "text-align:center; font-size:22px;", strong("What Does This Mean for People's Health?")),
   
   div(
     style = "
@@ -227,7 +227,7 @@ ui <- navbarPage(
   
 
   
-  h2(style = "text-align:center; font-size:22px;", strong("So what now?")),
+  h2(style = "text-align:center; font-size:22px;", strong("So, What Now?")),
   
     ) # closing fluidpage
   ), # Closing tab #1

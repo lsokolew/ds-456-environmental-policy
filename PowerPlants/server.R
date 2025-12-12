@@ -154,7 +154,7 @@ server = function(input, output, session){
         fillOpacity = 0.5,
         color = "darkblue",
         weight = 1,
-        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
+        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plant(s) nearby")
       ) %>%
       # --- Power plants ---
       addCircleMarkers(
@@ -183,7 +183,7 @@ server = function(input, output, session){
         ),
         labels = c(
           "Environmental Justice Area",
-          "Power Plant",
+          "Fossil Fuel Power Plant",
           "3-mile Buffer",
           "Air Monitor"
         ),
@@ -214,7 +214,7 @@ server = function(input, output, session){
                y = 9.2, hjust = 0,
                label = "National Standard",
                color = "darkgray") +
-      labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
+      labs(x = "Year", y = "Annual Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
       theme_minimal()
@@ -223,33 +223,33 @@ server = function(input, output, session){
   
   # compare the pollutant concentration the year before and after new plant built
   
-  plant_monitor_pairs <- st_intersects(air_buffers, mn_pp_sf)
-  
-  monitor_pp <- tibble(
-    site_num = air_buffers$site_num,
-    plant_index = pp_within_each_monitor
-  ) %>%
-    unnest(plant_index) %>%                             
-    mutate(
-      plant_id = mn_pp_sf$plant_code[plant_index],
-      plant_year = mn_pp_sf$first_op_year[plant_index]
-    ) %>%
-    select(-plant_index) %>% 
-    distinct() # keep only unique rows
-  
-  # Join to the air quality time series
-  aq_with_pp <- AirData_allyears %>%
-    left_join(monitor_pp, by = "site_num")
-  
-  # ---- 1 year change -----
-  aq_changes <- aq_with_pp %>%
-    filter(!is.na(plant_year)) %>%     # monitors near a plant
-    mutate(period = case_when(
-      year == plant_year - 1 ~ "before",
-      year == plant_year + 1 ~ "after",
-      TRUE ~ NA_character_
-    )) %>%
-    filter(!is.na(period))
+  # plant_monitor_pairs <- st_intersects(air_buffers, mn_pp_sf)
+  # 
+  # monitor_pp <- tibble(
+  #   site_num = air_buffers$site_num,
+  #   plant_index = pp_within_each_monitor
+  # ) %>%
+  #   unnest(plant_index) %>%                             
+  #   mutate(
+  #     plant_id = mn_pp_sf$plant_code[plant_index],
+  #     plant_year = mn_pp_sf$first_op_year[plant_index]
+  #   ) %>%
+  #   select(-plant_index) %>% 
+  #   distinct() # keep only unique rows
+  # 
+  # # Join to the air quality time series
+  # aq_with_pp <- AirData_allyears %>%
+  #   left_join(monitor_pp, by = "site_num")
+  # 
+  # # ---- 1 year change -----
+  # aq_changes <- aq_with_pp %>%
+  #   filter(!is.na(plant_year)) %>%     # monitors near a plant
+  #   mutate(period = case_when(
+  #     year == plant_year - 1 ~ "before",
+  #     year == plant_year + 1 ~ "after",
+  #     TRUE ~ NA_character_
+  #   )) %>%
+  #   filter(!is.na(period))
   
   # aq_changes_summ <- aq_changes %>%
   #   group_by(site_num, plant_id) %>%
@@ -298,7 +298,7 @@ server = function(input, output, session){
         labs(
           title = "Average PM2.5 Concentration by County Type",
           color = "County Plant(s) Type",
-          y = "Average PM2.5 Concentration (µg/m3)",
+          y = "Annual Average PM2.5 Concentration (µg/m3)",
           x = "Year"
         ) +
         ylim(0, 12) +
@@ -506,6 +506,13 @@ server = function(input, output, session){
 # 
 # })
 
+  
+  # choose the specific power plant (example: row 1)
+  target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
+  # find which air buffers intersect this plant's location
+  hits <- st_intersects(air_buffers_proj, target_pp)
+  # keep only buffers that intersect
+  air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
 
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%
