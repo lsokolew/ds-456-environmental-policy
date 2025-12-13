@@ -113,6 +113,7 @@ ui <- navbarPage(
   br(),
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Where Are Minnesota's Most Vulnerable Communities in Relation to Power Plants?")),
+
   
   # DIV 1: choose how the text should be formated
   div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -143,7 +144,7 @@ ui <- navbarPage(
   ##=================Air Quality=================##
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("How do Power Plants Impact Air Quality?")),
+  h2(style = "text-align:center; font-size:22px;", strong("What is going on with the Air quality?")),
   
   div(
     style = "
@@ -189,7 +190,7 @@ ui <- navbarPage(
   br(),
   br(),
   
-  h2(style = "text-align:center; font-size:22px;", strong("What Does This Mean for People's Health?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How are people's health impacted?")),
   
   div(
     style = "
@@ -227,7 +228,7 @@ ui <- navbarPage(
   
   column(12, align = "center", plotOutput(outputId = 'herc_lineplot', height = 400, width = 600)),
   
-  h2(style = "text-align:center; font-size:22px;", strong("So, What Now?")),
+  h2(style = "text-align:center; font-size:22px;", strong("So what now?")),
   
     ) # closing fluidpage
   ), # Closing tab #1

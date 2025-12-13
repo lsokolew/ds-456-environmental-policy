@@ -154,7 +154,7 @@ server = function(input, output, session){
         fillOpacity = 0.5,
         color = "darkblue",
         weight = 1,
-        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plant(s) nearby")
+        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
       ) %>%
       # --- Power plants ---
       addCircleMarkers(
@@ -183,7 +183,7 @@ server = function(input, output, session){
         ),
         labels = c(
           "Environmental Justice Area",
-          "Fossil Fuel Power Plant",
+          "Power Plant",
           "3-mile Buffer",
           "Air Monitor"
         ),
@@ -214,7 +214,7 @@ server = function(input, output, session){
                y = 9.2, hjust = 0,
                label = "National Standard",
                color = "darkgray") +
-      labs(x = "Year", y = "Annual Average PM2.5 Concentration (µg/m3)",
+      labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
       theme_minimal()
@@ -243,7 +243,7 @@ server = function(input, output, session){
         labs(
           title = "Average PM2.5 Concentration by County Type",
           color = "County Plant(s) Type",
-          y = "Annual Average PM2.5 Concentration (µg/m3)",
+          y = "Average PM2.5 Concentration (µg/m3)",
           x = "Year"
         ) +
         ylim(0, 12) +
@@ -450,6 +450,7 @@ server = function(input, output, session){
 #     )
 # 
 # })
+
 
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%
