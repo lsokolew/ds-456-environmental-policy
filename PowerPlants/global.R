@@ -13,6 +13,7 @@ mn_powerplants =  read_csv('mn_powerplants.csv')
 zcta_joined =  st_read('zcta_joined.shp') 
 
 AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
+load("Data/aq_data_clean/wrangled_airdata.rds")
 
 schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 

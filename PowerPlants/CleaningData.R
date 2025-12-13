@@ -95,13 +95,74 @@ mn_powerplants <- mn_powerplants %>%
 
 ###=== Air Quality ===###
 
+# initial cleaning 
 AirData_allyears <- AirData_allyears %>%
   filter(pollutant_standard == "PM25 24-hour 2012") %>% # 2012 is the most recent standard with the most observations; it doesn't change the numbers
   group_by(site_num, parameter_code, pollutant_standard, year, longitude, latitude, local_site_name, county_name, city_name, cbsa_name) %>%
   summarize(avg_pm25 = mean(arithmetic_mean)) %>% # if multiple POC (monitors at a site), take average
   mutate(county_name = ifelse(county_name == "Saint Louis", "St Louis", county_name))  %>% # standardize with power plants df naming
   ungroup()
+
+# get # plants near each monitor
+
+AirData_sf <- st_as_sf(AirData_allyears, coords = c("longitude", "latitude"), crs = 4326)
+mn_pp_sf <- st_as_sf(mn_powerplants, coords = c("longitude", "latitude"), crs = 4326) %>% 
+  filter(fossil_fuel == "Fossil Fuel")
+
+# Project to meters (UTM 15N for Minnesota)
+AirData_proj <- st_transform(AirData_sf, 26915)
+mn_pp_proj  <- st_transform(mn_pp_sf, 26915)
+
+# buffer in meters
+buffer_distance <- 1609.34 * 3
+air_buffers_proj <- st_buffer(AirData_proj, dist = buffer_distance)
+
+# Spatial relationships in projected CRS
+within_3miles <- st_within(mn_pp_proj, air_buffers_proj)
+mn_pp_sf$near_monitor <- lengths(within_3miles) > 0
+
+pp_within_each_monitor <- st_intersects(air_buffers_proj, mn_pp_proj)
+air_buffers_proj$nearby_pp_count <- lengths(pp_within_each_monitor)
+
+# Transform back to WGS84 for leaflet
+air_buffers <- st_transform(air_buffers_proj, 4326)
   
+
+# calculate average pm2.5 for each year 
+
+calc_avg_pm25 <- function(year_spec){
+  air_buffers %>% 
+    filter(year == year_spec) %>% 
+    mutate(grouped_nearby_pp_count = ifelse(nearby_pp_count > 1, "2+", as.character(nearby_pp_count))) %>% 
+    group_by(grouped_nearby_pp_count) %>% 
+    summarise(avg_pm25_grouped = mean(avg_pm25)) %>% 
+    mutate(year = year_spec)
+}
+
+years <- 1999:2024 # incomplete data for 2025; would be inaccurate comparison
+grouped_summ_pm25_allyears <- map(years, calc_avg_pm25) %>% list_rbind()
+
+# check out area near the HERC
+
+target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
+# find which air buffers intersect this plant's location
+hits <- st_intersects(air_buffers_proj, target_pp)
+# keep only buffers that intersect
+air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
+air_buffers_near_target <- st_transform(air_buffers_near_target, 4326)
+
+herc_monitor_avgs <- air_buffers_near_target %>% 
+  group_by(year) %>% 
+  summarize(pm25_avg_by_year = mean(avg_pm25)) %>% 
+  mutate(id = "Near HERC")
+
+all_monitor_avgs <- air_buffers %>% 
+  group_by(year) %>% 
+  summarize(pm25_avg_by_year = mean(avg_pm25)) %>% 
+  mutate(id = "Whole State")
+
+all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
+
 ###=== Asthma ===###
 
 # Asthma Data and ZCTAs
@@ -308,6 +369,7 @@ write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
 
 # air quality
 saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
+save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, file="Data/aq_data_clean/wrangled_airdata.rds")
 
 # health
 st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
