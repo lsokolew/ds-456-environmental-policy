@@ -64,6 +64,7 @@ server = function(input, output, session){
            fill = "Powerplant Type") +
       theme_classic() +
       theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
       fuel_colors
 
   }, bg = "transparent")
@@ -78,6 +79,7 @@ server = function(input, output, session){
            fill = "Powerplant Type") +
       theme_classic() +
       theme_1    +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
       fuel_colors
   }, bg = "transparent")
   
@@ -93,7 +95,8 @@ server = function(input, output, session){
       labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Electricity Produced by Energy Source in MN Powerplants",
            fill = "Powerplant Type") +  
       theme_classic() +
-      theme_1
+      theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
     }, bg = "transparent")
   
   ###================================ Air Quality ===============================###
@@ -127,7 +130,7 @@ server = function(input, output, session){
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       # --- 3-mile buffers around monitors ---
       addPolygons(
-        data = air_buffers %>% filter(year == 2015),
+        data = air_buffers %>% group_by(site_num) %>% slice(which.max(nearby_pp_count)),
         fillColor = ~pal_buffers(nearby_pp_count),
         fillOpacity = 0.5,
         color = "darkblue",
@@ -144,7 +147,7 @@ server = function(input, output, session){
       ) %>%
       # --- Air monitors ---
       addCircleMarkers(
-        data = AirData_sf %>% filter(year == 2015),
+        data = AirData_sf,
         radius = .5,
         color = "darkblue",
         fill = TRUE,
@@ -176,12 +179,13 @@ server = function(input, output, session){
       geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
       geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
       annotate("text", x = 2015,
-               y = 9.2, hjust = 0,
+               y = 9.3, hjust = 0,
                label = "National Standard",
                color = "darkgray") +
       labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
+      ylim(0, 12) +
       theme_minimal()
   }, bg = "transparent")
   
@@ -343,7 +347,8 @@ server = function(input, output, session){
       labs(title = "Distance to Nearest Power Plant by EJ Status",
            x = "In EJ Area?", y = "Distance (miles)") +
       stat_summary(fun = median, geom = "point", size = 2, color = "red")+
-      theme_1
+      theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   }, bg = "transparent")
   
 
@@ -447,11 +452,17 @@ output$herc_lineplot <- renderPlot({
   # diff between avg of all air monitors in the state and air monitors just near the plant
   ggplot(all_avgs) +
     geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
+    geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+    annotate("text", x = 2016,
+             y = 9.3, hjust = 0,
+             label = "National Standard",
+             color = "darkgray") +
+    ylim(0,12)+
     scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
     labs(title = "PM2.5 Concentrations Are Consistently Higher Near the HERC",
          y = "Annual Average PM2.5 Concentration (µg/m3)",
          x = "Year",
          color = "Location of Monitor") +
-    theme_classic()
+    theme_1
 }, bg = "transparent")
 }

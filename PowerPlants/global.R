@@ -50,8 +50,7 @@ light_blue <- "#CBE0F7"
 my_colors <- c("red", "grey")
 values <- c("New Power Plant", "Old Power Plant")
 
-theme_1 <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-                 panel.background = element_blank(),     
+theme_1 <- theme(panel.background = element_blank(),     
                  plot.background = element_blank(),     
                  panel.grid = element_blank(),
                  strip.background = element_blank(),

@@ -144,7 +144,7 @@ ui <- navbarPage(
   ##=================Air Quality=================##
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("What is going on with the Air quality?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How do power plants affect the air people breath?")),
   
   div(
     style = "
@@ -190,7 +190,7 @@ ui <- navbarPage(
   br(),
   br(),
   
-  h2(style = "text-align:center; font-size:22px;", strong("How are people's health impacted?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How is people's health impacted?")),
   
   div(
     style = "
