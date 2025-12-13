@@ -1292,6 +1292,22 @@ AirData_allyears %>%
     theme_classic()
 
 # this has so many asterisks 
+
+
+cntys <- AirData_allyears %>%
+  left_join(ff_status, by = c("county_name" = "county")) %>% 
+  group_by(year, county_name, plant_group) %>% 
+  summarize(avg_pm25_grouped = mean(avg_pm25)) %>% 
+  mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>% 
+  filter(year > 2015, avg_pm25_grouped < 2.5, plant_group == "Has Fossil Fuel") %>% 
+  pull(county_name) %>% 
+  unique()
+
+
+mn_counties%>% mutate(in_cnty = NAME %in% cntys) %>% ggplot() + geom_sf(aes(fill = in_cnty))
+
+
+mn_counties %>% filter(NAME %in% cntys) %>% ggplot() + geom_sf()
 ```
 
 ```{r}

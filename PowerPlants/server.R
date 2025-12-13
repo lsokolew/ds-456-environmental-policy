@@ -500,10 +500,10 @@ output$herc_lineplot <- renderPlot({
   ggplot(all_avgs) +
     geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
     scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
-    labs(title = "PM2.5 Concentrations Are Consistently Higher near the HERC",
+    labs(title = "PM2.5 Concentrations Are Consistently Higher Near the HERC",
          y = "Annual Average PM2.5 Concentration (µg/m3)",
          x = "Year",
          color = "Location of Monitor") +
     theme_classic()
-})
+}, bg = "transparent")
 }
