@@ -343,9 +343,9 @@ server = function(input, output, session){
   output$school_pp_plot = renderPlot({
     distinct_schools_metro %>%
       ggplot(aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
-      geom_violin() +
+      geom_boxplot() +
       labs(title = "Distance to Nearest Power Plant by EJ Status",
-           x = "In EJ Area?", y = "Distance (miles)") +
+           x = "Environmental Justice Area", y = "Distance (miles)") +
       stat_summary(fun = median, geom = "point", size = 2, color = "red")+
       theme_1 +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
