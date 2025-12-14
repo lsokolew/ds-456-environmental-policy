@@ -227,6 +227,10 @@ server = function(input, output, session){
   ###================================ Health ===============================###
   
   mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
+  top_NOpolluters_metro <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+  
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----

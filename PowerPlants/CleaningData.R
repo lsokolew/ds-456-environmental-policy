@@ -478,6 +478,8 @@ write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
 saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, file="Data/aq_data_clean/wrangled_airdata.rds")
 
+# emissions
+write_csv(all_emissions_data, "all_emissions_data.csv", row.names = FALSE)
 # health
 st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
 
