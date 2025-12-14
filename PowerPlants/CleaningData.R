@@ -35,13 +35,6 @@ powerplant_dates <- read_csv("Data/powerplant_data_eia_2024_generator_operable.c
 # air quality 
 AirData_allyears <- read_csv("Data/airdata_clean.csv") 
 
-# load spatial/boundary info
-# mn_counties <- counties(state = "MN", cb = TRUE) %>%
-#   st_transform(crs = 4326)
-
-# mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
-#   st_transform(crs = 4326)
-
 ###=== Healthcare ===###
 
 # Asthma

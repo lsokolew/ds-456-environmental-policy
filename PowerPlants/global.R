@@ -212,16 +212,24 @@ it's just gonna hurt him more. I want... I want to shut [the HERC] down for the 
 
 
 pp_data_methods <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota as of 2024
-from the US Energy Information Administration (EIA)."
+from the US Energy Information Administration (EIA) and Environmental Protection Agency (EPA). "
 
 ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from 2022. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental
 Justice Areas. </b> "
 
-aq_data_methods <-"<b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of
-PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to evaluate the impacts of power
-plants on air quality. I downloaded these via R script from Air Quality System Data Mart available via https://www.epa.gov/outdoor-air-quality-data. Accessed Month DD, YYYY.
+aq_data_methods <-"The EPA provided pre-generated Air Data files of annual summaries of
+PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to explore the impacts of power
+plants on air quality. It contains annual mean PM2.5 readings from various sites around the state, some of which have multiple monitors, and provides the locations
+of the sites and the metric used to calculate annual mean PM2.5 (eg, 1- or 24-hour averages). It also notes the local site name, county name, and city name,
+if applicable. We downloaded these via R script from Air Quality System Data 
+Mart available via https://www.epa.gov/outdoor-air-quality-data, on November 21st, 2025. We filter the observations to just 
+Minnesota and 24-hour average PM2.5 readings. If there are multiple monitors at a site, we take the average, so that there is at most one reading per site
+per year.  This average annual mean PM2.5 ranges from 1 to 15  μg/m3, with a typical value around 7.5  μg/m3.
+<br>
+Then, to find the number of power plants near a monitor, we create a three-mile buffer around the monitors and check which power plants fall within that buffer,
+and save that count. We then calculate the average annual mean PM2.5 concentrations for monitors near 0, 1, or 2+ power plants.  
 "
 
 health_data_methods <- "Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's
