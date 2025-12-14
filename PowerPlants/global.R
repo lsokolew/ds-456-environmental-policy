@@ -15,7 +15,8 @@ zcta_joined =  st_read('zcta_joined.shp')
 AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
 load("Data/aq_data_clean/wrangled_airdata.rds")
 
-distinct_schools_metro <- read_csv("distinct_schools_metro.csv")
+schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
+
 all_emissions_data <- read_csv("all_emissions_data.csv")
 mn_tracts <- st_read("mn_tracts.shp")
 ej_sf <- st_read("ej_sf.shp")

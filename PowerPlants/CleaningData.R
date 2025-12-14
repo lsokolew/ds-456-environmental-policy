@@ -42,7 +42,7 @@ AirData_allyears <- read_csv("Data/airdata_clean.csv")
 ###=== Healthcare ===###
 
 # Asthma
-MN_asthma_ED <- read_csv("Data/MN_asthma_ED.csv")
+asthmaMN <- read_csv("Data/MN-asthma-zipcode.csv")
 
 # Zip codes
 mn_zctas <- readRDS("Data/mn_zctas_2020.rds")
@@ -54,8 +54,6 @@ ej_spaces <- read_csv("Data/ej_mpca_census.csv") %>%
   select(-Shape_Area, -Shape_Length, -source, -statefp, -funcstat, -name, 
          -namelsad, -mtfcc, -intptlat, -intptlon, -geography, -countyfp, 
          -aland, -awater)
-
-ej_shapefile <- st_read("Data/ej_mpca_census.shp")
 
 
 tribal_shp <- st_read("Data/tribal_areas/census_tribal_areas.shp")
@@ -70,7 +68,6 @@ mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
 
 mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
 
-schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 
 
 ###==================== Wrangling ====================###
@@ -171,19 +168,17 @@ all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
 
 # Asthma Data and ZCTAs
 
-zcta_joined_asthma <- MN_asthma_ED %>%
+zcta_joined <- asthmaMN %>%
   left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
   mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
          `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
   mutate(value_cat = case_when(
-    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` < 15 ~ "0-15",
-    `Age-adjusted rate per 10,000` >= 15 & `Age-adjusted rate per 10,000` < 30 ~ "15-30",
-    `Age-adjusted rate per 10,000` >= 30 & `Age-adjusted rate per 10,000` < 45 ~ "30-45",
-    `Age-adjusted rate per 10,000` >= 45 & `Age-adjusted rate per 10,000` < 60 ~ "45-60",
-    `Age-adjusted rate per 10,000` >= 60 ~ "60+",
-    TRUE ~ NA_character_))
+    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
+    `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
+    `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
+    `Age-adjusted rate per 10,000` >= 7 ~ "7+"))
 
-
+zcta_joined <- st_as_sf(zcta_joined)
 
 
 ###=== EJ Areas ===###
@@ -291,49 +286,6 @@ herc <- powerplants_with_ej %>%
   select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
 
 ###=====Schools====###
-points_sf_crs <- st_as_sf(
-  mn_powerplants,
-  coords = c("longitude", "latitude"),
-  crs = 4326) %>%
-  st_transform(26915)  
-
-ej_areas <- ej_shapefile %>%
-  filter(status200x == "YES" | statuspoc == "YES" | statuslep == "YES")
-
-# -------- EJ Tracts ---------
-# If ej_shapefile already has a CRS, USE IT — do not overwrite.
-# Only set CRS if it is missing:
-if (is.na(st_crs(ej_areas))) {
-  ej_areas <- st_set_crs(ej_areas, 26915)
-}
-
-# -------- Schools shapefile --------
-if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
-  schools_sf <- st_set_crs(schools_sf, 26915)
-}
-schools_sf <- schools_sf %>%
-  filter(is.na(GRADERANGE))
-
-school_proj <- st_transform(schools_sf, 26915)
-
-school_pp_dist <- st_distance(school_proj, points_sf_crs)
-
-schools_in_ej <- st_within(school_proj, ej_areas)
-school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
-
-nearest_pp <- apply(school_pp_dist, 1, which.min)
-
-school_proj$nearest_pp_id <- points_sf$plant_code[nearest_pp]
-school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
-school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
-
-distinct_schools <- school_proj %>% 
-  distinct(GISADDR, .keep_all = TRUE)
-
-distinct_schools_metro <- distinct_schools %>% 
-  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) 
-
-###====Emissions====###
 path <- "Data/emissions2017.xlsx"
 sheets <- excel_sheets(path)
 
@@ -532,9 +484,7 @@ save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, fi
 write_csv(all_emissions_data, "all_emissions_data.csv")
 
 # health
-st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
-# schools
-write.csv(distinct_schools_metro, "distinct_schools_metro.csv")
+st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
 
 # ej areas
 st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)

@@ -153,37 +153,62 @@ ui <- navbarPage(
     text-align: justify;
     font-size: 18px;
     font-family: 'Tinos', serif;
-    color: #4a4a4a;",HTML(aq_text_3)),
+    color: #4a4a4a;",HTML(aq_text_1)),
   br(),
   
   column(12, align = "center", leafletOutput(outputId = 'monitor_buffers', height = 400, width = 600)),
-  #column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),
-  
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(interactive_aq_plot_descrip)),
-  # br(),
+
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_2)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "grouped_summ_lineplot", height = 400, width = 600)),
-  #column(12, align = "center", plotOutput(outputId = "one_yr_aq_change_lineplot", height = 400, width = 600)),
+
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_3)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "aq_by_county_type_lineplot", height = 400, width = 600)),
 
   
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(aq_line_plot_descrip)),
-  # br(),
-
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_4)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_5)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_6)),
   
   ##=================Health=================##
   
@@ -239,7 +264,7 @@ tabPanel(
   title = "Methods & Sources",
   fluidPage(
     ##=================Data=================##
-    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Work")),
     
     # DIV 1: choose how the text should be formated
     div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -250,7 +275,7 @@ tabPanel(
           "<style>  b { 
         background-color: #FFF59D;  /* soft yellow highlight */
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
-          data_intro))), # close div
+          pp_data_methods))), # close div
     
     
     # DIV 2: data source logos
@@ -296,5 +321,15 @@ tabPanel(
     ), #  close div
     
     ) #closing navpage
-  ) # closing tab #2
+  ), # closing tab #2
+
+###=============================================    Tab #2  =================================================###
+
+tabPanel(
+  title = "References",
+  fluidPage(
+    includeHTML("references.html")
+  ) #closing navpage
+) # closing tab #3
+
 ) # closing UI
