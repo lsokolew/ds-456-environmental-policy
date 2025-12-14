@@ -91,7 +91,19 @@ herc_buffer <- st_transform(herc_buffer, crs = 4326)
 
 ###================================ Text Tab 1  ================================###
 
-intro <- "Intro"
+intro <- "Without fail, North Minneapolis resident Kim M’s car is covered by a layer of black film just days after a wash. When he lived in Brooklyn Park, 
+his car could go months without needing a carwash, so he knows this is a community issue. After learning about the HERC during a local climate activism group meeting, 
+the black film, the kids he’d see with respiratory issues, and even the smell in the air all made sense. 
+<br>
+<br>
+The HERC, or the Hennepin Energy Recovery Center, is a waste to energy facility located in the North Loop neighborhood. Since its opening in 1989, it has processed a 
+thousand tons of waste per day. Back then, it was the solution to calls for the redirection of trash from landfills to waste incinerators, but its presence in the 
+community has always been heavily debated. 
+<br>
+<br>
+In this analysis, we consider power plants to be facilities with a capacity of 1 megawatt or larger. The HERC has a capacity of 40MW. We have two questions: 
+how do power plants align with Minnesota’s commitment to environmental justice and how do power plants affect the surrounding community?
+"
 
 # power plants
 
