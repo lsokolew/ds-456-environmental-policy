@@ -150,18 +150,25 @@ aq_text_2 <- "The EPA provides data from air quality monitors, placed at irregul
 
 aq_text_3 <- "Monitors which are within a three-mile radius of at least one power plant, and thus are most likely to pick up on the effects of plants' pollution, have consistently higher PM2.5 concentrations than monitors which are not. 
 <br>
+<br>
 Some of this effect could be due to the fact that air monitors tend to be located in centers of population, like the Twin Cities, which experience higher pollution levels due to factors like vehicle traffic as well as power plants. It is also important to note that some categories have limited data: while 12+ monitors every year have no fossil-fired plants nearby, only a handful have one or more nearby. 
+<br>
 <br>
 Still, this plot suggests that air quality in areas near power plants is consistently worse than other areas. Communities near power plants are experiencing higher ambient PM2.5 concentrations, and the power plants are certainly not decreasing that environmental burden. 
 "
 aq_text_4 <- "
 Zooming out from a three-mile radius, we see a similar trend: air quality monitors in counties with no fossil fuel plants tend to report lower PM2.5 concentrations than counties with fossil fuel plant(s). After 2015, though, this pattern appears to shift. Two fossil-fuel counties even drop below 2.5 µg/m3, giving the impression that renewable-only counties have worse air quality overall than fossil-fuel counties. However, the air monitors in these counties only have observations starting in 2015. They are located in the northeast tip of the state, around Lake Superior and the Boundary Waters, where air quality tends to be best. Further, most of the very low, fossil-only counties are relatively large, with air monitors far from plants. Thus, the pattern post-2015 should not be taken as evidence of significant improvement in fossil-fuel counties overall. 
 <br>
+<br>
 During this time period, both plots also show near-universal spikes in PM2.5 concentrations in 2021 and 2023. This is potentially due to Canadian wildfire smoke, a significant cause of ambient PM2.5 (MPCA trends).
 <br>
-Yet, both plots do show average annual PM2.5 concentration declining over time, which aligns with research by Jbaily et al. at Harvard T.H. Chan School of Public Health, who found that 
-| \"on average across the U.S., PM2.5 concentration levels fell from 2000 to 2016, with average exposure falling from 12.6 μg/m3 to 7.5 μg/m3—a 40.4% drop. They also found that the percentage of the population exposed to PM2.5 levels higher than 12 μg/m3 decreased from 57.3% in 2000 to 4.5% in 2016.\" (Racial, Ethnic Minorities & pollution)
-This aligns with decreasing EPS NAAQS standards for permissible PM2.5, and is part of a greater trend of decreasing PM2.5 levels nationally, potentially indicating the success of EPA programs for pollution control (PM2.5 national trend). It also aligns with the spike in new renewable power plants starting around 2000, potentially demonstrating the effectiveness of Minnesota's commitment to improving air quality via less reliance on fossil fuels. By 2040, in fact, electricity providers will be expected to generate or procure 100% of their electricity from carbon-free sources (EIA profile analysis). 
+<br>
+Yet, both plots do show average annual PM2.5 concentration declining over time, which aligns with research by Jbaily et al. at Harvard T.H. Chan School of Public Health, who found that
+<br>" 
+
+aq_text_5 <- "on average across the U.S., PM2.5 concentration levels fell from 2000 to 2016, with average exposure falling from 12.6 μg/m3 to 7.5 μg/m3—a 40.4% drop. They also found that the percentage of the population exposed to PM2.5 levels higher than 12 μg/m3 decreased from 57.3% in 2000 to 4.5% in 2016. (Racial, Ethnic Minorities & pollution)"
+
+aq_text_6 <- "This aligns with decreasing EPS NAAQS standards for permissible PM2.5, and is part of a greater trend of decreasing PM2.5 levels nationally, potentially indicating the success of EPA programs for pollution control (PM2.5 national trend). It also aligns with the spike in new renewable power plants starting around 2000, potentially demonstrating the effectiveness of Minnesota's commitment to improving air quality via less reliance on fossil fuels. By 2040, in fact, electricity providers will be expected to generate or procure 100% of their electricity from carbon-free sources (EIA profile analysis). 
 "
 
 

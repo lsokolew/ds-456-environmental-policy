@@ -191,7 +191,24 @@ ui <- navbarPage(
     font-size: 18px;
     font-family: 'Tinos', serif;
     color: #4a4a4a;",HTML(aq_text_4)),
-  br(),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_5)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_6)),
   
   ##=================Health=================##
   
@@ -304,5 +321,15 @@ tabPanel(
     ), #  close div
     
     ) #closing navpage
-  ) # closing tab #2
+  ), # closing tab #2
+
+###=============================================    Tab #2  =================================================###
+
+tabPanel(
+  title = "References",
+  fluidPage(
+    includeHTML("references.html")
+  ) #closing navpage
+) # closing tab #3
+
 ) # closing UI
