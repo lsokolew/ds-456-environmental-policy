@@ -215,6 +215,7 @@ ui <- navbarPage(
   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
   
   
+  
 
  
   ###================================ HERC ===============================###
@@ -223,6 +224,10 @@ ui <- navbarPage(
   h2(style = "text-align:center; font-size:22px;", strong("Diving into the HERC")),
   
   h2(style = "text-align:center; font-size:18px;", "Where is it located"),
+  
+  column(12, align = "center", htmlOutput("legend_ui", height = 100, width = 100)),
+  
+  
    column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
   
 

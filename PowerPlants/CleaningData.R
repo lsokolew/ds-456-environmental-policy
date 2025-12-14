@@ -64,8 +64,6 @@ mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
 
 mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
 
-
-
 ###==================== Wrangling ====================###
 
 powerplant_dates_mn <- powerplant_dates %>% 
@@ -204,7 +202,8 @@ powerplants_with_ej <- st_join(
   mutate(power_plant_or_not = !is.na(plant_name))
 
 metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
-  
+metro_area_pp <- st_transform(metro_area_pp, crs = 4326)
+
 
 tt <- powerplants_with_ej %>%
   filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%  #metro areas
@@ -301,21 +300,21 @@ animate(
 ###==================== Write as csv ===================###
 
 # overall
-write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
+write.csv(mn_powerplants, "Data/cleaning_data/mn_powerplants.csv", row.names = FALSE)
 
 # air quality
 saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 
 # health
-st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
+st_write(zcta_joined, "Data/cleaning_data/zcta_joined.shp", row.names = FALSE)
 
 # ej areas
-st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)
-st_write(ej_sf, "ej_sf.shp", row.names = FALSE)
-st_write(plants_in_ej_counts, "plants_in_ej_counts.shp", row.names = FALSE)
+st_write(mn_tracts, "Data/cleaning_data/mn_tracts.shp", row.names = FALSE)
+st_write(ej_sf, "Data/cleaning_data/ej_sf.shp", row.names = FALSE)
+st_write(plants_in_ej_counts, "Data/cleaning_data/plants_in_ej_counts.shp", row.names = FALSE)
 # st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
 
-st_write(metro_area_pp, "metro_area_pp.shp", row.names = FALSE)
+st_write(metro_area_pp, "Data/cleaning_data/metro_area_pp.shp", row.names = FALSE)
 
-st_write(powerplants_sf, "powerplants_sf.shp", row.names = FALSE)
+st_write(powerplants_sf, "Data/cleaning_data/powerplants_sf.shp", row.names = FALSE)
 
