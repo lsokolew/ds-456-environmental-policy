@@ -306,6 +306,18 @@ server = function(input, output, session){
                   weight = 2,
                   label = ~paste0("Plant: ", plant_name.x))
     })
+  
+  output$asthma_poc_plot = renderPlot({
+    
+    asthma_poc_powerplant %>%
+      ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
+      geom_point() +
+      facet_wrap(~near_plant, labeller = labeller(near_plant = 
+                                                    c("TRUE" = "Within Mile of Power Plant",
+                                                      "FALSE" = "Not Within Mile of Power Plant"))) +
+      labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
+      theme_bw()
+  }, bg = "transparent")
     
   ###================================ Schools ===============================###
   

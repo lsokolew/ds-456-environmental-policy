@@ -18,10 +18,12 @@ load("Data/aq_data_clean/wrangled_airdata.rds")
 distinct_schools_metro <- read_csv("distinct_schools_metro.csv")
 all_emissions_data <- read_csv("all_emissions_data.csv")
 mn_tracts <- st_read("mn_tracts.shp")
+asthma_poc_powerplant <- read_csv("asthma_poc_powerplant.csv")
 ej_sf <- st_read("ej_sf.shp")
 ej_shp <- st_read("Data/ej_mpca_census.shp")
 metro_area <- st_read("metro_area_pp.shp")
 powerplants <- st_read("powerplants_sf.shp")
+
 
 tribal_shp_wgs <- st_read ("Data/tribal_areas/census_tribal_areas.shp")
 
