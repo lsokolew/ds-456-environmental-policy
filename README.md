@@ -27,8 +27,8 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 
 
 ## Required Data:
-- `Power_Plants.csv`: We acquired this dataset from the EIA, at the following link, which is no longer working. We have been unable to find the dataset elsewhere, but it is in our repository. \[TODO: ADD lINK, LOOK FOR DATA ELSEWHERE\]
-- `powerplant_data_eia_egrid_2024_generator_operable.csv`: Data from Form EIA-860 (2024). By EPA. Used for power plant first operation dates, for all operational powerplants in 2024. Available at [https://www.eia.gov/electricity/data/eia860/].
+- `Power_Plants.csv`: We acquired this dataset from the EIA, at the following link, which is no longer working. We have been unable to find the dataset elsewhere, but it is in our repository.   \[TODO: ADD lINK, LOOK FOR DATA ELSEWHERE\]
+- `powerplant_data_eia_2024_generator_operable.csv`: Data from Form EIA-860 (2024). By EPA. Used for power plant first operation dates, for all operational powerplants in 2024. Available at [https://www.eia.gov/electricity/data/eia860/].
 - `airdata_clean.csv`: Data from EPA. Used for annual average PM2.5 values in MN, 1980-2025. Acquirable at the following link,[https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual], or by running `process_airdata.R`.
 - 
 [[TODO: update the following\]
