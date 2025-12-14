@@ -169,7 +169,17 @@ all_monitor_avgs <- air_buffers %>%
 all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
 
 ###=== Asthma ===###
-
+metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 
+                55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422,
+                55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 
+                55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 
+                55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121,
+                55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 
+                55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 
+                55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 
+                55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 
+                55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070,
+                55079, 55092, 55303)
 # Asthma Data and ZCTAs
 
 zcta_joined_asthma <- MN_asthma_ED %>%
@@ -193,15 +203,15 @@ points_sf_crs <- st_as_sf( # power plants
   st_transform(26915)  
 
 zcta_pop_data <-zcta_pop_data %>% 
-  mutate(pct_poc = (blackE + asianE + hispanicE) / total_popE)
+  mutate(pct_poc = (blackE + asianE + hispanicE) / total_popE) %>%
+  mutate(GEOID = as.character(GEOID))
 
 
-asthma_poc_joined <- zcta_joined_asthma %>%
-  mutate(`_ZIP` = as.numeric(`_ZIP`)) %>%
+asthma_poc_joined_df <- zcta_joined_asthma %>%
   left_join(zcta_pop_data, by = c("_ZIP" = "GEOID"))  %>%
   filter(`Age group` == "All ages")
 
-asthma_poc_joined_sf <- st_as_sf(asthma_poc_joined)
+asthma_poc_joined_sf <- st_as_sf(asthma_poc_joined_df)
 
 zips_proj <- st_transform(asthma_poc_joined_sf, 26915)
 
@@ -212,13 +222,16 @@ zipcode_buffer_mile <- st_buffer(zips_proj, dist = 1609.34)
 zip_plant_counts_mile <- st_join(zipcode_buffer_mile, NR_points_sf_crs, join = st_intersects) %>%
   filter(`_ZIP` %in% metro_zips) %>%
   group_by(`_ZIP`) %>%      
-  summarise(num_plants = n())
+  summarise(num_plants = n()) %>%
+  st_drop_geometry()
 
-asthma_poc_powerplant <- asthma_poc_joined %>%
-  st_drop_geometry() %>%
-  left_join(zip_plant_counts_mile, by = c("_ZIP" = "_ZIP")) %>%
-  mutate(near_plant = if_else(is.na(num_plants), FALSE, TRUE))
+asthma_poc_joined_clean <- zcta_joined_asthma %>%
+  mutate(`_ZIP` = as.character(`_ZIP`)) %>%
+  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID")) %>%
+  filter(`Age group` == "All ages")
 
+asthma_poc_powerplant <- asthma_poc_joined_clean %>%
+  left_join(zip_plant_counts_mile, by = "_ZIP")
 
 ###=== EJ Areas ===###
 
@@ -357,7 +370,7 @@ school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
 
 nearest_pp <- apply(school_pp_dist, 1, which.min)
 
-school_proj$nearest_pp_id <- points_sf$plant_code[nearest_pp]
+school_proj$nearest_pp_id <- points_sf_crs$plant_code[nearest_pp]
 school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
 school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
 
@@ -567,7 +580,7 @@ write_csv(all_emissions_data, "all_emissions_data.csv")
 
 # health
 st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
-write.csv(asthma_poc_powerplant, "asthma_poc_ppowerplant.csv", row.names = FALSE)
+write.csv(asthma_poc_powerplant, "asthma_poc_powerplant.csv", row.names = FALSE)
 # schools
 write.csv(distinct_schools_metro, "distinct_schools_metro.csv", row.names = FALSE)
 
