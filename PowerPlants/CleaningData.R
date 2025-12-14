@@ -15,7 +15,7 @@ library(tigris)
 
   ###=== Needed Overall ===###
   # power plant
-    mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
+    mn_powerplants <- read_csv('Data/Power_Plants.csv') %>%
       filter(State == "Minnesota") %>%
       mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"),
              PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% # change 'other' to 'waste heat'
@@ -62,6 +62,9 @@ library(tigris)
     # MN Counties
     mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
 
+    # census ACS Tract information (full)
+    CensusACSTract <- read_xlsx("Data/CensusACSTract.xlsx")
+    
 
 ###==================== Wrangling ====================###
 
@@ -277,52 +280,173 @@ mn_powerplants_with_EJ <- mn_powerplants %>%
             by = c("county" = "County")) %>%
   mutate(EJ_OR_NOT = if_else(is.na(EJ_OR_NOT), FALSE, EJ_OR_NOT))
 
+  #--------------------------------------------------------------
+  # Find if a power plant is by an EJ area
+  
+  # Manually enter crs
+  st_crs(ej_shp) <- 26915
+  
+  # merge the ej areas relabeled with the ej shp
+  EJ_stacked <- EJ_stacked %>%
+    mutate(geoid = as.character(geoid))
+  
+  # join data
+  ej_tracts_sf <- ej_shp %>%
+    left_join(EJ_stacked %>% select(geoid, EJ_OR_NOT),by = "geoid") %>%
+    mutate(EJ_OR_NOT = if_else(is.na(EJ_OR_NOT), FALSE, TRUE))
+  
+  # make sure power plants sf is sf
+  powerplants_sf <- mn_powerplants %>%
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
+    st_transform(26915)
+  ej_tracts_sf <- st_transform(ej_tracts_sf, st_crs(powerplants_sf))
+  
+  # Join data
+  powerplants_with_ej <- st_join(
+    ej_tracts_sf,
+    powerplants_sf %>% select(plant_name, total_mw, fossil_fuel, county, zip, plant_code),
+    join = st_contains) %>%
+    mutate(power_plant_or_not = !is.na(plant_name))
+  
+  #-------------------------
+  # Metro Area Analysis
+  
+  # filter out metro area counties
+  metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
+  
+  # transform data to correct crs
+  metro_area_pp <- st_transform(metro_area_pp, crs = 4326)
+  
+  # find distribution of power plants in metro area (and by enviromental justice area and type of plants)
+  metro_EJ_x_PP <- metro_area_pp %>%
+    group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
+    summarize(count = n())
+  
+  # find distribution of power plants in MN (and by enviromental justice area and type of plants)
+  mn_EJ_x_PP <- powerplants_with_ej %>%
+    group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
+    summarize(count = n())
+  
+  #-------------------------
+  # HERC Analysis
+  
+  # HERC Information: Conclusion is that it's not an EJ areas
+  herc <- powerplants_with_ej %>%
+    filter(plant_code == 10013) %>%
+    select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
+  
+  # calculate the population demographics that make up the 1 mile radious (areas the herc impacts within one mile)
+  herc_area_poo <- metro_area %>%
+    filter(tractce %in% c("126201", "126202", "103000", "103600", "126101", "126102", "104400", "105204",
+                          "105201", "105500", "104100","103400", "003300","126300")) %>%
+    select(tractce, prp200x, prppoc, prplep, totpov, totpoc, totlep, totlan, totnnng, poc) %>%
+    summarise(mean_pct_200x = mean(prp200x), 
+              sum_lan_pop = sum(totlan),
+              sum_land_nng = sum(totnnng),
+              sum_pop = sum(totpoc),
+              sum_poc = sum(poc),
+              sum_pop = sum(totpov)) %>%
+    mutate(prp_eng = sum_land_nng/sum_lan_pop, 
+           prp_poc =  sum_poc/sum_pop)
+  
+  # just select the population demographics that make up the 1 mile radius no recalculating 
+  herc_ind_area <-metro_area %>%
+    filter(tractce %in% c("126201", "126202", "103000", "103600", "126101", "126102", "104400", "105204",
+                          "105201", "105500", "104100","103400", "003300","126300")) %>%
+    select(tractce,prppoc, prp200x, prplep, -geometry)%>%
+    arrange(desc(prppoc))%>% 
+    rename(`Census Tract` = tractce,
+           `POC Proportion` = prppoc,
+           `Under Poverty Level Proportion` = prp200x,
+           `Non-English Speakers Proprtion` = prplep)
+  
+  #-------------------------
+  # Household Income Analysis
+  
+  # Select only household related information
+  census_tract_income <- CensusACSTract %>%
+    mutate(GEOID2 = as.double(GEOID2)) %>%
+    dplyr::select(1:20, MEANHHINC, MEDIANHHI)  
 
-#--------
-# Find if a power plant is by an EJ area
-
-## Work on EJ
-# Manually enter crs
-st_crs(ej_shp) <- 26915
-
-# merge the ej areas relabeled with the ej shp
-EJ_stacked <- EJ_stacked %>%
-  mutate(geoid = as.character(geoid))
-# join data
-ej_tracts_sf <- ej_shp %>%
-  left_join(EJ_stacked %>% select(geoid, EJ_OR_NOT),by = "geoid") %>%
-  mutate(EJ_OR_NOT = if_else(is.na(EJ_OR_NOT), FALSE, TRUE))
-
-## make sure power plants sf is sf
-powerplants_sf <- mn_powerplants %>%
-  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
-  st_transform(26915)
-ej_tracts_sf <- st_transform(ej_tracts_sf, st_crs(powerplants_sf))
-
-## Join data
-powerplants_with_ej <- st_join(
-  ej_tracts_sf,
-  powerplants_sf %>% select(plant_name, total_mw, fossil_fuel, county, zip, plant_code),
-  join = st_contains) %>%
-  mutate(power_plant_or_not = !is.na(plant_name))
-
-metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
-metro_area_pp <- st_transform(metro_area_pp, crs = 4326)
-
-
-tt <- powerplants_with_ej %>%
-  filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%  #metro areas
-  group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
-  summarize(count = n())
-
-full <- powerplants_with_ej %>%
-  group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
-  summarize(count = n())
-
-
-herc <- powerplants_with_ej %>%
-  filter(plant_code == 10013) %>%
-  select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
+  # transform it to the matching crs (needed to join)
+  mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
+    st_transform(crs = 4326)%>%
+    mutate(GEOID = as.double(GEOID),
+           County = gsub(" County", "", NAMELSADCO))  
+  
+  # change crs of mn_tracts
+  mn_tracts_diff <- st_transform(mn_tracts, 26915)   
+  
+  # join powerplant and mn tracts
+  powerplant_with_tract <- st_join(powerplants_sf, mn_tracts_diff,join = st_within) %>%
+    group_by(GEOIDFQ, fossil_fuel) %>%
+    summarize(count = n())
+  
+  # Join power plant now with census (possible because powerplant has tract info)
+  census_with_pp <- census_tract_income %>%
+    left_join( powerplant_with_tract,
+      by = c("GEOID" = "GEOIDFQ")) %>%
+      mutate(count = if_else(is.na(count), 0, count))
+    
+  # create "breaks" or sports in the Mean Household Income you want to split for analysis
+  # Then create labels so they are easier to interpret (big numbers read weird)
+  breaks <- seq(0, max(census_with_pp$MEANHHINC, na.rm = TRUE) + 50000, by = 50000)
+  labels <- paste0(breaks[-length(breaks)] / 1000, "–",breaks[-1] / 1000, "k")
+  
+  # now actually apply the breaks to mean household income then find the total_powerplants
+  # and number of tracts income bin (and fossil fuel)
+  pp_by_income <- census_with_pp %>%
+    mutate(income_bin = cut(MEANHHINC,breaks = breaks,labels = labels,include.lowest = TRUE)) %>%
+    group_by(income_bin, fossil_fuel) %>%
+    summarise(total_powerplants = sum(count, na.rm = TRUE), count_tracts = n())
+  
+  #-------------------------
+  # 1 Mile buffer
+  
+  # grab the geoid for each EJ Census tract
+  ej_geoids <- as.numeric(ej_sf$geoid)
+  
+  # in the full mn_tracts, if the geoid is in the EJ_sf, mark it as an EJ_Area
+  mn_tracts_flagged <- mn_tracts %>%
+    mutate(EJ_Area = GEOID %in% ej_geoids)
+  
+  # transform the data tha will be joined to matching crs 
+  mn_tracts_flagged <- st_transform(mn_tracts_flagged, 26915)   
+  powerplants_sf <- st_transform(powerplants_sf, 26915)
+  
+  # Create buffer around each powerplant for 1 mile (1609.34 = meter)
+  powerplants_buffer <- st_buffer(powerplants_sf, dist = 1609.34)
+  
+  # Join mn_tracts with powerplants (and the buggers)
+  tracts_near_pp <- st_join(mn_tracts_flagged, powerplants_buffer, join = st_intersects)  
+  
+  # Find how many tracts are within 1 mile from a powerplant (and seperate. by type of fuel)
+  pp_summary <- tracts_near_pp %>%
+    group_by(plant_name, fossil_fuel, COUNTYFP) %>%
+    summarise(number_tracts = n(),
+              number_ej_tracts = sum(EJ_Area),
+              prop = number_ej_tracts/number_tracts) 
+  
+  
+  pp_summary %>%
+    filter(fossil_fuel == "Fossil Fuel") %>%
+    ggplot(aes(x =prop)) +
+    geom_histogram(fill = "darkblue") +
+    theme_classic() +
+    labs(x = "Proportion", y = "Count",
+         title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
+         subtitle = "For Fossil Fuel Plants")
+  
+  
+  pp_summary %>%
+    filter(fossil_fuel == "Fossil Fuel") %>%
+    filter(COUNTYFP %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%
+    ggplot(aes(x =prop)) +
+    geom_histogram(fill = "darkgreen") +
+    theme_classic() +
+    labs(x = "Proportion", y = "Count",
+         title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
+         subtitle = "For Fossil Fuel Plants in Metro Area (Twin Cities)")
 
 ###=====Schools====###
   points_sf_crs <- st_as_sf(
@@ -478,42 +602,42 @@ herc <- powerplants_with_ej %>%
 
 ###=== Animation of Powerplants over the years ===###
   
-# define the last year of data
-  max_year <- 2025
-
-# for each year, if a power plant was already isntalled, have it as old, if not have it as new
-mn_powerplants_over_time <- mn_powerplants %>%
-  select(plant_code, longitude, latitude, first_op_date, first_op_year) %>%
-  filter(!is.na(longitude) & !is.na(latitude)) %>%
-  rowwise() %>%
-  mutate(year = list(first_op_year:max_year)) %>% 
-  unnest(year) %>%                                 
-  mutate(is_current_year = ifelse(year == first_op_year, "New", "Old")) %>%
-  mutate(display = year >= first_op_year) %>%
-  arrange(year)
-
-# Plot the data, new vs old power plants
-p_map <-ggplot() +
-  geom_sf(data = mn_counties, fill = NA, color = "#454545", size = 0.1) +
-  geom_point(data = mn_powerplants_over_time %>% filter(display),
-             aes(longitude, latitude, color = is_current_year), size = 1.75, alpha = 0.9) +
-  scale_color_manual(values = c("New" = "#F2447E", "Old" = "#A19F9F")) +
-  coord_sf() +
-  theme_void() +
-  theme(panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.grid = element_blank(),
-        strip.background = element_blank(),
-        legend.background = element_rect(fill = "transparent", color = NA),
-        axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Year: {current_frame}", color = "") +
-  transition_manual(year) 
-
-# Actually Animate the leaflet (and save it, so it's just a graph for every year)
-  animate(p_map, fps = 10, duration = 30, width = 600,height = 400,
-          renderer = gifski_renderer("www/animations/powerplants_animation.gif"),
-          bg = 'transparent')
+  # define the last year of data
+    max_year <- 2025
+  
+  # for each year, if a power plant was already isntalled, have it as old, if not have it as new
+  mn_powerplants_over_time <- mn_powerplants %>%
+    select(plant_code, longitude, latitude, first_op_date, first_op_year) %>%
+    filter(!is.na(longitude) & !is.na(latitude)) %>%
+    rowwise() %>%
+    mutate(year = list(first_op_year:max_year)) %>% 
+    unnest(year) %>%                                 
+    mutate(is_current_year = ifelse(year == first_op_year, "New", "Old")) %>%
+    mutate(display = year >= first_op_year) %>%
+    arrange(year)
+  
+  # Plot the data, new vs old power plants
+  p_map <-ggplot() +
+    geom_sf(data = mn_counties, fill = NA, color = "#454545", size = 0.1) +
+    geom_point(data = mn_powerplants_over_time %>% filter(display),
+               aes(longitude, latitude, color = is_current_year), size = 1.75, alpha = 0.9) +
+    scale_color_manual(values = c("New" = "#F2447E", "Old" = "#A19F9F")) +
+    coord_sf() +
+    theme_void() +
+    theme(panel.background = element_rect(fill = "transparent", color = NA),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.grid = element_blank(),
+          strip.background = element_blank(),
+          legend.background = element_rect(fill = "transparent", color = NA),
+          axis.text = element_blank(),
+          axis.ticks = element_blank()) +
+    labs(title = "Year: {current_frame}", color = "") +
+    transition_manual(year) 
+  
+  # Actually Animate the leaflet (and save it, so it's just a graph for every year)
+    animate(p_map, fps = 10, duration = 30, width = 600,height = 400,
+            renderer = gifski_renderer("www/animations/powerplants_animation.gif"),
+            bg = 'transparent')
 
 ###==================== Write as csv ===================###
 
