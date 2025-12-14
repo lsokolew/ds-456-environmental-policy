@@ -93,6 +93,8 @@ herc_cols <- colorBin(palette = poc_cols, domain = metro_area$prppoc, bins = 5)
 
 intro <- "Intro"
 
+# power plants
+
 pp_locations <- "Power plants draw from several sources of energy aside from traditional fossil fuels. Wind farms, particularly on the state's open
 western and southern prairies, allow for wind energy to provide 25% of the state's total net electricity generation in 2024 (EIA profile analysis).
 The state's flat terrain offers little opportunities for hydroelectric generation; however, several small plants in the northeast produce roughly 1%
@@ -207,9 +209,12 @@ from the US Energy Information Administration (EIA). In order to examine demogra
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from [ADD YEAR]. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental
 Justice Areas.</b> <b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of
-PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1980-2025), which we used to evaluate the impacts of power
+PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to evaluate the impacts of power
 plants on air quality. Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's
-data</b> on hospitalizations due to asthma and COPD.</b>"
+data</b> on hospitalizations due to asthma and COPD.</b>
+<br>
+To find code and reproduce our work, please see our github repository at https://github.com/lsokolew/ds-456-environmental-policy/tree/main.
+"
 
 acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable help in guilding the direction of our project. We
 sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks also to Professor Shilad Sen for his help."

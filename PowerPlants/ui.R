@@ -153,37 +153,45 @@ ui <- navbarPage(
     text-align: justify;
     font-size: 18px;
     font-family: 'Tinos', serif;
-    color: #4a4a4a;",HTML(aq_blurb)),
+    color: #4a4a4a;",HTML(aq_text_1)),
   br(),
   
   column(12, align = "center", leafletOutput(outputId = 'monitor_buffers', height = 400, width = 600)),
-  #column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),
-  
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(interactive_aq_plot_descrip)),
-  # br(),
+
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_2)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "grouped_summ_lineplot", height = 400, width = 600)),
-  #column(12, align = "center", plotOutput(outputId = "one_yr_aq_change_lineplot", height = 400, width = 600)),
+
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_3)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "aq_by_county_type_lineplot", height = 400, width = 600)),
 
   
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(aq_line_plot_descrip)),
-  # br(),
-
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_4)),
+  br(),
   
   ##=================Health=================##
   
