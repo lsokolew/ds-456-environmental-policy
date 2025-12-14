@@ -232,18 +232,18 @@ ui <- navbarPage(
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(asthma_plot_one)),
   
-  # column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
-  # br(),
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(health_blurb)),
-  # 
-  # column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
+   column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
+   br(),
+   div(
+     style = "
+     max-width: 900px; 
+     margin: 0 auto; 
+     text-align: justify; 
+     font-size: 18px; 
+     font-family: 'Tinos', serif; 
+     color: #4a4a4a;",HTML(health_blurb)),
+   
+   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
  
   ###================================ HERC ===============================###
   br(),
