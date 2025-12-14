@@ -284,6 +284,113 @@ herc <- powerplants_with_ej %>%
   filter(plant_code == 10013) %>%
   select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
 
+###=====Schools====###
+path <- "emissions2017.xlsx"
+sheets <- excel_sheets(path)
+
+xl_list <- lapply(sheets, function(file){
+  emissions_2017 <- read_xlsx(path, sheet = file)
+})
+NO2_emissions2017 <- xl_list[[3]]
+
+names(NO2_emissions2017) <- as.character(NO2_emissions2017[1, ])
+NO2_emissions2017 <- NO2_emissions2017[-1,]
+
+NO2_emissions2017 <- NO2_emissions2017 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2017)
+
+# 2018
+path2 <- "emissions2018.xlsx"
+sheets2 <- excel_sheets(path2)
+
+xl_list2 <- lapply(sheets2, function(file){
+  emissions_2018 <- read_xlsx(path2, sheet = file)
+})
+NO2_emissions2018 <- xl_list2[[3]]
+
+names(NO2_emissions2018) <- as.character(NO2_emissions2018[1, ])
+NO2_emissions2018 <- NO2_emissions2018[-1,]
+
+NO2_emissions2018 <- NO2_emissions2018 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2018)
+
+# 2019
+path3 <- "emissions2019.xlsx"
+sheets3 <- excel_sheets(path3)
+
+xl_list3 <- lapply(sheets3, function(file){
+  emissions_2019 <- read_xlsx(path3, sheet = file)
+})
+NO2_emissions2019 <- xl_list3[[3]]
+
+names(NO2_emissions2019) <- as.character(NO2_emissions2019[1, ])
+NO2_emissions2019 <- NO2_emissions2019[-1,]
+
+NO2_emissions2019 <- NO2_emissions2019 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2019)
+
+# 2020
+path4 <- "emissions2020.xlsx"
+sheets4 <- excel_sheets(path4)
+
+xl_list4 <- lapply(sheets4, function(file){
+  emissions_2020 <- read_xlsx(path4, sheet = file)
+})
+NO2_emissions2020 <- xl_list4[[3]]
+
+names(NO2_emissions2020) <- as.character(NO2_emissions2020[1, ])
+NO2_emissions2020 <- NO2_emissions2020[-1,]
+
+NO2_emissions2020 <- NO2_emissions2020 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2020)
+
+# 2021
+path5 <- "emissions2021.xlsx"
+sheets5 <- excel_sheets(path5)
+
+xl_list5 <- lapply(sheets5, function(file){
+  emissions_2021 <- read_xlsx(path5, sheet = file)
+})
+NO2_emissions2021 <- xl_list5[[3]]
+
+names(NO2_emissions2021) <- as.character(NO2_emissions2021[1, ])
+NO2_emissions2021 <- NO2_emissions2021[-1,]
+
+NO2_emissions2021 <- NO2_emissions2021 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2021)
+
+all_emissions <- rbind(NO2_emissions2017, NO2_emissions2018)
+all_emissions <- rbind(all_emissions, NO2_emissions2019)
+all_emissions <- rbind(all_emissions, NO2_emissions2020)
+all_emissions <- rbind(all_emissions, NO2_emissions2021)
+
+
+all_emissions_data <- all_emissions %>%
+  distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, year, .keep_all = TRUE) %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>%
+  distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
+  filter(!is.na(latitude) & !is_na(longitude)) %>%
+  group_by(plant_code, plant_name.x, zip, longitude, latitude) %>%
+  summarise(`eia_model_estimates_of_n_ox_emissions_tons` = sum(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
+  filter(zip %in% metro_zips) %>%
+  arrange(desc(`eia_model_estimates_of_n_ox_emissions_tons`))
+
 
 
 # # Loading in census data
@@ -371,6 +478,8 @@ write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
 saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, file="Data/aq_data_clean/wrangled_airdata.rds")
 
+# emissions
+write_csv(all_emissions_data, "all_emissions_data.csv", row.names = FALSE)
 # health
 st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
 

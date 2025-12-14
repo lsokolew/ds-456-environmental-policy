@@ -227,68 +227,71 @@ server = function(input, output, session){
   ###================================ Health ===============================###
   
   mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
+  top_NOpolluters_metro <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+  
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----
-    pal <- colorFactor(
-      palette = c("lightblue", "steelblue", "royalblue4", "navy"),
-      levels = c("0-2", "2-4", "4-7", "7+"),
+    pal2 <- colorFactor(
+      palette = c("lightblue", "lightblue3","skyblue3", "royalblue3", "midnightblue"),
+      levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
       na.color = "grey"
     )
 
-    # ---- Palette for power plants ----
-    leaflet(zcta_joined) %>%
-      setView(lng = -93.265, lat = 44.9778, zoom = 8) %>%
+    leaflet(zcta_joined_children) %>%
+      setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       addTiles() %>%
       addPolygons(
-        fillColor = ~pal(valu_ct),
+        fillColor = ~pal2(value_cat),
         color = "black",
         weight = 1,
-        fillOpacity = 0.7,
         opacity = 1,
+        fillOpacity = 0.9,
         highlight = highlightOptions(
           weight = 2,
-          color = "white"
-        ),
-         label = ~paste0(
-           "Zipcode: ", ZCTA5CE, "<br>",
-           "Rate: ",
-           ifelse(is.na(A.rp10.),
-                  "Not given due to small population",
-                  A.rp10.)
-         ),
+          color = "white"),
+        label = ~paste0(
+          "Zipcode: ", ZCTA5CE20, "\n",
+          "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`)),
         labelOptions = labelOptions(
           style = list("white-space" = "pre-line")
-        )
-      ) %>%
+        )) %>%
+      
       addLegend(
-        pal = pal,
-        values = zcta_joined$valu_ct,
-        opacity = 0.7,
-        title = "Asthma hospitalizations per 10,000 (2017–2021)",
+        pal = pal2,
+        values = zcta_joined_children$value_cat,
+        opacity = 0.9,
+        title = "Asthma-related Emergency Department Visit",
         position = "bottomright",
         na.label = "Not given"
       ) %>%
       addLegend(
         colors = "red",
-        labels = "Fossil Fuel Plant",
-        opacity = 0.7,
+        labels = "Non-renewable Power Plant",
+        opacity = 0.8,
         position = "bottomright"
       ) %>%
       addCircleMarkers(
-        data = mn_powerplants_nonrenewable,
+        data = top_NOpolluters_metro,
         lng = ~longitude,
         lat = ~latitude,
         color = "red",
         radius = 3,
+        fill = "red",
         fillOpacity = 1,
         label = ~paste0(
-          "Plant Name: ", plant_name, "<br>",
-          "Plant Code: ", plant_code
-        )
-      )
-  })
-  
+          "Plant Name: ", plant_name.x, "<br>",
+          "Plant Code: ", plant_code)) %>%
+      addPolygons(data = polluters_buffer,
+                  fillColor = "transparent",
+                  fillOpacity = 0.4,
+                  color = "red",
+                  weight = 2,
+                  label = ~paste0("Plant: ", plant_name.x))
+    })
+    
   ###================================ Schools ===============================###
   if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
     schools_sf <- st_set_crs(schools_sf, 26915)}
@@ -343,9 +346,9 @@ server = function(input, output, session){
   output$school_pp_plot = renderPlot({
     distinct_schools_metro %>%
       ggplot(aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
-      geom_violin() +
+      geom_boxplot() +
       labs(title = "Distance to Nearest Power Plant by EJ Status",
-           x = "In EJ Area?", y = "Distance (miles)") +
+           x = "Environmental Justice Area", y = "Distance (miles)") +
       stat_summary(fun = median, geom = "point", size = 2, color = "red")+
       theme_1 +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
