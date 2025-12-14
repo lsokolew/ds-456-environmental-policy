@@ -443,7 +443,6 @@ mn_powerplants_with_EJ <- mn_powerplants %>%
               number_ej_tracts = sum(EJ_Area),
               prop = number_ej_tracts/number_tracts) 
   
-  
   pp_summary %>%
     filter(fossil_fuel == "Fossil Fuel") %>%
     ggplot(aes(x =prop)) +
@@ -492,19 +491,18 @@ powerplants_with_ej <- st_join(
   join = st_contains) %>%
   mutate(power_plant_or_not = !is.na(plant_name))
 
-metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
-  
-
+# find power plants are in ej_area (in metro area)
 tt <- powerplants_with_ej %>%
   filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%  #metro areas
   group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
   summarize(count = n())
 
+# find power plants are in ej_area (overall)
 full <- powerplants_with_ej %>%
   group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
   summarize(count = n())
 
-
+# find power plants are in ej_area (HERC Only)
 herc <- powerplants_with_ej %>%
   filter(plant_code == 10013) %>%
   select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
