@@ -8,25 +8,25 @@ library(gifski)
 ###================================ Load in Data ================================###
 
 
-mn_powerplants =  read_csv('Data/cleaning_data/mn_powerplants.csv') 
-zcta_joined =   st_read('Data/cleaning_data/zcta_joined.shp') 
-AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
-load("Data/aq_data_clean/wrangled_airdata.rds")
-schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
-mn_tracts <- st_read("Data/cleaning_data/mn_tracts.shp")
-ej_sf <- st_read("Data/cleaning_data/ej_sf.shp")
-asthma_poc_powerplant <- read_csv("Data/asthma_poc_ppowerplant.csv")
-distinct_schools_metro.csv <- read_csv("Data/distinct_schools_metro.csv")
-ej_shp <- st_read("Data/ej_mpca_census.shp")
-metro_area <- st_read("Data/cleaning_data/metro_area_pp.shp")
-powerplants <- st_read("Data/cleaning_data/powerplants_sf.shp")
-tribal_shp_wgs <- st_read("Data/tribal_areas/census_tribal_areas.shp")
+mn_powerplants              <- read_csv('Data/cleaning_data/mn_powerplants.csv') 
+zcta_joined                 <- st_read('Data/cleaning_data/zcta_joined.shp') 
+AirData_allyears            <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
+schools_sf                  <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
+mn_tracts                   <- st_read("Data/cleaning_data/mn_tracts.shp")
+ej_sf                       <- st_read("Data/cleaning_data/ej_sf.shp")
+asthma_poc_powerplant       <- read_csv("Data/asthma_poc_ppowerplant.csv")
+distinct_schools_metro.csv  <- read_csv("Data/distinct_schools_metro.csv")
+ej_shp                      <- st_read("Data/ej_mpca/ej_mpca_census.shp")
+metro_area                  <- st_read("Data/cleaning_data/metro_area_pp.shp")
+powerplants                 <- st_read("Data/cleaning_data/powerplants_sf.shp")
+tribal_shp_wgs              <- st_read("Data/tribal_areas/census_tribal_areas.shp")
 
+
+load("Data/aq_data_clean/wrangled_airdata.rds")
 all_emissions_data <- read_csv("all_emissions_data.csv")
 
 
-# plants_in_ej_counts <- st_read("plants_in_ej_counts.shp")
-
+# Metro Zip Codes
 metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 
                 55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422,
                 55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 
@@ -42,91 +42,53 @@ metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409,
 
 ###================================ Colors/Fonts/ETC ================================###
 
-
-# Colors/Fonts
+# App color
 light_blue <- "#CBE0F7"
 
-my_colors <- c("red", "grey")
-values <- c("New Power Plant", "Old Power Plant")
-
+# theme to use around ggplots
 theme_1 <- theme(panel.background = element_blank(),     
                  plot.background = element_blank(),     
                  panel.grid = element_blank(),
                  strip.background = element_blank(),
                  legend.background = element_rect(fill = "transparent", color = NA) )
 
-fuel_colors <- scale_fill_manual(
-  values = c("Fossil Fuel" = "#d95f02", 
-             "Renewable" = "#1C693A"))
-
+# Fuel typ color
+fuel_colors <- scale_fill_manual( values = c("Fossil Fuel" = "#d95f02", "Renewable" = "#1C693A"))
 
 # colors for ej areas
-pal1 <- colorFactor(
-  palette = c("#dc0073", "#22577a", "#c44900", "#f4e285"),
-  domain = c("ALL", "ONLY LOW INCOME", "ONLY POC", "ONLY POC & LOW INCOME")
-)
+pal1 <- colorFactor(palette = c("#dc0073", "#22577a", "#c44900", "#f4e285"),
+                    domain = c("ALL", "ONLY LOW INCOME", "ONLY POC", "ONLY POC & LOW INCOME"))
 
 # health palete
-pal3 <- colorFactor(
-  palette = c("red", "green"),
-  domain = mn_powerplants$fossil_fuel
-)
+pal3 <- colorFactor(palette = c("red", "green"), domain = mn_powerplants$fossil_fuel)
 
+# HERC - POC pallete
+poc_cols <- c("#D5D1E6","#DFCEE9", "#534680","#312A4C", "#1E192E") 
+herc_cols <- colorBin(palette = c("#D5D1E6","#DFCEE9", "#534680","#312A4C", "#1E192E"),
+                      domain = (metro_area$prppoc *100), bins = 5)
 
 # For all plants
-plants_proj_1 <- st_transform(powerplants, crs = 26915)
-buffer_distance <- 1609.34 * 1
-plants_buffer <- st_buffer(plants_proj_1, dist = buffer_distance)
-plants_buffer <- st_transform(plants_buffer, crs = 4326)
+  plants_proj_1 <- st_transform(powerplants, crs = 26915)
+  buffer_distance <- 1609.34 * 1
+  plants_buffer <- st_buffer(plants_proj_1, dist = buffer_distance)
+  plants_buffer <- st_transform(plants_buffer, crs = 4326)
 
-
-# Herc stuff
+  
+###================================ Buffer Information (HERC) ================================###
+  
+# Filter to the HERC
 herc<- powerplants %>% filter(plnt_cd == 10013)
 
+# make sure the data is correct crs
 plants_proj <- st_transform(herc, crs = 26915)
 
+# determine 1 mile buffer based on km
 buffer_distance <- 1609.34 * 1
 
+# create buffer and then transform data back to crs for leaflet
 herc_buffer <- st_buffer(plants_proj, dist = buffer_distance)
 herc_buffer <- st_transform(herc_buffer, crs = 4326)
 
-## cols for her
-
-poc_cols <- c("#D5D1E6","#DFCEE9", "#534680","#312A4C", "#1E192E") 
-
-herc_cols <- colorBin(palette = poc_cols, domain = (metro_area$prppoc *100), bins = 5)
-
-
-tt<-metro_area %>%
-  filter(tractce %in% c("126201", "126202", "103000", "103600", "126101", "126102", "104400", "105204",
-                        "105201", "105500", "104100","103400", "003300","126300")) %>%
-  select(tractce, prp200x, prppoc, prplep, totpov, totpoc, totlep, totlan, totnnng, poc) %>%
-  summarise(mean_pct_200x = mean(prp200x), 
-            sum_lan_pop = sum(totlan),
-            sum_land_nng = sum(totnnng),
-            sum_pop = sum(totpoc),
-            sum_poc = sum(poc),
-            sum_pop = sum(totpov)) %>%
-  mutate(prp_eng = sum_land_nng/sum_lan_pop,
-         prp_poc =  sum_poc/sum_pop)
-
-
-ff<-metro_area %>%
-  filter(tractce %in% c("126201", "126202", "103000", "103600", "126101", "126102", "104400", "105204",
-                        "105201", "105500", "104100","103400", "003300","126300")) %>%
-  select(tractce,prppoc, prp200x, prplep, -geometry)%>%
-  arrange(desc(prppoc))%>% 
-  rename(`Census Tract` = tractce,
-          `POC Proportion` = prppoc,
-         `Under Poverty Level Proportion` = prp200x,
-         `Non-English Speakers Proprtion` = prplep)
-
-ff <- as.data.frame(ff) 
-
-ff <- ff %>% select(-geometry) 
-
-#126201, 126202, 103000, 103600, 126101, 126102, 104400, 105204
-# 105201, 105500, 104100,103400, 003300,126300
 ###================================ Text Tab 1  ================================###
 
 intro <- "Intro"
@@ -253,9 +215,9 @@ pp_data_methods <- "We got our main data about the locations, characteristics, a
 from the US Energy Information Administration (EIA) and Environmental Protection Agency (EPA). "
 
 ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
-counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from [ADD YEAR]. We made use of <b>Minnesota
+counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from 2022. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental
-Justice Areas.</b> "
+Justice Areas. </b> "
 
 aq_data_methods <-"The EPA provided pre-generated Air Data files of annual summaries of
 PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to explore the impacts of power
@@ -275,15 +237,14 @@ data</b> on hospitalizations due to asthma and COPD.</b>"
 
 data_methods_conclusion <- "To find code and reproduce our work, please see our github repository at https://github.com/lsokolew/ds-456-environmental-policy/tree/main."
 
-
-
 acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable insight in guilding the direction of our project. We
 sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks to Professor Shilad Sen for his feedback, and Professor Brianna
 Heggeseth also for her help."
 
 
-ai_statement <- "ChatGPT was used to debug code for some plots in the air quality section of this report. No generative AI was used in the 
-writing of our analysis."
+ai_statement <- "ChatGPT was used to debug code for some plots in the air quality section of this report. 
+Additonally, ChatGPT was used to debug animation plot, specifically, the one thing used was transition_manual. 
+No generative AI was used in the writing of our analysis."
 
 ###================================ OLD TEXT - NOTE DELETE ================================###
 
