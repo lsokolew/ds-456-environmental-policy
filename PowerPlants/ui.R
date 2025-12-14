@@ -112,7 +112,8 @@ ui <- navbarPage(
   ##=================EJ areas=================##
   br(),
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("How is Minnesota Protecting the Most Vulnerable?")),
+  h2(style = "text-align:center; font-size:22px;", strong("Where Are Minnesota's Most Vulnerable Communities in Relation to Power Plants?")),
+
   
   # DIV 1: choose how the text should be formated
   div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -143,7 +144,7 @@ ui <- navbarPage(
   ##=================Air Quality=================##
   
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("How do Power Plants Impact Air Quality?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How do power plants affect the air people breath?")),
   
   div(
     style = "
@@ -152,44 +153,69 @@ ui <- navbarPage(
     text-align: justify;
     font-size: 18px;
     font-family: 'Tinos', serif;
-    color: #4a4a4a;",HTML(aq_blurb)),
+    color: #4a4a4a;",HTML(aq_text_1)),
   br(),
   
   column(12, align = "center", leafletOutput(outputId = 'monitor_buffers', height = 400, width = 600)),
-  #column(12, align = "center", sliderInput('year_for_aq_viz', 'Year', min = 2008, max = 2021, value = c(2008), sep = "")),
-  
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(interactive_aq_plot_descrip)),
-  # br(),
+
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_2)),
+  br(),
   
   column(12, align = "center", plotOutput(outputId = "grouped_summ_lineplot", height = 400, width = 600)),
-  #column(12, align = "center", plotOutput(outputId = "one_yr_aq_change_lineplot", height = 400, width = 600)),
+
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_3)),
+  br(),
+  
   column(12, align = "center", plotOutput(outputId = "aq_by_county_type_lineplot", height = 400, width = 600)),
 
   
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(aq_line_plot_descrip)),
-  # br(),
-
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_4)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_5)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_6)),
   
   ##=================Health=================##
   
   br(),
   br(),
   
-  h2(style = "text-align:center; font-size:22px;", strong("What Does This Mean for People's Health?")),
+  h2(style = "text-align:center; font-size:22px;", strong("How is people's health impacted?")),
   
   div(
     style = "
@@ -212,6 +238,19 @@ ui <- navbarPage(
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(asthma_plot_one)),
   
+  column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(health_blurb)),
+  
+  
+  
   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
   
   
@@ -230,9 +269,9 @@ ui <- navbarPage(
   
    column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
   
-
+  column(12, align = "center", plotOutput(outputId = 'herc_lineplot', height = 400, width = 600)),
   
-  h2(style = "text-align:center; font-size:22px;", strong("So, What Now?")),
+  h2(style = "text-align:center; font-size:22px;", strong("So what now?")),
   
     ) # closing fluidpage
   ), # Closing tab #1
@@ -243,7 +282,7 @@ tabPanel(
   title = "Methods & Sources",
   fluidPage(
     ##=================Data=================##
-    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data")),
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Work")),
     
     # DIV 1: choose how the text should be formated
     div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -254,7 +293,7 @@ tabPanel(
           "<style>  b { 
         background-color: #FFF59D;  /* soft yellow highlight */
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
-          data_intro))), # close div
+          pp_data_methods))), # close div
     
     
     # DIV 2: data source logos
@@ -286,6 +325,29 @@ tabPanel(
       HTML(acknowledgements)
       ), #  close div
     
+    br(),
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("AI Statement")),
+    
+    div(
+      style = "max-width: 900px; 
+               margin: 0 auto; 
+               text-align: justify; 
+               font-size: 18px; 
+               font-family: 'Tinos', serif; 
+               color: #4a4a4a;",
+      HTML(ai_statement)
+    ), #  close div
+    
     ) #closing navpage
-  ) # closing tab #2
+  ), # closing tab #2
+
+###=============================================    Tab #2  =================================================###
+
+tabPanel(
+  title = "References",
+  fluidPage(
+    includeHTML("references.html")
+  ) #closing navpage
+) # closing tab #3
+
 ) # closing UI

@@ -22,22 +22,21 @@ library(htmlwidgets)
 library(htmltools)
 library(httr)
 library(jsonlite)
+library(readxl)
 
 ```
 
-
-
 ```{r, include=FALSE }
 
-# --------- Power plants ---------ycd]\\\\\\\\
-american_powerPlants <- read_csv("Data/Power_Plants.csv")
+# --------- Power plants ---------
+american_powerPlants <- read_csv("Power_Plants.csv")
 mn_powerplants <- american_powerPlants %>%
   filter(State == "Minnesota") %>% 
   mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas") | Plant_Code == 10013, "Fossil Fuel", "Renewable")) %>%
   janitor::clean_names()
 
 # Operating Years
-powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+powerplant_dates <- read_csv("powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
   janitor::clean_names() 
 powerplant_dates_mn <- powerplant_dates %>% 
   filter(state == "MN") %>% 
@@ -65,14 +64,34 @@ mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel
 
 
 # --------- Health ---------
-asthmaMN <- read_csv("Data/MN-asthma-zipcode.csv") 
-asthmaED <- read_csv("Data/MN_asthma_ED.csv")
+asthmaMN <- read_csv("MN-asthma-zipcode.csv") 
+asthmaED <- read_csv("Data/MN_asthma_ED.csv") 
+
 
 # --------- Zip Codes ---------
 
 zctas <- zctas(cb = FALSE, year = 2020)
 mn_counties <- counties(state = "MN", class = "sf")
 mn_zctas <- st_filter(zctas, mn_counties)
+
+zcta_data <- get_acs(
+  geography = "zcta",
+  variables = c(
+    total_pop = "B01003_001",
+    white = "B02001_002",
+    black = "B02001_003",
+    asian = "B02001_005",
+    hispanic = "B03003_003",
+    poverty = "B17001_002",
+    median_income = "B19013_001"
+  ),
+  year = 2021,
+  survey = "acs5",
+  output = "wide"
+)
+
+write.csv(zcta_data, "zcta_pop_data.csv")
+
 
 saveRDS(mn_zctas, "mn_zctas_2020.rds")
 
@@ -100,8 +119,8 @@ zcta_joined <- asthmaED %>%
 
 # --------- EJ Tracts---------
 
-ej_justice <- read_csv("Data/ej_mpca_census.csv")
-ej_shapefile <- sf::st_read("Data/ej_mpca_census.shp")
+ej_justice <- read_csv("ej_mpca_census.csv")
+ej_shapefile <- sf::st_read("ej_mpca_census.shp")
 
 
 
@@ -110,16 +129,148 @@ metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 5
 
 ```
 
+```{r test}
+path <- "Data/Emissions2024.xlsx"
+sheets <- excel_sheets(path)
+
+xl_list <- lapply(sheets, function(file){
+  emissions_2024 <- read_xlsx(path, sheet = file)
+})
+NO2_emissions2024 <- xl_list[[3]]
+
+names(NO2_emissions2024) <- as.character(NO2_emissions2024[1, ])
+NO2_emissions2024 <- NO2_emissions2024[-1,]
+
+NO2_emissions2024 <- NO2_emissions2024 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  left_join(mn_powerplants_nonrenewable)
+
+NO2_emissions2024_data <- NO2_emissions2024 %>%
+  distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>%
+  arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
+  distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
+  filter(!is.na(latitude) & !is_na(longitude))
+
+NO2_emissions_sf <- st_as_sf(NO2_emissions2024_data, coords = c("longitude", "latitude"), crs = 4326) %>%
+  st_transform(26915)
+
+plant_in_ej <- st_within(NO2_emissions_sf, ej_areas_proj)
+NO2_emissions_sf$plant_in_ej <- lengths(plant_in_ej) > 0
+
+points_sf_crs%>%
+  st_join(NO2_emissions_sf) %>%
+  filter(!is.na(eia_model_estimates_of_n_ox_emissions_tons)) %>%
+  arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+
+top_NOpolluters_metro <- NO2_emissions_sf %>%
+  filter(zip %in% metro_zips) %>%
+  arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+
+  group_by(plant_in_ej) %>%
+  summarise(median = median(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+
+
+
+ 
+```
+
+```{r test2}
+
+MPCA_emissions <- read_xlsx("Data/MPCA_PointSourceAirEmissionsInventory.xlsx")
+       filter(INDUSTRY_TYPE == "Utilities") %>%
+  count()
+
+MPCA_emissions_cleaned_2023 <- MPCA_emissions %>%
+  janitor::clean_names() %>%
+  filter(year == 2023) %>%
+  filter(!is.na(latitude) & !is_na(longitude)) %>%
+  filter(zip_code %in% metro_zips)
+
+MPCA_emissions_cleaned_2023 %>%
+  filter(facility_id %in% top_emissions & pollutant %in% asthma_pollutants) %>%
+  ggplot(aes(y = facility_name, x = emissions_tons)) +
+  geom_col() +
+  facet_wrap(~pollutant)+
+      theme(legend.position = "none")
+
+# ------------------------------------------
+MPCA_emissions_cleaned_2023 %>%
+  filter(facility_id %in% top_emissions & pollutant %in% asthma_pollutants) %>%
+  ggplot(aes(x = pollutant, y = emissions_tons)) +
+  geom_col(aes(fill = facility_name), position = position_dodge()) +
+  labs(x = "Pollutant", y = "Emissions (Tons)", 
+       title = "Top Polluters in Metro Area by Total Emissions", 
+       fill = "Facility") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# ------------------------------------------ look at population density
+
+
+  
+
+top_emissions <- c(12300012, 5300015, 5301050, 5300400, 3700016)
+asthma_pollutants <- c("Nitrogen Oxides", "PM2.5 Primary", "PM10 Primary", "Sulfur Dioxide")
+
+MPCA_emissions_cleaned_NO_allyears <- MPCA_emissions %>%
+  janitor::clean_names() %>%
+  filter(pollutant == "Nitrogen Oxides") %>%
+  filter(!is.na(latitude) & !is_na(longitude))
+
+# Asthma + NO
+mpca_data <- MPCA_emissions %>%
+  janitor::clean_names() %>%
+  filter(pollutant %in% c("Nitrogen Oxides", "PM2.5 Primary", "PM10 Primary", "Sulfur Dioxide")) %>%
+  filter(year %in% 2017:2021) %>%
+  filter(!is.na(latitude) & !is_na(longitude)) %>%
+  group_by(zip_code, pollutant) %>%
+  summarise(avg = mean(emissions_tons)) %>%
+  mutate(zip_code = as.character(zip_code)) %>%
+  left_join(asthmaED, by = c("zip_code" = "_ZIP")) %>%
+  filter(`Age group` == "All ages" & `Age-adjusted rate per 10,000` != "*") %>%
+  pivot_wider(names_from = pollutant, values_from = avg) %>%
+  janitor::clean_names()
+
+MPCA_sf <- st_as_sf(MPCA_emissions_cleaned_NO_allyears, coords = c("longitude", "latitude"), crs = 4326) %>%
+  st_transform(26915)
+
+plant_in_ej <- st_within(MPCA_sf, ej_areas_proj)
+MPCA_sf$plant_in_ej <- lengths(plant_in_ej) > 0
+
+MPCA_sf %>%
+  filter(year == 2023) %>%
+  ggplot(aes(x = emissions_tons)) +
+  geom_density()
+
+MPCA_sf %>%
+  filter(zip_code %in% metro_zips) %>%
+  group_by(year, plant_in_ej) %>%
+  summarise(avg_no = median(emissions_tons)) %>%
+  ggplot(aes(x = year, y = avg_no, group = plant_in_ej, color = plant_in_ej)) +
+  geom_line()
+
+log_model <- glm(plant_in_ej ~ emissions_tons, data = MPCA_sf, family = binomial)
+
+coef <- summary(log_model)$coefficients
+exp(coef)
+```
+
+
 
 ```{r ASTHMA}
 # -------- Data Wrangling ---------
-zcta_joined <- st_as_sf(zcta_joined)
 
 zcta_joined_all_ages <- zcta_joined %>%
   filter(`Age group` == "All ages")
 
 zcta_joined_children <- zcta_joined %>%
   filter(`Age group` == "0-17")
+
+zcta_joined <- st_as_sf(zcta_joined)
+
 
 mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
 
@@ -137,15 +288,15 @@ zcta_joined <- asthmaED %>%
     `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` < 15 ~ "0-15",
     `Age-adjusted rate per 10,000` >= 15 & `Age-adjusted rate per 10,000` < 30 ~ "15-30",
     `Age-adjusted rate per 10,000` >= 30 & `Age-adjusted rate per 10,000` < 45 ~ "30-45",
-    `Age-adjusted rate per 10,000` >= 45 ~ "45+",
+    `Age-adjusted rate per 10,000` >= 45 & `Age-adjusted rate per 10,000` < 60 ~ "45-60",
+    `Age-adjusted rate per 10,000` >= 60 ~ "60+",
      TRUE ~ NA_character_))
 
-zcta_joined_all_ages <- zcta_joined %>%
-  filter(`Age group` == "All ages")
+
 
 pal2 <- colorFactor(
-  palette = c("lightblue", "steelblue", "royalblue4", "navy"),
-  levels = c("0-15", "15-30", "30-45", "45+"),
+  palette = c("lightblue", "dodgerblue","royalblue", "royalblue4", "midnightblue"),
+  levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
   na.color = "grey"
 )
 
@@ -239,7 +390,7 @@ points_sf <- st_as_sf(
 ) %>%
   st_transform(26915) 
 
-# --------- Asthma buffer around HERC ---------
+# --------- Asthma buffer around polluters ---------
 
 # Create sf points from lat/long in WGS84
  # project to UTM 15N for distance work
@@ -248,39 +399,70 @@ HERC <- points_sf %>%
   filter(plant_code == 10013) %>%
   st_transform(crs = 4326)
 
-HERC_buffer <- st_buffer(HERC, dist = 1609.34)
 
-plot <- leaflet(zcta_joined) %>%
-  setView(lng = -93.265, lat = 44.9778, zoom = 15) %>%
+
+zcta_joined <- asthmaED %>%
+  left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
+  mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
+        `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
+   mutate(value_cat = case_when(
+    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` < 15 ~ "0-15",
+    `Age-adjusted rate per 10,000` >= 15 & `Age-adjusted rate per 10,000` < 30 ~ "15-30",
+    `Age-adjusted rate per 10,000` >= 30 & `Age-adjusted rate per 10,000` < 45 ~ "30-45",
+    `Age-adjusted rate per 10,000` >= 45 & `Age-adjusted rate per 10,000` < 60 ~ "45-60",
+    `Age-adjusted rate per 10,000` >= 60 ~ "60+",
+     TRUE ~ NA_character_))
+
+zcta_joined <- st_as_sf(zcta_joined)
+
+zcta_joined_children <- zcta_joined %>%
+  filter(`Age group` == "0-17")
+
+pal2 <- colorFactor(
+  palette = c("skyblue2", "skyblue3","royalblue3", "royalblue4", "midnightblue"),
+  levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
+  na.color = "grey"
+)
+
+
+polluters <- top_NOpolluters_metro %>%
+  arrange(desc(eia_model_estimates_of_n_ox_emissions_tons)) %>%
+  head(15) %>%
+  st_transform(crs = 4326)
+
+polluters_buffer <- st_buffer(polluters, dist = 1609.34)
+
+plot <- leaflet(zcta_joined_children) %>%
+  setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
   addTiles() %>%
   addPolygons(
-    fillColor = ~pal(valu_ct),
+    fillColor = ~pal2(value_cat),
     color = "black",
     weight = 1,
     opacity = 1,
-    fillOpacity = 0.7,
+    fillOpacity = 0.9,
     highlight = highlightOptions(
       weight = 2,
       color = "white"),
     label = ~paste0(
-      "Zipcode: ", ZCTA5CE, "\n",
-      "Rate: ", ifelse(is.na(A.rp10.), "Not given due to small population", A.rp10.))) %>%
+      "Zipcode: ", ZCTA5CE20, "\n",
+      "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`))) %>%
   addLegend(
-    pal = pal,
-    values = zcta_joined$valu_ct,
-    opacity = 0.7,
+    pal = pal2,
+    values = zcta_joined_children$value_cat,
+    opacity = 0.9,
     title = "Asthma hospitalizations per 10,000 (2017–2021)",
     position = "bottomright",
     na.label = "Not given"
   ) %>%
  addLegend(
     colors = "red",
-    labels = "HERC",
-    opacity = 0.7,
+    labels = "Non-renewable Power Plant",
+    opacity = 0.8,
     position = "bottomright"
   ) %>%
   addCircleMarkers(
-    data = HERC,
+    data = top_NOpolluters_metro,
     lng = ~x,
     lat = ~y,
     color = "red",
@@ -288,18 +470,42 @@ plot <- leaflet(zcta_joined) %>%
     fill = "red",
     fillOpacity = 1,
     label = ~paste0(
-      "Plant Name: ", plant_name, "<br>",
+      "Plant Name: ", plant_name.x, "<br>",
       "Plant Code: ", plant_code)) %>%
-  addPolygons(data = HERC_buffer,
+  addPolygons(data = polluters_buffer,
                           fillColor = "transparent",
                           fillOpacity = 0.4,
                           color = "red",
-                          weight = 2)
+                          weight = 2,
+                          label = ~paste0("Plant: ", plant_name.x))
 plot
+zips_proj <- st_transform(zcta_joined_children, 26915)
+
+NR_points_sf_crs <- points_sf_crs %>% filter(fossil_fuel == "Fossil Fuel")
+
+zipcode_buffer <- st_buffer(zips_proj, dist = (1609.34 * 3))
+
+zip_plant_counts <- st_join(
+  zipcode_buffer,
+  NR_points_sf_crs,
+  join = st_contains
+) %>%
+  filter(`_ZIP` %in% metro_zips) %>%
+  group_by(`_ZIP`) %>%      # whatever your ZIP code field is called
+  summarise(
+    num_plants = n()                # number of plants within 3 miles
+  )
+
+asthmaED %>% left_join(zip_plant_counts) %>%
+  filter(`Age group` == "All ages") %>%
+  mutate(num_plants = ifelse(is.na(num_plants), 0, num_plants)) %>%
+  mutate(Rate = as.numeric(`Age-adjusted rate per 10,000`)) %>%
+  filter(!is.na(Rate)) %>%
+  ggplot(aes(y = Rate, x = num_plants)) +
+  geom_point()
+  
 
 ```
-
-
 
 ```{r School 1 mile radius}
 ##
@@ -400,25 +606,12 @@ distinct_schools %>%
 
 ```
 
-
-EJ Mile Radius
-
-```{r}
+```{r EJ Mile Radius}
 points_sf <- st_as_sf(mn_powerplants,
                       coords = c("longitude", "latitude"),
                       crs = 26915) 
 # Environmental justice areas
-ej_areas <- ej_shapefile %>%
-  filter(status200x == "YES")
 
-# If ej_shapefile already has a CRS, USE IT — do not overwrite.
-# Only set CRS if it is missing:
-if (is.na(st_crs(ej_areas))) {
-  ej_areas <- st_set_crs(ej_areas, 26915)
-}
-
-schools_in_ej <- st_within(school_proj, ej_areas)
-school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
 
 
 # Ensure projected CRS
@@ -435,51 +628,7 @@ points_sf$inside_tract <- lengths(points_inside) > 0
 
 
 
-points_sf %>%
-  filter(first_op_year >= 1995) %>%
-  mutate(before_after = case_when(first_op_year >= 1995 & first_op_year <= 2010 ~ TRUE,
-                                  first_op_year > 2010 ~ FALSE)) %>%
-  group_by(energy_source, before_after) %>%
-  summarise(count_inside_or_near = sum(inside_tract | within_mile))
-  
-points_sf %>%
-  filter(first_op_year >= 1995) %>%
-  mutate(before_after = case_when(first_op_year >= 1995 & first_op_year <= 2010 ~ TRUE,
-                                  first_op_year > 2010 ~ FALSE)) %>%
-  group_by(before_after) %>%
-  count()
 
-points_sf %>%
-  summarise(count_inside_or_near = sum(inside_tract | within_mile))
-
-buffer_points <- points_sf %>%
-  st_transform(3857) %>%      # project to meters
-  st_buffer(1609.34) %>%      # 1-mile buffer
-  st_transform(4326)       
-
-
-nearest_pp_index <- apply(school_pp_dist, 1, which.min)
-
-school_proj$nearest_pp_id <- points_sf$plant_code[nearest_pp_index]
-school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
-school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
-
-schools_near_pp_and_in_ej <- school_proj %>%
-  filter(within_1mile_pp & schools_in_ej)
-
-
-distinct_schools <- school_proj %>% 
-  distinct(GISADDR, .keep_all = TRUE) 
-
-metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422, 55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121, 55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070, 55079, 55092, 55303)
-
-distinct_schools <- distinct_schools %>% mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips)
-
-  ggplot(distinct_schools,aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
-  geom_violin() +
-  labs(title = "Distance to Nearest Power Plant by EJ Status",
-       x = "In EJ Area?", y = "Distance (miles)") +
-    stat_summary(fun = median, geom = "point", size = 2, color = "red")
 
 # Example data frame with latitude and longitude
 site_locations <- data.frame(
@@ -506,9 +655,278 @@ site_locations_sf$nearest_pp_id <- points_sf$plant_code[nearest_site_pp]
 site_locations_sf$nearest_pp_dist_m <- site_pp_dist[cbind(1:nrow(site_pp_dist), nearest_site_pp)]
 site_locations_sf$nearest_pp_dist_mi <- as.numeric(site_locations_sf$nearest_pp_dist_m) / 1609.34
 
+
+
 ```
 
+```{r}
+DATA
+
+test
+
+# power plant
+mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
+  filter(State == "Minnesota") %>%
+  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas"), "Fossil Fuel", "Renewable"),
+         PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% # change 'other' to 'waste heat'
+  janitor::clean_names() 
+
+# power plant dates
+powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+  janitor::clean_names() 
+powerplant_dates_retired <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_retired.csv") %>% 
+  janitor::clean_names()
+
+
+ 
+###=============Wrangling =============###
+
+powerplant_dates_mn <- powerplant_dates %>% 
+  filter(state == "MN") %>% 
+  mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(first_op_date = min(full_date))
+
+# add years to mn_powerplants (main dataset we're using for powerplants)
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn)
+
+# fill in missing dates:
+# Buffalo Sun CSG - active since 2/1/2025
+# Oster Sun CSG	- active since 1/1/2025
+# Quarry Sun CSG - active since 1/1/2025
+# via sunshare website
+mn_powerplants <- mn_powerplants %>%
+  mutate(first_op_date = case_when(plant_code == 66070 ~ as.Date(mdy("2/1/2025")),
+                                   plant_code == 66072 ~ as.Date(mdy("1/1/2025")),
+                                   plant_code == 66073 ~ as.Date(mdy("1/1/2025")),
+                                   TRUE ~ first_op_date), 
+         first_op_year = year(first_op_date)
+  ) 
+
+# get date of *last* generator's retirement for a powerplant (disregard dates of generators retired later)
+powerplant_dates_retired_mn <- powerplant_dates_retired %>% 
+  filter(state == "MN", plant_code != 1912) %>% #inaccurate info given for plant 1912 (it's still operational)
+  mutate(full_retirement_date = make_date(year = retirement_year, month = retirement_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(last_retire_date = max(full_retirement_date, na.rm = TRUE)) # those with missing dates don't appear in mn_powerplants & can be excluded
+
+# join to mn_powerplants
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_retired_mn) %>% mutate(last_retire_year = year(last_retire_date))
 
 
 
+```
 
+```{r, include=FALSE }
+
+# Power plants
+american_powerPlants <- read_csv("Data/Power_Plants.csv")
+mn_powerplants <- american_powerPlants %>%
+  filter(State == "Minnesota") %>% 
+  mutate(fossil_fuel = ifelse(PrimSource %in% c("coal", "petroleum", "natural gas") | Plant_Code == 10013, "Fossil Fuel", "Renewable")) %>%
+  janitor::clean_names()
+
+# Operating Years
+powerplant_dates <- read_csv("Data/powerplant_data_eia_egrid_2024_generator_operable.csv") %>% 
+  janitor::clean_names() 
+powerplant_dates_mn <- powerplant_dates %>% 
+  filter(state == "MN") %>% 
+  mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(first_op_date = min(full_date))
+
+# add years to mn_powerplants (main dataset we're using for powerplants)
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn, by = c("plant_code" = "plant_code"))
+
+# fill in missing dates:
+# Buffalo Sun CSG - active since 2/1/2025
+# Oster Sun CSG	- active since 1/1/2025
+# Quarry Sun CSG - active since 1/1/2025
+# via sunshare website
+mn_powerplants <- mn_powerplants %>%
+  mutate(first_op_date = case_when(plant_code == 66070 ~ as.Date(mdy("2/1/2025")),
+                                   plant_code == 66072 ~ as.Date(mdy("1/1/2025")),
+                                   plant_code == 66073 ~ as.Date(mdy("1/1/2025")),
+                                   TRUE ~ first_op_date), 
+         first_op_year = year(first_op_date)
+         ) 
+mn_powerplants
+
+mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel"
+
+write_csv(mn_powerplants, "mn_powerplants.csv")
+
+# Health
+copd <- read_csv("Data/copd.csv")
+asthmaMN <- read_csv("Data/MN-asthma-zipcode.csv") 
+# Air
+air <- read_csv("Data/air.csv")
+
+
+
+# Filter for specific zip codes if needed
+# For example, to get data for zip codes 90210 and 90001
+
+zctas <- zctas(cb = FALSE, year = 2020)
+mn_counties <- counties(state = "MN", class = "sf")
+mn_zctas <- st_filter(zctas, mn_counties)
+
+saveRDS(mn_zctas, "mn_zctas_2020.rds")
+
+
+zcta_joined <- asthmaMN %>%
+  left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
+  mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
+        `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
+   mutate(value_cat = case_when(
+    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
+    `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
+    `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
+    `Age-adjusted rate per 10,000` >= 7 ~ "7+"))
+
+zcta_joined <- st_as_sf(zcta_joined)
+
+```
+
+EPA API DATA
+
+```{r}
+# Load httr package
+library(httr)
+
+# Define the API URL
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 2000:2020
+all_data <- list()
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "amberbird59",    
+    param  = "88101",       # PM2.5
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "123",
+    site   = "0868"
+  )
+  
+  27-053-1007
+
+  
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df <- bind_rows(all_data)
+
+df<-final_df %>%
+  filter(metric_used == "Daily Mean") %>%
+  arrange(year) %>%
+  filter(method == 'R & P Model 2025 PM-2.5 Sequential Air Sampler w/VSCC - Gravimetric'| method == 'Andersen RAAS2.5-300 PM2.5 SEQ w/WINS - GRAVIMETRIC') %>%
+  distinct(arithmetic_mean, .keep_all = TRUE) %>%
+  mutate(year = as.numeric(year))
+
+aq_copd <- df %>% left_join(copd_total_hospitalizations)
+
+aq_plot <- df %>% ggplot(aes(x = year, y = arithmetic_mean)) +
+  geom_line()
+
+copd_plot <- aq_copd %>% ggplot(aes(x = year, y = hospitalizations)) +
+  geom_line()
+
+ggarrange(aq_plot, copd_plot, 1,1)
+  
+
+```
+
+EPA API DATA PM10
+
+```{r}
+url <- "https://aqs.epa.gov/data/api/annualData/bySite"
+
+years <- 1990:2002
+all_data1 <- list()
+
+# by HERC
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "taupemallard55",    
+    param  = "81102",       # PM10
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "053",
+    site   = "0053"
+  )
+
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data1[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+
+# Combine all years into one data frame
+final_df_PM10_byHERC <- bind_rows(all_data1)
+final_df_PM10_byHERC
+
+# SLP
+
+for (yr in years) {
+  query_params <- list(
+    email  = "sohr@macalester.edu",
+    key    = "taupemallard55",    
+    param  = "81102",       # PM10
+    bdate  = paste0(yr, "0101"),
+    edate  = paste0(yr, "1231"),
+    state  = "27",
+    county = "053",
+    site   = "2006"
+  )
+
+  response <- GET(url, query = query_params)
+  if (status_code(response) == 200) {
+    data_text <- content(response, as = "text", encoding = "UTF-8")
+    data_json <- fromJSON(data_text)
+    
+    if (length(data_json$Data) > 0) {
+      all_data1[[as.character(yr)]] <- data_json$Data
+    } else {
+      message("No data for year ", yr)
+    }
+  } else {
+    message("Request failed for year ", yr, " with status: ", status_code(response))
+  }
+}
+# Combine all years into one data frame
+final_df_PM10_SLP <- bind_rows(all_data1)
+
+PM10_total_df <- final_df_PM2.5_byHERC %>% full_join(final_df_PM10_SLP)
+
+PM10_total_df %>%
+  ggplot(aes(x = year, y = arithmetic_mean, colour = site_number)) + geom_line()
+  
+```

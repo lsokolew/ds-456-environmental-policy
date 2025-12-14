@@ -64,6 +64,7 @@ server = function(input, output, session){
            fill = "Powerplant Type") +
       theme_classic() +
       theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
       fuel_colors
 
   }, bg = "transparent")
@@ -78,6 +79,7 @@ server = function(input, output, session){
            fill = "Powerplant Type") +
       theme_classic() +
       theme_1    +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
       fuel_colors
   }, bg = "transparent")
   
@@ -93,34 +95,13 @@ server = function(input, output, session){
       labs(x = "Energy Source", y = "Megawatts Electricity Produced", title = "Electricity Produced by Energy Source in MN Powerplants",
            fill = "Powerplant Type") +  
       theme_classic() +
-      theme_1
+      theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
     }, bg = "transparent")
   
   ###================================ Air Quality ===============================###
 
   # Map the Buffers
-  
-  AirData_sf <- st_as_sf(AirData_allyears, coords = c("longitude", "latitude"), crs = 4326)
-  mn_pp_sf <- st_as_sf(mn_powerplants, coords = c("longitude", "latitude"), crs = 4326) %>% 
-    filter(fossil_fuel == "Fossil Fuel")
-  
-  # Project to meters (UTM 15N for Minnesota)
-  AirData_proj <- st_transform(AirData_sf, 26915)
-  mn_pp_proj  <- st_transform(mn_pp_sf, 26915)
-  
-  # buffer in meters
-  buffer_distance <- 1609.34 * 3
-  air_buffers_proj <- st_buffer(AirData_proj, dist = buffer_distance)
-  
-  # Spatial relationships in projected CRS
-  within_3miles <- st_within(mn_pp_proj, air_buffers_proj)
-  mn_pp_sf$near_monitor <- lengths(within_3miles) > 0
-  
-  pp_within_each_monitor <- st_intersects(air_buffers_proj, mn_pp_proj)
-  air_buffers_proj$nearby_pp_count <- lengths(pp_within_each_monitor)
-  
-  # Transform back to WGS84 for leaflet
-  air_buffers <- st_transform(air_buffers_proj, 4326)
   
   output$monitor_buffers = renderLeaflet({
     pal_buffers <- colorNumeric(
@@ -149,12 +130,12 @@ server = function(input, output, session){
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       # --- 3-mile buffers around monitors ---
       addPolygons(
-        data = air_buffers %>% filter(year == 2015),
+        data = air_buffers %>% group_by(site_num) %>% slice(which.max(nearby_pp_count)),
         fillColor = ~pal_buffers(nearby_pp_count),
         fillOpacity = 0.5,
         color = "darkblue",
         weight = 1,
-        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plant(s) nearby")
+        label = ~paste0("Monitor: ", local_site_name, " - ", nearby_pp_count, " plants nearby")
       ) %>%
       # --- Power plants ---
       addCircleMarkers(
@@ -166,7 +147,7 @@ server = function(input, output, session){
       ) %>%
       # --- Air monitors ---
       addCircleMarkers(
-        data = AirData_sf %>% filter(year == 2015),
+        data = AirData_sf,
         radius = .5,
         color = "darkblue",
         fill = TRUE,
@@ -183,7 +164,7 @@ server = function(input, output, session){
         ),
         labels = c(
           "Environmental Justice Area",
-          "Fossil Fuel Power Plant",
+          "Power Plant",
           "3-mile Buffer",
           "Air Monitor"
         ),
@@ -191,90 +172,23 @@ server = function(input, output, session){
       ) 
   })
   
-  
   # plot the pollutant concentrations grouped by number of nearby plants
-  
-  calc_avg_pm25 <- function(year_spec){
-    air_buffers %>% 
-      filter(year == year_spec) %>% 
-      mutate(grouped_nearby_pp_count = ifelse(nearby_pp_count > 1, "2+", as.character(nearby_pp_count))) %>% 
-      group_by(grouped_nearby_pp_count) %>% 
-      summarise(avg_pm25_grouped = mean(avg_pm25)) %>% 
-      mutate(year = year_spec)
-  }
-  
-  years <- 1999:2024 # incomplete data for 2025; would be inaccurate comparison
-  grouped_summ_pm25_allyears <- map(years, calc_avg_pm25) %>% list_rbind()
 
   output$grouped_summ_lineplot = renderPlot({
     ggplot(grouped_summ_pm25_allyears) +
       geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
       geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
       annotate("text", x = 2015,
-               y = 9.2, hjust = 0,
+               y = 9.3, hjust = 0,
                label = "National Standard",
                color = "darkgray") +
-      labs(x = "Year", y = "Annual Average PM2.5 Concentration (µg/m3)",
+      labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
+      ylim(0, 12) +
       theme_minimal()
   }, bg = "transparent")
   
-  
-  # compare the pollutant concentration the year before and after new plant built
-  
-  # plant_monitor_pairs <- st_intersects(air_buffers, mn_pp_sf)
-  # 
-  # monitor_pp <- tibble(
-  #   site_num = air_buffers$site_num,
-  #   plant_index = pp_within_each_monitor
-  # ) %>%
-  #   unnest(plant_index) %>%                             
-  #   mutate(
-  #     plant_id = mn_pp_sf$plant_code[plant_index],
-  #     plant_year = mn_pp_sf$first_op_year[plant_index]
-  #   ) %>%
-  #   select(-plant_index) %>% 
-  #   distinct() # keep only unique rows
-  # 
-  # # Join to the air quality time series
-  # aq_with_pp <- AirData_allyears %>%
-  #   left_join(monitor_pp, by = "site_num")
-  # 
-  # # ---- 1 year change -----
-  # aq_changes <- aq_with_pp %>%
-  #   filter(!is.na(plant_year)) %>%     # monitors near a plant
-  #   mutate(period = case_when(
-  #     year == plant_year - 1 ~ "before",
-  #     year == plant_year + 1 ~ "after",
-  #     TRUE ~ NA_character_
-  #   )) %>%
-  #   filter(!is.na(period))
-  
-  # aq_changes_summ <- aq_changes %>%
-  #   group_by(site_num, plant_id) %>%
-  #   summarize(
-  #     before = avg_pm25[period == "before"],
-  #     after  = avg_pm25[period == "after"],
-  #     change = after - before
-  #   ) %>% 
-  #   pivot_longer(3:4, names_to = "period", values_to = "avg_pm25_annual")
-  # 
-  # output$one_yr_aq_change_lineplot = renderPlot(
-  #   {ggplot(aq_changes_summ) +
-  #   geom_point(aes(x = fct_relevel(period, c("before", "after")),  
-  #                  y = avg_pm25_annual, 
-  #                  group = site_num, color = site_num)) +
-  #   geom_line(aes(x = fct_relevel(period, c("before", "after")),  
-  #                 y = avg_pm25_annual, 
-  #                 group = site_num, color = site_num)) +
-  #     scale_color_discrete(labels = c("B.F. Pearson School", "Ramsey Health Center", "Near Road I-35/I-94", "Andersen School")) +
-  #   theme_minimal() +
-  #   labs(title = "PM2.5 Concentration from Air Monitors Near New Plants",
-  #        x = "Year (Relative to Plant Beginning Operations)",
-  #        y = "PM2.5 Concentration (µg/m3)",
-  #        color = "Air Monitor Site")
-  # }, bg = "transparent")
   
   ff_status <- mn_powerplants %>%
   group_by(county) %>%
@@ -298,7 +212,7 @@ server = function(input, output, session){
         labs(
           title = "Average PM2.5 Concentration by County Type",
           color = "County Plant(s) Type",
-          y = "Annual Average PM2.5 Concentration (µg/m3)",
+          y = "Average PM2.5 Concentration (µg/m3)",
           x = "Year"
         ) +
         ylim(0, 12) +
@@ -313,68 +227,94 @@ server = function(input, output, session){
   ###================================ Health ===============================###
   
   mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
+  top_NOpolluters_metro <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+  
+  top_NOpolluters_metro_sf <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+  
+  polluters <- top_NOpolluters_metro_sf %>%
+    arrange(desc(eia_model_estimates_of_n_ox_emissions_tons)) %>%
+    st_transform(crs = 4326)
+  
+  polluters_buffer <- st_buffer(polluters, dist = 1609.34)
+  
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----
-    pal <- colorFactor(
-      palette = c("lightblue", "steelblue", "royalblue4", "navy"),
-      levels = c("0-2", "2-4", "4-7", "7+"),
+    pal2 <- colorFactor(
+      palette = c("lightblue", "lightblue3","skyblue3", "royalblue3", "midnightblue"),
+      levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
       na.color = "grey"
     )
 
-    # ---- Palette for power plants ----
-    leaflet(zcta_joined) %>%
-      setView(lng = -93.265, lat = 44.9778, zoom = 8) %>%
+    leaflet(zcta_joined_children) %>%
+      setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       addTiles() %>%
       addPolygons(
-        fillColor = ~pal(valu_ct),
+        fillColor = ~pal2(value_cat),
         color = "black",
         weight = 1,
-        fillOpacity = 0.7,
         opacity = 1,
+        fillOpacity = 0.9,
         highlight = highlightOptions(
           weight = 2,
-          color = "white"
-        ),
-         label = ~paste0(
-           "Zipcode: ", ZCTA5CE, "<br>",
-           "Rate: ",
-           ifelse(is.na(A.rp10.),
-                  "Not given due to small population",
-                  A.rp10.)
-         ),
+          color = "white"),
+        label = ~paste0(
+          "Zipcode: ", ZCTA5CE20, "\n",
+          "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`)),
         labelOptions = labelOptions(
           style = list("white-space" = "pre-line")
-        )
-      ) %>%
+        )) %>%
+      
       addLegend(
-        pal = pal,
-        values = zcta_joined$valu_ct,
-        opacity = 0.7,
-        title = "Asthma hospitalizations per 10,000 (2017–2021)",
+        pal = pal2,
+        values = zcta_joined_children$value_cat,
+        opacity = 0.9,
+        title = "Asthma-related Emergency Department Visit",
         position = "bottomright",
         na.label = "Not given"
       ) %>%
       addLegend(
         colors = "red",
-        labels = "Fossil Fuel Plant",
-        opacity = 0.7,
+        labels = "Non-renewable Power Plant",
+        opacity = 0.8,
         position = "bottomright"
       ) %>%
       addCircleMarkers(
-        data = mn_powerplants_nonrenewable,
+        data = top_NOpolluters_metro,
         lng = ~longitude,
         lat = ~latitude,
         color = "red",
         radius = 3,
+        fill = "red",
         fillOpacity = 1,
         label = ~paste0(
-          "Plant Name: ", plant_name, "<br>",
-          "Plant Code: ", plant_code
-        )
-      )
-  })
+          "Plant Name: ", plant_name.x, "<br>",
+          "Plant Code: ", plant_code)) %>%
+      addPolygons(data = polluters_buffer,
+                  fillColor = "transparent",
+                  fillOpacity = 0.4,
+                  color = "red",
+                  weight = 2,
+                  label = ~paste0("Plant: ", plant_name.x))
+    })
   
+  output$asthma_poc_plot = renderPlot({
+    
+    asthma_poc_powerplant %>%
+      ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
+      geom_point() +
+      facet_wrap(~near_plant, labeller = labeller(near_plant = 
+                                                    c("TRUE" = "Within Mile of Power Plant",
+                                                      "FALSE" = "Not Within Mile of Power Plant"))) +
+      labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
+      theme_bw()
+  }, bg = "transparent")
+    
   ###================================ Schools ===============================###
   if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
     schools_sf <- st_set_crs(schools_sf, 26915)}
@@ -429,11 +369,12 @@ server = function(input, output, session){
   output$school_pp_plot = renderPlot({
     distinct_schools_metro %>%
       ggplot(aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
-      geom_violin() +
+      geom_boxplot() +
       labs(title = "Distance to Nearest Power Plant by EJ Status",
-           x = "In EJ Area?", y = "Distance (miles)") +
+           x = "Environmental Justice Area", y = "Distance (miles)") +
       stat_summary(fun = median, geom = "point", size = 2, color = "red")+
-      theme_1
+      theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   }, bg = "transparent")
   
 
@@ -498,14 +439,13 @@ server = function(input, output, session){
 # 
 # })
 
-  
   # choose the specific power plant (example: row 1)
   target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
   # find which air buffers intersect this plant's location
   hits <- st_intersects(air_buffers_proj, target_pp)
   # keep only buffers that intersect
   air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
-  
+
 
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%
@@ -525,7 +465,23 @@ output$pp_ej_re <- renderLeaflet({
                    radius = 8, color =  "#962A0C")  
   })
 
+# choose the specific power plant
 
-
-
+output$herc_lineplot <- renderPlot({
+  # diff between avg of all air monitors in the state and air monitors just near the plant
+  ggplot(all_avgs) +
+    geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
+    geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+    annotate("text", x = 2016,
+             y = 9.3, hjust = 0,
+             label = "National Standard",
+             color = "darkgray") +
+    ylim(0,12)+
+    scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
+    labs(title = "PM2.5 Concentrations Are Consistently Higher Near the HERC",
+         y = "Annual Average PM2.5 Concentration (µg/m3)",
+         x = "Year",
+         color = "Location of Monitor") +
+    theme_1
+}, bg = "transparent")
 }
