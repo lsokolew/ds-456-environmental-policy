@@ -295,6 +295,11 @@ tabPanel(
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
           pp_data_methods))), # close div
     
+    HTML(paste0(
+      "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+      aq_data_methods))),
     
     # DIV 2: data source logos
     div(style = "text-align: center;",
