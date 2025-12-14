@@ -32,9 +32,13 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `airdata_clean.csv`: Data from EPA. Used for annual average PM2.5 values in MN, 1980-2025. Acquirable at the following link,[https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual], or by running `process_airdata.R`.
 - 
 [[TODO: update the following\]
-- `MN-asthma-zipcode.csv ` & `copd.csv`: By MN Department of Health, via the MN Public Health Data Access Portal. Used for hospitalizations due to asthma and COPD. 
+- `MN_asthma_ED.csv `: By MN Department of Health, via the MN Public Health Data Access Portal. Used for emergency department visits due to asthma.
+- `zcta_pop_data.csv`: American Community Survey 5-Year data at the ZCTA level (acquired through Tidycensus) and has proportions of demographics by race and income.
 - `CensusACSTract.xlsx`: American Community Survey 5-Year Summary File. By US Census Bureau. Via Minnesota Geospatial Commons. Used for househould income data. 
-- `ej_mpca_census.csv`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information.
+- `ej_mpca_census.csv` &  `ej_mpca_census.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information.
+- `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
+- `emissions2017.xlsx`, `emissions2018.xlsx`,`emissions2019.xlsx`,`emissions2020.xlsx`,`emissions2021.xlsx`: From the U.S. Energy Information Administration. Used for NOx, SO2, and CO2 emissions.
+  
 
 
 ## Required R Packages
