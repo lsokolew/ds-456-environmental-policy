@@ -231,6 +231,17 @@ server = function(input, output, session){
     filter(zip %in% metro_zips) %>%
     arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
   
+  top_NOpolluters_metro_sf <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+  
+  polluters <- top_NOpolluters_metro_sf %>%
+    arrange(desc(eia_model_estimates_of_n_ox_emissions_tons)) %>%
+    st_transform(crs = 4326)
+  
+  polluters_buffer <- st_buffer(polluters, dist = 1609.34)
+  
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----

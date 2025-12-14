@@ -482,6 +482,7 @@ save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, fi
 
 # emissions
 write_csv(all_emissions_data, "all_emissions_data.csv")
+
 # health
 st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
 
