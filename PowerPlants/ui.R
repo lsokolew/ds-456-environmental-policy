@@ -153,7 +153,7 @@ ui <- navbarPage(
     text-align: justify;
     font-size: 18px;
     font-family: 'Tinos', serif;
-    color: #4a4a4a;",HTML(aq_blurb)),
+    color: #4a4a4a;",HTML(aq_text_3)),
   br(),
   
   column(12, align = "center", leafletOutput(outputId = 'monitor_buffers', height = 400, width = 600)),
