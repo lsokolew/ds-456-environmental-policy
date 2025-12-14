@@ -312,6 +312,7 @@ server = function(input, output, session){
   output$asthma_poc_plot = renderPlot({
     
     asthma_poc_powerplant %>%
+      mutate(pct_poc = (blackE +asianE + hispanicE) / total_popE) %>%
       ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
       geom_point() +
       facet_wrap(~near_plant, labeller = labeller(near_plant = 
