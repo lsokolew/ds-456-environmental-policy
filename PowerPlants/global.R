@@ -17,7 +17,7 @@ load("Data/aq_data_clean/wrangled_airdata.rds")
 
 schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 
-all_emissions_data <- read.csv("all_emissions_data.csv")
+all_emissions_data <- read_csv("all_emissions_data.csv")
 mn_tracts <- st_read("mn_tracts.shp")
 ej_sf <- st_read("ej_sf.shp")
 ej_shp <- st_read("Data/ej_mpca_census.shp")
