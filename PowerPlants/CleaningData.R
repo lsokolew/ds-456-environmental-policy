@@ -705,13 +705,13 @@ saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, file="Data/aq_data_clean/wrangled_airdata.rds")
 
 # emissions
-write_csv(all_emissions_data, "Data/data_cleaning/all_emissions_data.csv")
+write_csv(all_emissions_data, "Data/cleaning_data/all_emissions_data.csv")
 
 # health
-st_write(zcta_joined_asthma, "Data/data_cleaning/zcta_joined.shp", row.names = FALSE)
-write.csv(asthma_poc_powerplant, "Data/data_cleaning/asthma_poc_powerplant.csv", row.names = FALSE)
+st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
+write.csv(asthma_poc_powerplant, "Data/cleaning_data/asthma_poc_powerplant.csv", row.names = FALSE)
 # schools
-write.csv(distinct_schools_metro, "Data/data_cleaning/distinct_schools_metro.csv", row.names = FALSE)
+write.csv(distinct_schools_metro, "Data/cleaning_data/distinct_schools_metro.csv", row.names = FALSE)
 
 # ej areas
 st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)
