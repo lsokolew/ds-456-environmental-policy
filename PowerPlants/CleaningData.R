@@ -380,6 +380,7 @@ all_emissions <- rbind(all_emissions, NO2_emissions2019)
 all_emissions <- rbind(all_emissions, NO2_emissions2020)
 all_emissions <- rbind(all_emissions, NO2_emissions2021)
 
+mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
 
 all_emissions_data <- all_emissions %>%
   distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, year, .keep_all = TRUE) %>%
