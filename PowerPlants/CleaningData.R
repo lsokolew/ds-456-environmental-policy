@@ -201,35 +201,34 @@ points_sf_crs <- st_as_sf( # power plants
   crs = 4326) %>%
   st_transform(26915)  
 
-zcta_pop_data <-zcta_pop_data %>% 
-  mutate(pct_poc = (blackE + asianE + hispanicE) / total_popE) %>%
-  mutate(GEOID = as.character(GEOID))
+# join asthma + population, filter once, convert to sf, project once
+asthma_sf_proj <- zcta_joined_asthma %>%
+  mutate(`_ZIP` = as.numeric(`_ZIP`)) %>%
+  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID")) %>%
+  filter(`Age group` == "All ages") %>%
+  st_as_sf() %>%
+  st_transform(26915)
 
-asthma_poc_joined_df <- zcta_joined_asthma %>%
-  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID"))  %>%
-  filter(`Age group` == "All ages")
+# filter + project power plants once
+NR_points_proj <- points_sf_crs %>%
+  filter(fossil_fuel == "Fossil Fuel") %>%
+  st_transform(26915)
 
-asthma_poc_joined_sf <- st_as_sf(asthma_poc_joined_df)
-
-zips_proj <- st_transform(asthma_poc_joined_sf, 26915)
-
-NR_points_sf_crs <- points_sf_crs %>% filter(fossil_fuel == "Fossil Fuel") %>% st_transform(26915)
-
-zipcode_buffer_mile <- st_buffer(zips_proj, dist = 1609.34)
-
-zip_plant_counts_mile <- st_join(zipcode_buffer_mile, NR_points_sf_crs, join = st_intersects) %>%
+# buffer, spatial join, and count plants
+zip_plant_counts_mile <- asthma_sf_proj %>%
+  st_buffer(dist = 1609.34) %>%
+  st_join(NR_points_proj, join = st_intersects) %>%
   filter(`_ZIP` %in% metro_zips) %>%
-  group_by(`_ZIP`) %>%      
-  summarise(num_plants = n()) %>%
+  group_by(`_ZIP`) %>%
+  summarise(num_plants = n(), .groups = "drop") %>%
   st_drop_geometry()
 
-asthma_poc_joined_clean <- zcta_joined_asthma %>%
-  mutate(`_ZIP` = as.character(`_ZIP`)) %>%
-  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID")) %>%
-  filter(`Age group` == "All ages")
+# final join + indicator variable
+asthma_poc_powerplants <- asthma_sf_proj %>%
+  st_drop_geometry() %>%
+  left_join(zip_plant_counts_mile, by = "_ZIP") %>%
+  mutate(near_plant = !is.na(num_plants))
 
-asthma_poc_powerplant <- asthma_poc_joined_clean %>%
-  left_join(zip_plant_counts_mile, by = "_ZIP")
 
 ##=====Schools====###
 ej_areas <- ej_shapefile %>%
@@ -701,8 +700,8 @@ save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, fi
 write_csv(all_emissions_data, "Data/cleaning_data/all_emissions_data.csv")
 
 # health
-st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
-write.csv(asthma_poc_powerplant, "Data/cleaning_data/asthma_poc_powerplant.csv", row.names = FALSE)
+st_write(zcta_joined_asthma, "Data/cleaning_data/zcta_joined_asthma.shp", row.names = FALSE)
+write.csv(asthma_poc_powerplants, "Data/cleaning_data/asthma_poc_powerplants.csv", row.names = FALSE)
 # schools
 write.csv(distinct_schools_metro, "Data/cleaning_data/distinct_schools_metro.csv", row.names = FALSE)
 

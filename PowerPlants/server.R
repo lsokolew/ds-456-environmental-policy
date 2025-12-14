@@ -243,7 +243,7 @@ server = function(input, output, session){
   polluters_buffer <- st_buffer(polluters, dist = 1609.34)
   
   zcta_joined_children <- zcta_joined_asthma %>%
-    filter(`Age group` == "0-17")
+    filter(`Aggroup` == "0-17")
   
   zcta_joined_children <- st_as_sf(zcta_joined_asthma, crs = 4326)
   
@@ -261,7 +261,7 @@ server = function(input, output, session){
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       addTiles() %>%
       addPolygons(
-        fillColor = ~pal2(value_cat),
+        fillColor = ~pal2(valu_ct),
         color = "black",
         weight = 1,
         opacity = 1,
@@ -270,15 +270,15 @@ server = function(input, output, session){
           weight = 2,
           color = "white"),
         label = ~paste0(
-          "Zipcode: ", ZCTA5CE20, "\n",
-          "Rate: ", ifelse(is.na(`Age-adjusted rate per 10,000`), "Not given due to small population", `Age-adjusted rate per 10,000`)),
+          "Zipcode: ", ZCTA5CE, "\n",
+          "Rate: ", ifelse(is.na(`A.rp10.`), "Not given due to small population", `A.rp10.`)),
         labelOptions = labelOptions(
           style = list("white-space" = "pre-line")
         )) %>%
       
       addLegend(
         pal = pal2,
-        values = zcta_joined_children$value_cat,
+        values = zcta_joined_children$valu_ct,
         opacity = 0.9,
         title = "Asthma-related Emergency Department Visit",
         position = "bottomright",
