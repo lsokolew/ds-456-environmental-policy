@@ -8,10 +8,9 @@ library(ggplot2)
 library(gganimate)
 library(gifski)
 library(readxl)
-library(tigris)
-
 
 ###==================== Load in data ===================###
+
 
   ###=== Needed Overall ===###
   # power plant
@@ -27,40 +26,55 @@ library(tigris)
     powerplant_dates <- read_csv("Data/powerplant_data_eia_2024_generator_operable.csv") %>% 
       janitor::clean_names() 
 
-  ###=== Air Quality ===###
-  # air quality 
-    AirData_allyears <- read_csv("Data/airdata_clean.csv") 
+# power plant dates
+powerplant_dates <- read_csv("Data/powerplant_data_eia_2024_generator_operable.csv") %>% 
+  janitor::clean_names() 
 
-  ###=== Healthcare ===###
-  # Asthma
-  MN_asthma_ED <- read_csv("Data/MN_asthma_ED.csv")
-  zcta_pop_data <- read.csv("Data/zcta_pop_data.csv")
-  
-  # Zip codes
-  mn_zctas <- readRDS("Data/mn_zctas_2020.rds")
-  
-  # Schools
-  schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
+###=== Air Quality ===###
 
-  ###=== EJ Areas ===###
-  
-    # Environmental justice areas (subseted)
-    ej_spaces <- read_csv("Data/ej_mpca/ej_mpca_census.csv") %>%
-      select(-Shape_Area, -Shape_Length, -source, -statefp, -funcstat, -name, 
-             -namelsad, -mtfcc, -intptlat, -intptlon, -geography, -countyfp, 
-             -aland, -awater)
-    
-    ej_shp <- st_read("Data/ej_mpca/ej_mpca_census.shp")
-    
-    # tracts
-    mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
-      st_transform(crs = 4326)%>%
-      mutate(GEOID = as.double(GEOID),
-             County = gsub(" County", "", NAMELSADCO))  %>%
-      select(GEOID, geometry, County) 
-    
-    # MN Counties
-    mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
+# air quality 
+AirData_allyears <- read_csv("Data/airdata_clean.csv") 
+
+# load spatial/boundary info
+# mn_counties <- counties(state = "MN", cb = TRUE) %>%
+#   st_transform(crs = 4326)
+
+# mn_tracts <- tracts(state = "MN", cb = TRUE) %>%
+#   st_transform(crs = 4326)
+
+###=== Healthcare ===###
+
+# Asthma
+MN_asthma_ED <- read_csv("Data/MN_asthma_ED.csv")
+zcta_pop_data <- read.csv("Data/zcta_pop_data.csv")
+
+# Zip codes
+mn_zctas <- readRDS("Data/mn_zctas_2020.rds")
+
+###=== EJ Areas ===###
+
+# Environmental justice areas (subseted)
+ej_spaces <- read_csv("Data/ej_mpca_census.csv") %>%
+  select(-Shape_Area, -Shape_Length, -source, -statefp, -funcstat, -name, 
+         -namelsad, -mtfcc, -intptlat, -intptlon, -geography, -countyfp, 
+         -aland, -awater)
+
+ej_shapefile <- st_read("Data/ej_mpca_census.shp")
+
+
+tribal_shp <- st_read("Data/tribal_areas/census_tribal_areas.shp")
+
+
+# tracts
+mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
+  st_transform(crs = 4326)%>%
+  mutate(GEOID = as.double(GEOID),
+         County = gsub(" County", "", NAMELSADCO))  %>%
+  select(GEOID, geometry, County) 
+
+mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
+
+schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 
     # census ACS Tract information (full)
     CensusACSTract <- read_xlsx("Data/CensusACSTract.xlsx")
@@ -68,27 +82,27 @@ library(tigris)
 
 ###==================== Wrangling ====================###
 
-  # getting operating dates
-    powerplant_dates_mn <- powerplant_dates %>% 
-      filter(state == "MN") %>% 
-      mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
-      group_by(plant_code) %>% 
-      summarise(first_op_date = min(full_date))
-  
-  # add years to mn_powerplants (main dataset we're using for powerplants)
-    mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn)
-  
-  # fill in missing dates(via sunshare website):
-    # 1.Buffalo Sun CSG - active since 2/1/2025
-    # 2.Oster Sun CSG	- active since 1/1/2025
-    # 3.Quarry Sun CSG - active since 1/1/2025
-  
-  mn_powerplants <- mn_powerplants %>%
-    mutate(first_op_date = case_when(plant_code == 66070 ~ as.Date(mdy("2/1/2025")),
-                                     plant_code == 66072 ~ as.Date(mdy("1/1/2025")),
-                                     plant_code == 66073 ~ as.Date(mdy("1/1/2025")),
-                                     TRUE ~ first_op_date), 
-           first_op_year = year(first_op_date)) 
+powerplant_dates_mn <- powerplant_dates %>% 
+  filter(state == "MN") %>% 
+  mutate(full_date = make_date(year = operating_year, month = operating_month, day = 1)) %>% 
+  group_by(plant_code) %>% 
+  summarise(first_op_date = min(full_date))
+
+# add years to mn_powerplants (main dataset we're using for powerplants)
+mn_powerplants <- mn_powerplants %>% left_join(powerplant_dates_mn)
+
+# fill in missing dates:
+# Buffalo Sun CSG - active since 2/1/2025
+# Oster Sun CSG	- active since 1/1/2025
+# Quarry Sun CSG - active since 1/1/2025
+# via sunshare website
+mn_powerplants <- mn_powerplants %>%
+  mutate(first_op_date = case_when(plant_code == 66070 ~ as.Date(mdy("2/1/2025")),
+                                   plant_code == 66072 ~ as.Date(mdy("1/1/2025")),
+                                   plant_code == 66073 ~ as.Date(mdy("1/1/2025")),
+                                   TRUE ~ first_op_date), 
+         first_op_year = year(first_op_date)
+  ) 
 
 ###=== Air Quality ===###
 
@@ -101,6 +115,7 @@ AirData_allyears <- AirData_allyears %>%
   ungroup()
 
 # get # plants near each monitor
+
 AirData_sf <- st_as_sf(AirData_allyears, coords = c("longitude", "latitude"), crs = 4326)
 mn_pp_sf <- st_as_sf(mn_powerplants, coords = c("longitude", "latitude"), crs = 4326) %>% 
   filter(fossil_fuel == "Fossil Fuel")
@@ -125,6 +140,7 @@ air_buffers <- st_transform(air_buffers_proj, 4326)
   
 
 # calculate average pm2.5 for each year 
+
 calc_avg_pm25 <- function(year_spec){
   air_buffers %>% 
     filter(year == year_spec) %>% 
@@ -159,7 +175,17 @@ all_monitor_avgs <- air_buffers %>%
 all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
 
 ###=== Asthma ===###
-
+metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 
+                55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422,
+                55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 
+                55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 
+                55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121,
+                55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 
+                55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 
+                55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 
+                55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 
+                55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070,
+                55079, 55092, 55303)
 # Asthma Data and ZCTAs
 
 zcta_joined_asthma <- MN_asthma_ED %>%
@@ -183,15 +209,14 @@ points_sf_crs <- st_as_sf( # power plants
   st_transform(26915)  
 
 zcta_pop_data <-zcta_pop_data %>% 
-  mutate(pct_poc = (blackE + asianE + hispanicE) / total_popE)
+  mutate(pct_poc = (blackE + asianE + hispanicE) / total_popE) %>%
+  mutate(GEOID = as.character(GEOID))
 
-
-asthma_poc_joined <- zcta_joined_asthma %>%
-  mutate(`_ZIP` = as.numeric(`_ZIP`)) %>%
+asthma_poc_joined_df <- zcta_joined_asthma %>%
   left_join(zcta_pop_data, by = c("_ZIP" = "GEOID"))  %>%
   filter(`Age group` == "All ages")
 
-asthma_poc_joined_sf <- st_as_sf(asthma_poc_joined)
+asthma_poc_joined_sf <- st_as_sf(asthma_poc_joined_df)
 
 zips_proj <- st_transform(asthma_poc_joined_sf, 26915)
 
@@ -199,29 +224,19 @@ NR_points_sf_crs <- points_sf_crs %>% filter(fossil_fuel == "Fossil Fuel") %>% s
 
 zipcode_buffer_mile <- st_buffer(zips_proj, dist = 1609.34)
 
-
-metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 
-                55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422,
-                55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 
-                55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 
-                55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121,
-                55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 
-                55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 
-                55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 
-                55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 
-                55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070,
-                55079, 55092, 55303)
-
 zip_plant_counts_mile <- st_join(zipcode_buffer_mile, NR_points_sf_crs, join = st_intersects) %>%
   filter(`_ZIP` %in% metro_zips) %>%
   group_by(`_ZIP`) %>%      
-  summarise(num_plants = n())
+  summarise(num_plants = n()) %>%
+  st_drop_geometry()
 
-asthma_poc_powerplant <- asthma_poc_joined %>%
-  st_drop_geometry() %>%
-  left_join(zip_plant_counts_mile, by = c("_ZIP" = "_ZIP")) %>%
-  mutate(near_plant = if_else(is.na(num_plants), FALSE, TRUE))
+asthma_poc_joined_clean <- zcta_joined_asthma %>%
+  mutate(`_ZIP` = as.character(`_ZIP`)) %>%
+  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID")) %>%
+  filter(`Age group` == "All ages")
 
+asthma_poc_powerplant <- asthma_poc_joined_clean %>%
+  left_join(zip_plant_counts_mile, by = "_ZIP")
 
 ###=== EJ Areas ===###
 
@@ -262,6 +277,7 @@ low_income_poc_areas <- ej_spaces %>%
 EJ_stacked <- bind_rows(statuselp_filtered, status200x_filtered,
                         statuspoc_filtered, low_income_poc_areas) %>%
   mutate(EJ_OR_NOT = TRUE)
+
 
 # Subset fossil fuel power plants
 fossil_power_plants <- mn_powerplants %>%
@@ -448,157 +464,75 @@ mn_powerplants_with_EJ <- mn_powerplants %>%
          title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
          subtitle = "For Fossil Fuel Plants in Metro Area (Twin Cities)")
 
+#--------
+# Find if a power plant is by an EJ area
+
+## Work on EJ
+# Manually enter crs
+st_crs(ej_shp) <- 26915
+
+# merge the ej areas relabeled with the ej shp
+EJ_stacked <- EJ_stacked %>%
+  mutate(geoid = as.character(geoid))
+# join data
+ej_tracts_sf <- ej_shp %>%
+  left_join(EJ_stacked %>% select(geoid, EJ_OR_NOT),by = "geoid") %>%
+  mutate(EJ_OR_NOT = if_else(is.na(EJ_OR_NOT), FALSE, TRUE))
+
+## make sure power plants sf is sf
+powerplants_sf <- mn_powerplants %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
+  st_transform(26915)
+ej_tracts_sf <- st_transform(ej_tracts_sf, st_crs(powerplants_sf))
+
+## Join data
+powerplants_with_ej <- st_join(
+  ej_tracts_sf,
+  powerplants_sf %>% select(plant_name, total_mw, fossil_fuel, county, zip, plant_code),
+  join = st_contains) %>%
+  mutate(power_plant_or_not = !is.na(plant_name))
+
+metro_area_pp<- powerplants_with_ej %>% filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) 
+  
+
+tt <- powerplants_with_ej %>%
+  filter(countyfp %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%  #metro areas
+  group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
+  summarize(count = n())
+
+full <- powerplants_with_ej %>%
+  group_by(EJ_OR_NOT, power_plant_or_not, fossil_fuel) %>%
+  summarize(count = n())
+
+
+herc <- powerplants_with_ej %>%
+  filter(plant_code == 10013) %>%
+  select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
+
 ###=====Schools====###
-  points_sf_crs <- st_as_sf(
-    mn_powerplants,
-    coords = c("longitude", "latitude"),
-    crs = 4326) %>%
-    st_transform(26915)  
-  
-  ej_areas <- ej_shapefile %>%
-    filter(status200x == "YES" | statuspoc == "YES" | statuslep == "YES")
+points_sf_crs <- st_as_sf(
+  mn_powerplants,
+  coords = c("longitude", "latitude"),
+  crs = 4326) %>%
+  st_transform(26915)  
 
-  # -------- EJ Tracts ---------
-  # If ej_shapefile already has a CRS, USE IT — do not overwrite.
-  # Only set CRS if it is missing:
-  if (is.na(st_crs(ej_areas))) {
-    ej_areas <- st_set_crs(ej_areas, 26915)
-  }
+ej_areas <- ej_shapefile %>%
+  filter(status200x == "YES" | statuspoc == "YES" | statuslep == "YES")
 
-  # -------- Schools shapefile --------
-  if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
-    schools_sf <- st_set_crs(schools_sf, 26915)
-  }
-  schools_sf <- schools_sf %>%
-    filter(is.na(GRADERANGE))
-  
-  school_proj <- st_transform(schools_sf, 26915)
-  
-  school_pp_dist <- st_distance(school_proj, points_sf_crs)
-  
-  schools_in_ej <- st_within(school_proj, ej_areas)
-  school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
-  
-  nearest_pp <- apply(school_pp_dist, 1, which.min)
-  
-  school_proj$nearest_pp_id <- points_sf_crs$plant_code[nearest_pp]
-  school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
-  school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
-  
-  distinct_schools <- school_proj %>% 
-    distinct(GISADDR, .keep_all = TRUE)
-  
-  distinct_schools_metro <- distinct_schools %>% 
-    mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) 
+# -------- EJ Tracts ---------
+# If ej_shapefile already has a CRS, USE IT — do not overwrite.
+# Only set CRS if it is missing:
+if (is.na(st_crs(ej_areas))) {
+  ej_areas <- st_set_crs(ej_areas, 26915)
+}
 
-  ###====Emissions====###
-  path <- "Data/emissions2017.xlsx"
-  sheets <- excel_sheets(path)
-  
-  xl_list <- lapply(sheets, function(file){
-    emissions_2017 <- read_xlsx(path, sheet = file)
-  })
-  NO2_emissions2017 <- xl_list[[3]]
-  
-  names(NO2_emissions2017) <- as.character(NO2_emissions2017[1, ])
-  NO2_emissions2017 <- NO2_emissions2017[-1,]
-  
-  NO2_emissions2017 <- NO2_emissions2017 %>%
-    janitor::clean_names() %>%
-    filter(state == "MN") %>%
-    mutate(plant_code = as.numeric(plant_code)) %>%
-    mutate(year = 2017)
-  
-  # 2018
-  path2 <- "Data/emissions2018.xlsx"
-  sheets2 <- excel_sheets(path2)
-  
-  xl_list2 <- lapply(sheets2, function(file){
-    emissions_2018 <- read_xlsx(path2, sheet = file)
-  })
-  NO2_emissions2018 <- xl_list2[[3]]
-  
-  names(NO2_emissions2018) <- as.character(NO2_emissions2018[1, ])
-  NO2_emissions2018 <- NO2_emissions2018[-1,]
-  
-  NO2_emissions2018 <- NO2_emissions2018 %>%
-    janitor::clean_names() %>%
-    filter(state == "MN") %>%
-    mutate(plant_code = as.numeric(plant_code)) %>%
-    mutate(year = 2018)
-  
-  # 2019
-  path3 <- "Data/emissions2019.xlsx"
-  sheets3 <- excel_sheets(path3)
-  
-  xl_list3 <- lapply(sheets3, function(file){
-    emissions_2019 <- read_xlsx(path3, sheet = file)
-  })
-  NO2_emissions2019 <- xl_list3[[3]]
-  
-  names(NO2_emissions2019) <- as.character(NO2_emissions2019[1, ])
-  NO2_emissions2019 <- NO2_emissions2019[-1,]
-  
-  NO2_emissions2019 <- NO2_emissions2019 %>%
-    janitor::clean_names() %>%
-    filter(state == "MN") %>%
-    mutate(plant_code = as.numeric(plant_code)) %>%
-    mutate(year = 2019)
-  
-  # 2020
-  path4 <- "Data/emissions2020.xlsx"
-  sheets4 <- excel_sheets(path4)
-  
-  xl_list4 <- lapply(sheets4, function(file){
-    emissions_2020 <- read_xlsx(path4, sheet = file)
-  })
-  NO2_emissions2020 <- xl_list4[[3]]
-  
-  names(NO2_emissions2020) <- as.character(NO2_emissions2020[1, ])
-  NO2_emissions2020 <- NO2_emissions2020[-1,]
-  
-  NO2_emissions2020 <- NO2_emissions2020 %>%
-    janitor::clean_names() %>%
-    filter(state == "MN") %>%
-    mutate(plant_code = as.numeric(plant_code)) %>%
-    mutate(year = 2020)
-  
-  # 2021
-  path5 <- "Data/emissions2021.xlsx"
-  sheets5 <- excel_sheets(path5)
-  
-  xl_list5 <- lapply(sheets5, function(file){
-    emissions_2021 <- read_xlsx(path5, sheet = file)
-  })
-  NO2_emissions2021 <- xl_list5[[3]]
-  
-  names(NO2_emissions2021) <- as.character(NO2_emissions2021[1, ])
-  NO2_emissions2021 <- NO2_emissions2021[-1,]
-  
-  NO2_emissions2021 <- NO2_emissions2021 %>%
-    janitor::clean_names() %>%
-    filter(state == "MN") %>%
-    mutate(plant_code = as.numeric(plant_code)) %>%
-    mutate(year = 2021)
-  
-  all_emissions <- rbind(NO2_emissions2017, NO2_emissions2018)
-  all_emissions <- rbind(all_emissions, NO2_emissions2019)
-  all_emissions <- rbind(all_emissions, NO2_emissions2020)
-  all_emissions <- rbind(all_emissions, NO2_emissions2021)
-  
-  mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
-  
-  all_emissions_data <- all_emissions %>%
-    distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, year, .keep_all = TRUE) %>%
-    mutate(plant_code = as.numeric(plant_code)) %>%
-    left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>%
-    distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
-    filter(!is.na(latitude) & !is.na(longitude)) %>%
-    group_by(plant_code, plant_name.x, zip, longitude, latitude) %>%
-    summarise(`eia_model_estimates_of_n_ox_emissions_tons` = sum(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
-    filter(zip %in% metro_zips) %>%
-    arrange(desc(`eia_model_estimates_of_n_ox_emissions_tons`))
-  
+# -------- Schools shapefile --------
+if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
+  schools_sf <- st_set_crs(schools_sf, 26915)
+}
+schools_sf <- schools_sf %>%
+  filter(is.na(GRADERANGE))
+
 
 ###=== Animation of Powerplants over the years ===###
   
@@ -638,11 +572,139 @@ mn_powerplants_with_EJ <- mn_powerplants %>%
     animate(p_map, fps = 10, duration = 30, width = 600,height = 400,
             renderer = gifski_renderer("www/animations/powerplants_animation.gif"),
             bg = 'transparent')
+    
+school_proj <- st_transform(schools_sf, 26915)
+
+school_pp_dist <- st_distance(school_proj, points_sf_crs)
+
+schools_in_ej <- st_within(school_proj, ej_areas)
+school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
+
+nearest_pp <- apply(school_pp_dist, 1, which.min)
+
+school_proj$nearest_pp_id <- points_sf_crs$plant_code[nearest_pp]
+school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
+school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
+
+distinct_schools <- school_proj %>% 
+  distinct(GISADDR, .keep_all = TRUE)
+
+distinct_schools_metro <- distinct_schools %>% 
+  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) 
+
+###====Emissions====###
+path <- "Data/emissions2017.xlsx"
+sheets <- excel_sheets(path)
+
+xl_list <- lapply(sheets, function(file){
+  emissions_2017 <- read_xlsx(path, sheet = file)
+})
+NO2_emissions2017 <- xl_list[[3]]
+
+names(NO2_emissions2017) <- as.character(NO2_emissions2017[1, ])
+NO2_emissions2017 <- NO2_emissions2017[-1,]
+
+NO2_emissions2017 <- NO2_emissions2017 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2017)
+
+# 2018
+path2 <- "Data/emissions2018.xlsx"
+sheets2 <- excel_sheets(path2)
+
+xl_list2 <- lapply(sheets2, function(file){
+  emissions_2018 <- read_xlsx(path2, sheet = file)
+})
+NO2_emissions2018 <- xl_list2[[3]]
+
+names(NO2_emissions2018) <- as.character(NO2_emissions2018[1, ])
+NO2_emissions2018 <- NO2_emissions2018[-1,]
+
+NO2_emissions2018 <- NO2_emissions2018 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2018)
+
+# 2019
+path3 <- "Data/emissions2019.xlsx"
+sheets3 <- excel_sheets(path3)
+
+xl_list3 <- lapply(sheets3, function(file){
+  emissions_2019 <- read_xlsx(path3, sheet = file)
+})
+NO2_emissions2019 <- xl_list3[[3]]
+
+names(NO2_emissions2019) <- as.character(NO2_emissions2019[1, ])
+NO2_emissions2019 <- NO2_emissions2019[-1,]
+
+NO2_emissions2019 <- NO2_emissions2019 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2019)
+
+# 2020
+path4 <- "Data/emissions2020.xlsx"
+sheets4 <- excel_sheets(path4)
+
+xl_list4 <- lapply(sheets4, function(file){
+  emissions_2020 <- read_xlsx(path4, sheet = file)
+})
+NO2_emissions2020 <- xl_list4[[3]]
+
+names(NO2_emissions2020) <- as.character(NO2_emissions2020[1, ])
+NO2_emissions2020 <- NO2_emissions2020[-1,]
+
+NO2_emissions2020 <- NO2_emissions2020 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2020)
+
+# 2021
+path5 <- "Data/emissions2021.xlsx"
+sheets5 <- excel_sheets(path5)
+
+xl_list5 <- lapply(sheets5, function(file){
+  emissions_2021 <- read_xlsx(path5, sheet = file)
+})
+NO2_emissions2021 <- xl_list5[[3]]
+
+names(NO2_emissions2021) <- as.character(NO2_emissions2021[1, ])
+NO2_emissions2021 <- NO2_emissions2021[-1,]
+
+NO2_emissions2021 <- NO2_emissions2021 %>%
+  janitor::clean_names() %>%
+  filter(state == "MN") %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  mutate(year = 2021)
+
+all_emissions <- rbind(NO2_emissions2017, NO2_emissions2018)
+all_emissions <- rbind(all_emissions, NO2_emissions2019)
+all_emissions <- rbind(all_emissions, NO2_emissions2020)
+all_emissions <- rbind(all_emissions, NO2_emissions2021)
+
+mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
+
+all_emissions_data <- all_emissions %>%
+  distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, year, .keep_all = TRUE) %>%
+  mutate(plant_code = as.numeric(plant_code)) %>%
+  left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>%
+  distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
+  filter(!is.na(latitude) & !is.na(longitude)) %>%
+  group_by(plant_code, plant_name.x, zip, longitude, latitude) %>%
+  summarise(`eia_model_estimates_of_n_ox_emissions_tons` = sum(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
+  filter(zip %in% metro_zips) %>%
+  arrange(desc(`eia_model_estimates_of_n_ox_emissions_tons`))
+
 
 ###==================== Write as csv ===================###
 
 # overall
-write.csv(mn_powerplants, "Data/cleaning_data/mn_powerplants.csv", row.names = FALSE)
+write.csv(mn_powerplants, "mn_powerplants.csv", row.names = FALSE)
 
 # air quality
 saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
@@ -652,13 +714,18 @@ save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, fi
 write_csv(all_emissions_data, "all_emissions_data.csv")
 
 # health
-st_write(zcta_joined_asthma, "Data/cleaning_data/zcta_joined.shp", row.names = FALSE)
-write.csv(asthma_poc_powerplant, "Data/asthma_poc_ppowerplant.csv", row.names = FALSE)
-write.csv(distinct_schools_metro, "Data/distinct_schools_metro.csv", row.names = FALSE)
+st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
+write.csv(asthma_poc_powerplant, "asthma_poc_powerplant.csv", row.names = FALSE)
+# schools
+write.csv(distinct_schools_metro, "distinct_schools_metro.csv", row.names = FALSE)
 
 # ej areas
-st_write(mn_tracts, "Data/cleaning_data/mn_tracts.shp", row.names = FALSE)
-st_write(ej_sf, "Data/cleaning_data/ej_sf.shp", row.names = FALSE)
-st_write(plants_in_ej_counts, "Data/cleaning_data/plants_in_ej_counts.shp", row.names = FALSE)
-st_write(metro_area_pp, "Data/cleaning_data/metro_area_pp.shp", row.names = FALSE)
-st_write(powerplants_sf, "Data/cleaning_data/powerplants_sf.shp", row.names = FALSE)
+st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)
+st_write(ej_sf, "ej_sf.shp", row.names = FALSE)
+st_write(plants_in_ej_counts, "plants_in_ej_counts.shp", row.names = FALSE)
+# st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
+
+st_write(metro_area_pp, "metro_area_pp.shp", row.names = FALSE)
+
+st_write(powerplants_sf, "powerplants_sf.shp", row.names = FALSE)
+

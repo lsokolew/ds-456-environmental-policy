@@ -242,6 +242,12 @@ server = function(input, output, session){
   
   polluters_buffer <- st_buffer(polluters, dist = 1609.34)
   
+  zcta_joined_children <- zcta_joined_asthma %>%
+    filter(`Age group` == "0-17")
+  
+  zcta_joined_children <- st_as_sf(zcta_joined_asthma, crs = 4326)
+  
+  
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----
