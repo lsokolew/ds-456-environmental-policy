@@ -7,6 +7,7 @@ library(ggthemes)
 library(ggplot2)
 library(gganimate)
 library(gifski)
+library(readxl)
 
 ###==================== Load in data ===================###
 
@@ -285,7 +286,7 @@ herc <- powerplants_with_ej %>%
   select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
 
 ###=====Schools====###
-path <- "emissions2017.xlsx"
+path <- "Data/emissions2017.xlsx"
 sheets <- excel_sheets(path)
 
 xl_list <- lapply(sheets, function(file){
@@ -303,7 +304,7 @@ NO2_emissions2017 <- NO2_emissions2017 %>%
   mutate(year = 2017)
 
 # 2018
-path2 <- "emissions2018.xlsx"
+path2 <- "Data/emissions2018.xlsx"
 sheets2 <- excel_sheets(path2)
 
 xl_list2 <- lapply(sheets2, function(file){
@@ -321,7 +322,7 @@ NO2_emissions2018 <- NO2_emissions2018 %>%
   mutate(year = 2018)
 
 # 2019
-path3 <- "emissions2019.xlsx"
+path3 <- "Data/emissions2019.xlsx"
 sheets3 <- excel_sheets(path3)
 
 xl_list3 <- lapply(sheets3, function(file){
@@ -339,7 +340,7 @@ NO2_emissions2019 <- NO2_emissions2019 %>%
   mutate(year = 2019)
 
 # 2020
-path4 <- "emissions2020.xlsx"
+path4 <- "Data/emissions2020.xlsx"
 sheets4 <- excel_sheets(path4)
 
 xl_list4 <- lapply(sheets4, function(file){
@@ -357,7 +358,7 @@ NO2_emissions2020 <- NO2_emissions2020 %>%
   mutate(year = 2020)
 
 # 2021
-path5 <- "emissions2021.xlsx"
+path5 <- "Data/emissions2021.xlsx"
 sheets5 <- excel_sheets(path5)
 
 xl_list5 <- lapply(sheets5, function(file){
