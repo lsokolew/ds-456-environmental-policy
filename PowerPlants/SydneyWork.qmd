@@ -74,6 +74,24 @@ zctas <- zctas(cb = FALSE, year = 2020)
 mn_counties <- counties(state = "MN", class = "sf")
 mn_zctas <- st_filter(zctas, mn_counties)
 
+zcta_data <- get_acs(
+  geography = "zcta",
+  variables = c(
+    total_pop = "B01003_001",
+    white = "B02001_002",
+    black = "B02001_003",
+    asian = "B02001_005",
+    hispanic = "B03003_003",
+    poverty = "B17001_002",
+    median_income = "B19013_001"
+  ),
+  year = 2021,
+  survey = "acs5",
+  output = "wide"
+)
+
+write.csv(zcta_data, "zcta_pop_data.csv")
+
 
 saveRDS(mn_zctas, "mn_zctas_2020.rds")
 

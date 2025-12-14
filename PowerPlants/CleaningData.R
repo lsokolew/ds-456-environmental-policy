@@ -42,7 +42,8 @@ AirData_allyears <- read_csv("Data/airdata_clean.csv")
 ###=== Healthcare ===###
 
 # Asthma
-asthmaMN <- read_csv("Data/MN-asthma-zipcode.csv")
+MN_asthma_ED <- read_csv("Data/MN_asthma_ED.csv")
+zcta_pop_data <- read.csv("Data/zcta_pop_data.csv")
 
 # Zip codes
 mn_zctas <- readRDS("Data/mn_zctas_2020.rds")
@@ -54,6 +55,8 @@ ej_spaces <- read_csv("Data/ej_mpca_census.csv") %>%
   select(-Shape_Area, -Shape_Length, -source, -statefp, -funcstat, -name, 
          -namelsad, -mtfcc, -intptlat, -intptlon, -geography, -countyfp, 
          -aland, -awater)
+
+ej_shapefile <- st_read("Data/ej_mpca_census.shp")
 
 
 tribal_shp <- st_read("Data/tribal_areas/census_tribal_areas.shp")
@@ -68,6 +71,7 @@ mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
 
 mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
 
+schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 
 
 ###==================== Wrangling ====================###
@@ -165,21 +169,69 @@ all_monitor_avgs <- air_buffers %>%
 all_avgs <- rbind(all_monitor_avgs, herc_monitor_avgs)
 
 ###=== Asthma ===###
-
+metro_zips <- c(55401, 55402, 55403, 55404, 55405, 55406, 55407, 55408, 55409, 
+                55410, 55411, 55412, 55413, 55414, 55415, 55416, 55418, 55419, 55422,
+                55423, 55426, 55427, 55428, 55431, 55433, 55443, 55450, 55454, 55455, 
+                55101, 55102, 55103, 55104, 55105, 55106, 55107, 55108, 55109, 55110, 
+                55111, 55112, 55113, 55114, 55115, 55116, 55117, 55118, 55119, 55121,
+                55122, 55123, 55124, 55125, 55126, 55127, 55128, 55129, 55130, 55133, 
+                55144, 55145, 55146, 55150, 55155, 55161, 55164, 55165, 55168, 55170, 
+                55171, 55172, 55175, 55180, 55187, 55199, 55305, 55311, 55316, 55331, 
+                55340, 55343, 55344, 55345, 55346, 55347, 55348, 55356, 55357, 55359, 
+                55361, 55364, 55369, 55374, 55375, 55384, 55391, 55392, 55005, 55070,
+                55079, 55092, 55303)
 # Asthma Data and ZCTAs
 
-zcta_joined <- asthmaMN %>%
+zcta_joined_asthma <- MN_asthma_ED %>%
   left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
   mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
          `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
   mutate(value_cat = case_when(
-    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` <= 2 ~ "0-2",
-    `Age-adjusted rate per 10,000` >= 2 & `Age-adjusted rate per 10,000` <= 4 ~ "2-4",
-    `Age-adjusted rate per 10,000` >= 4 & `Age-adjusted rate per 10,000` <= 7 ~ "4-7",
-    `Age-adjusted rate per 10,000` >= 7 ~ "7+"))
+    `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` < 15 ~ "0-15",
+    `Age-adjusted rate per 10,000` >= 15 & `Age-adjusted rate per 10,000` < 30 ~ "15-30",
+    `Age-adjusted rate per 10,000` >= 30 & `Age-adjusted rate per 10,000` < 45 ~ "30-45",
+    `Age-adjusted rate per 10,000` >= 45 & `Age-adjusted rate per 10,000` < 60 ~ "45-60",
+    `Age-adjusted rate per 10,000` >= 60 ~ "60+",
+    TRUE ~ NA_character_))
 
-zcta_joined <- st_as_sf(zcta_joined)
+# POC and Asthma
 
+points_sf_crs <- st_as_sf( # power plants
+  mn_powerplants,
+  coords = c("longitude", "latitude"),
+  crs = 4326) %>%
+  st_transform(26915)  
+
+zcta_pop_data <-zcta_pop_data %>% 
+  mutate(pct_poc = (blackE + asianE + hispanicE) / total_popE) %>%
+  mutate(GEOID = as.character(GEOID))
+
+
+asthma_poc_joined_df <- zcta_joined_asthma %>%
+  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID"))  %>%
+  filter(`Age group` == "All ages")
+
+asthma_poc_joined_sf <- st_as_sf(asthma_poc_joined_df)
+
+zips_proj <- st_transform(asthma_poc_joined_sf, 26915)
+
+NR_points_sf_crs <- points_sf_crs %>% filter(fossil_fuel == "Fossil Fuel") %>% st_transform(26915)
+
+zipcode_buffer_mile <- st_buffer(zips_proj, dist = 1609.34)
+
+zip_plant_counts_mile <- st_join(zipcode_buffer_mile, NR_points_sf_crs, join = st_intersects) %>%
+  filter(`_ZIP` %in% metro_zips) %>%
+  group_by(`_ZIP`) %>%      
+  summarise(num_plants = n()) %>%
+  st_drop_geometry()
+
+asthma_poc_joined_clean <- zcta_joined_asthma %>%
+  mutate(`_ZIP` = as.character(`_ZIP`)) %>%
+  left_join(zcta_pop_data, by = c("_ZIP" = "GEOID")) %>%
+  filter(`Age group` == "All ages")
+
+asthma_poc_powerplant <- asthma_poc_joined_clean %>%
+  left_join(zip_plant_counts_mile, by = "_ZIP")
 
 ###=== EJ Areas ===###
 
@@ -286,6 +338,49 @@ herc <- powerplants_with_ej %>%
   select(plant_name, total_mw, fossil_fuel, county, zip, plant_code, prp200x, tractce, prppoc, prplep)
 
 ###=====Schools====###
+points_sf_crs <- st_as_sf(
+  mn_powerplants,
+  coords = c("longitude", "latitude"),
+  crs = 4326) %>%
+  st_transform(26915)  
+
+ej_areas <- ej_shapefile %>%
+  filter(status200x == "YES" | statuspoc == "YES" | statuslep == "YES")
+
+# -------- EJ Tracts ---------
+# If ej_shapefile already has a CRS, USE IT — do not overwrite.
+# Only set CRS if it is missing:
+if (is.na(st_crs(ej_areas))) {
+  ej_areas <- st_set_crs(ej_areas, 26915)
+}
+
+# -------- Schools shapefile --------
+if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
+  schools_sf <- st_set_crs(schools_sf, 26915)
+}
+schools_sf <- schools_sf %>%
+  filter(is.na(GRADERANGE))
+
+school_proj <- st_transform(schools_sf, 26915)
+
+school_pp_dist <- st_distance(school_proj, points_sf_crs)
+
+schools_in_ej <- st_within(school_proj, ej_areas)
+school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
+
+nearest_pp <- apply(school_pp_dist, 1, which.min)
+
+school_proj$nearest_pp_id <- points_sf_crs$plant_code[nearest_pp]
+school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
+school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
+
+distinct_schools <- school_proj %>% 
+  distinct(GISADDR, .keep_all = TRUE)
+
+distinct_schools_metro <- distinct_schools %>% 
+  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) 
+
+###====Emissions====###
 path <- "Data/emissions2017.xlsx"
 sheets <- excel_sheets(path)
 
@@ -484,7 +579,10 @@ save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, fi
 write_csv(all_emissions_data, "all_emissions_data.csv")
 
 # health
-st_write(zcta_joined, "zcta_joined.shp", row.names = FALSE)
+st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
+write.csv(asthma_poc_powerplant, "asthma_poc_powerplant.csv", row.names = FALSE)
+# schools
+write.csv(distinct_schools_metro, "distinct_schools_metro.csv", row.names = FALSE)
 
 # ej areas
 st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)

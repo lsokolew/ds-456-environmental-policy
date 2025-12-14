@@ -242,6 +242,12 @@ server = function(input, output, session){
   
   polluters_buffer <- st_buffer(polluters, dist = 1609.34)
   
+  zcta_joined_children <- zcta_joined_asthma %>%
+    filter(`Age group` == "0-17")
+  
+  zcta_joined_children <- st_as_sf(zcta_joined_asthma, crs = 4326)
+  
+  
   output$asthma_map <- renderLeaflet({
 
     # ---- Color palette for polygons ----
@@ -302,6 +308,18 @@ server = function(input, output, session){
                   weight = 2,
                   label = ~paste0("Plant: ", plant_name.x))
     })
+  
+  output$asthma_poc_plot = renderPlot({
+    
+    asthma_poc_powerplant %>%
+      ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
+      geom_point() +
+      facet_wrap(~near_plant, labeller = labeller(near_plant = 
+                                                    c("TRUE" = "Within Mile of Power Plant",
+                                                      "FALSE" = "Not Within Mile of Power Plant"))) +
+      labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
+      theme_bw()
+  }, bg = "transparent")
     
   ###================================ Schools ===============================###
   if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
@@ -327,7 +345,7 @@ server = function(input, output, session){
   school_proj$within_1mile_pp <- apply(school_pp_dist, 1, function(x) any(x <= 1609.34))
   table(school_proj$within_1mile_pp)
 
-  # New Line- ALICA
+  # New Line- ALCIA
   school_proj <- st_transform(school_proj, st_crs(ej_sf))
   
   schools_in_ej <- st_within(school_proj, ej_sf)
@@ -372,22 +390,14 @@ server = function(input, output, session){
   output$pp_ej_ff = renderLeaflet({
     leaflet() %>%
       addProviderTiles("CartoDB.Positron") %>%
-      addPolygons(
-        data = ej_sf,
-        fillColor = ~pal1(EJ_area),
-        fillOpacity = 0.7,
-        color = "white",
-        weight = 0.15
-      ) %>%
-      addPolygons(
-        data = tribal_shp_wgs,
-        color = "red",         
-        fillOpacity = 0.3,    
-        weight = 1,            
-      ) %>%
-      addLegend(
-        pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
-      setView(lng = -94.6, lat = 46.4, zoom = 6) 
+      addPolygons(data = ej_sf, fillColor = "blue",
+                  fillOpacity = 0.7,color = "white", weight = 0.15) %>%
+      addPolygons(data = tribal_shp_wgs,color = "blue",         
+                  fillOpacity = 0.3, weight = 1) %>%
+      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"), 
+                       radius = 1, color =  "#962A0C")  %>%
+      addPolygons(data = plants_buffer%>% filter(fssl_fl =="Fossil Fuel"), fillColor = "#F58766",
+                  fillOpacity = 0.4, color = "#F26338",weight = 1) 
   })
 
 
@@ -395,7 +405,7 @@ server = function(input, output, session){
 # 
 # mn_tracts_wgs <- st_transform(mn_tracts, crs = 4326)
 # ej_sf_wgs <- st_transform(ej_sf, crs = 4326)
-# tribal_shp_wgs <- st_transform(tribal_shp, crs = 4326)
+ tribal_shp_wgs <- st_transform(tribal_shp_wgs, crs = 4326)
 # 
 # output$pp_ej_re <- renderLeaflet({
 #   leaflet() %>%
@@ -435,29 +445,30 @@ server = function(input, output, session){
 # 
 # })
 
+  # choose the specific power plant (example: row 1)
+  target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
+  # find which air buffers intersect this plant's location
+  hits <- st_intersects(air_buffers_proj, target_pp)
+  # keep only buffers that intersect
+  air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
+
 
 output$pp_ej_re <- renderLeaflet({
   leaflet() %>%
     setView(lng = -93.265, lat = 44.9778, zoom = 13) %>%
-    addProviderTiles("CartoDB.Positron") %>%
-    addPolygons(
-      data = metro_area,
-      fillColor = ~herc_cols(prppoc), 
-      fillOpacity = 0.7, 
-      color = "white", 
-      weight = 1
-    ) %>%
-    addLegend(pal = herc_cols, values = metro_area$prppoc) %>%
-
-    addPolygons(
-      data = herc_buffer ,
-      fillColor = "lightblue",
-      fillOpacity = 0.4,
-      color = "steelblue",
-      weight = 1
-    )  %>%
-    addCircleMarkers(data = mn_powerplants %>% filter (plant_code == 10013), 
-                     color = "#d95f02", radius = 1) 
+    addTiles() %>%
+    addPolygons(data = herc_buffer , fillColor = "#F58766",
+                fillOpacity = 0.4, color = "#F26338",weight = 1) %>%
+    addPolygons(data = metro_area,
+                fillColor = ~herc_cols(prppoc*100), fillOpacity = 0.7, 
+                color = "white", weight = 1, label = ~tractce,   
+                labelOptions = labelOptions(style = list("font-weight" = "bold"),
+                                            textsize = "14px",direction = "auto")) %>%
+    addLegend(pal = herc_cols, values = metro_area$prppoc,
+              labFormat = labelFormat(suffix  = "%"),
+              title = "Percent POC") %>%
+  addCircleMarkers(data = mn_powerplants %>% filter (plant_code == 10013), 
+                   radius = 8, color =  "#962A0C")  
   })
 
 # choose the specific power plant
