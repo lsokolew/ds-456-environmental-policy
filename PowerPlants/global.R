@@ -8,25 +8,22 @@ library(gifski)
 ###================================ Load in Data ================================###
 
 
-mn_powerplants =  read_csv('mn_powerplants.csv') 
-
-zcta_joined =  st_read('zcta_joined.shp') 
-
+mn_powerplants =  read_csv('Data/cleaning_data/mn_powerplants.csv') 
+zcta_joined =   st_read('Data/cleaning_data/zcta_joined.shp') 
 AirData_allyears <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
 load("Data/aq_data_clean/wrangled_airdata.rds")
-
 schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
+mn_tracts <- st_read("Data/cleaning_data/mn_tracts.shp")
+ej_sf <- st_read("Data/cleaning_data/ej_sf.shp")
+asthma_poc_powerplant <- read_csv("Data/asthma_poc_ppowerplant.csv")
+distinct_schools_metro.csv <- read_csv("Data/distinct_schools_metro.csv")
+ej_shp <- st_read("Data/ej_mpca_census.shp")
+metro_area <- st_read("Data/cleaning_data/metro_area_pp.shp")
+powerplants <- st_read("Data/cleaning_data/powerplants_sf.shp")
+tribal_shp_wgs <- st_read("Data/tribal_areas/census_tribal_areas.shp")
 
 all_emissions_data <- read_csv("all_emissions_data.csv")
-mn_tracts <- st_read("mn_tracts.shp")
-asthma_poc_powerplant <- read_csv("asthma_poc_powerplant.csv")
-ej_sf <- st_read("ej_sf.shp")
-ej_shp <- st_read("Data/ej_mpca_census.shp")
-metro_area <- st_read("metro_area_pp.shp")
-powerplants <- st_read("powerplants_sf.shp")
 
-
-tribal_shp_wgs <- st_read ("Data/tribal_areas/census_tribal_areas.shp")
 
 # plants_in_ej_counts <- st_read("plants_in_ej_counts.shp")
 
@@ -76,6 +73,13 @@ pal3 <- colorFactor(
 )
 
 
+# For all plants
+plants_proj_1 <- st_transform(powerplants, crs = 26915)
+buffer_distance <- 1609.34 * 1
+plants_buffer <- st_buffer(plants_proj_1, dist = buffer_distance)
+plants_buffer <- st_transform(plants_buffer, crs = 4326)
+
+
 # Herc stuff
 herc<- powerplants %>% filter(plnt_cd == 10013)
 
@@ -86,11 +90,43 @@ buffer_distance <- 1609.34 * 1
 herc_buffer <- st_buffer(plants_proj, dist = buffer_distance)
 herc_buffer <- st_transform(herc_buffer, crs = 4326)
 
-poc_cols <- c("#519465","#CF74B6", "#FFFFFF","#F7F4BA", "#FCF688") 
+## cols for her
 
-herc_cols <- colorBin(palette = poc_cols, domain = metro_area$prppoc, bins = 5)
+poc_cols <- c("#D5D1E6","#DFCEE9", "#534680","#312A4C", "#1E192E") 
+
+herc_cols <- colorBin(palette = poc_cols, domain = (metro_area$prppoc *100), bins = 5)
 
 
+tt<-metro_area %>%
+  filter(tractce %in% c("126201", "126202", "103000", "103600", "126101", "126102", "104400", "105204",
+                        "105201", "105500", "104100","103400", "003300","126300")) %>%
+  select(tractce, prp200x, prppoc, prplep, totpov, totpoc, totlep, totlan, totnnng, poc) %>%
+  summarise(mean_pct_200x = mean(prp200x), 
+            sum_lan_pop = sum(totlan),
+            sum_land_nng = sum(totnnng),
+            sum_pop = sum(totpoc),
+            sum_poc = sum(poc),
+            sum_pop = sum(totpov)) %>%
+  mutate(prp_eng = sum_land_nng/sum_lan_pop,
+         prp_poc =  sum_poc/sum_pop)
+
+
+ff<-metro_area %>%
+  filter(tractce %in% c("126201", "126202", "103000", "103600", "126101", "126102", "104400", "105204",
+                        "105201", "105500", "104100","103400", "003300","126300")) %>%
+  select(tractce,prppoc, prp200x, prplep, -geometry)%>%
+  arrange(desc(prppoc))%>% 
+  rename(`Census Tract` = tractce,
+          `POC Proportion` = prppoc,
+         `Under Poverty Level Proportion` = prp200x,
+         `Non-English Speakers Proprtion` = prplep)
+
+ff <- as.data.frame(ff) 
+
+ff <- ff %>% select(-geometry) 
+
+#126201, 126202, 103000, 103600, 126101, 126102, 104400, 105204
+# 105201, 105500, 104100,103400, 003300,126300
 ###================================ Text Tab 1  ================================###
 
 intro <- "Intro"
