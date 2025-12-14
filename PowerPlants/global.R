@@ -92,11 +92,13 @@ herc_cols <- colorBin(palette = poc_cols, domain = metro_area$prppoc, bins = 5)
 
 intro <- "Intro"
 
+# power plants
+
 pp_locations <- "Power plants draw from several sources of energy aside from traditional fossil fuels. Wind farms, particularly on the state's open
-western and southern prairies, allow for wind energy to provide 25% of the state's total net electricity generation in 2024 (EIA profile analysis).
+western and southern prairies, allow for wind energy to provide 25% of the state's total net electricity generation in 2024 (US EIA, 2025).
 The state's flat terrain offers little opportunities for hydroelectric generation; however, several small plants in the northeast produce roughly 1%
 of the state's electricity. Most solid waste biomass plants are in highly populated areas of southern Minnesota, while wood-fueled plants tend to be in the more forested parts of northern
-Minnesota (EIA profile analysis).
+Minnesota (US EIA, 2025).
 "
 
 pp_energy_sources <- "There are far more solar-fired power plants in Minnesota than any other kind - by nearly 5 times. However, as we
@@ -108,7 +110,7 @@ pp_elec_by_source <- "Indeed, we see that electricity production by fossil-fuel 
 produces around the same amount as nuclear, despite having a drastically greater number of plants. While wind makes up a
 significant part of electricity produced, as the EPA claims, natural gas produces the most out of any energy source in the state.
 Around one-fifth of the state's natural gas goes to electricity production, which has been increasing in recent years - Minnesota's
-electric power sector consumed around four times more natural gas in 2024 than in 2014 (EIA profile analysis). Overall, fossil fuel
+electric power sector consumed around four times more natural gas in 2024 than in 2014 (US EPA, 2025). Overall, fossil fuel
 sources have the capacity to produce around 750 MW more than renewable sources.
 "
 
@@ -141,24 +143,31 @@ A concern that arises is if these communities are affected more by power plants 
 
 # Air Quality 
 
-aq_text_1 <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants altogether are the largest stationary source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they produce significant quantities of fine particulate matter under 2.5 micrometers in diameter (PM₂.₅), both directly and through reactions of secondary pollutants in the atmosphere (EPA Human Health & Environment). PM2.5 particles are small enough to enter the lungs and bloodstream, potentially accumulating in the respiratory system. In addition to serious adverse effects on human health, pollutants emitted by power plants are linked to environmental damage, including loss of biodiversity and climate change (EPA Human Health & Environment). To mitigate this damage, the EPA sets air quality national standards for pollutants and works with state and local governments to meet them. In 2020, the standard for annual average PM2.5 was lowered to 9 µg/m3 from 12 µg/m3, set in 2013, down from 15.0 µg/m3 in 2006 and 50 µg/m3 in 1999 (NAAQS)." 
+aq_text_1 <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants altogether are the largest stationary source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they produce significant quantities of fine particulate matter under 2.5 micrometers in diameter (PM₂.₅), both directly and through reactions of secondary pollutants in the atmosphere (\"Human Health & Environmental Impacts\", 2025). PM2.5 particles are small enough to enter the lungs and bloodstream, potentially accumulating in the respiratory system. In addition to serious adverse effects on human health, pollutants emitted by power plants are linked to environmental damage, including loss of biodiversity and climate change (\"Human Health & Environmental Impacts\", 2025). To mitigate this damage, the EPA sets air quality national standards for pollutants and works with state and local governments to meet them. In 2020, the standard for annual average PM2.5 was lowered to 9 µg/m3 from 12 µg/m3, set in 2013, down from 15.0 µg/m3 in 2006 and 50 µg/m3 in 1999 (\"Timeline of Particulate Matter\", 2025)." 
 
-aq_text_2 <- "The EPA provides data from air quality monitors, placed at irregular locations across the state.  The map above visualizes the locations of these air monitors in relation to power plants and EJ areas. Many are in or near EJ areas, meaning that it is possible to more accurately apply our analysis to these areas. This placement also offers confidence that the government has access to information about air quality in the most marginalized areas and is able to consider these conditions in creating policy. In the Twin Cities, for instance, there is a higher concentration of power plants, EJ areas, and air monitors than elsewhere in the state. However, there are large clusters of EJ tracts in the northern half of the state that have no nearby air monitors. In the following plots, I compare the readings of air monitors that have nearby power plants, visualized with increasingly dark blue buffers, to those that do not, with white buffers. "
+aq_text_2 <- "The EPA provides data from air quality monitors, placed at irregular locations across the state.  The map above visualizes the locations of these air monitors in relation to power plants and EJ areas. Many are in or near EJ areas, meaning that it is possible to more accurately apply our analysis to these areas. This placement also offers confidence that the government has access to information about air quality in the most marginalized areas and is able to consider these conditions in creating policy. In the Twin Cities, for instance, there is a higher concentration of power plants, EJ areas, and air monitors than elsewhere in the state. However, there are large clusters of EJ tracts in the northern half of the state that have no nearby air monitors. In the following plots, we compare the readings of air monitors that have nearby power plants, visualized with increasingly dark blue buffers, to those that do not, with white buffers. "
 
 aq_text_3 <- "Monitors which are within a three-mile radius of at least one power plant, and thus are most likely to pick up on the effects of plants' pollution, have consistently higher PM2.5 concentrations than monitors which are not. 
 <br>
+<br>
 Some of this effect could be due to the fact that air monitors tend to be located in centers of population, like the Twin Cities, which experience higher pollution levels due to factors like vehicle traffic as well as power plants. It is also important to note that some categories have limited data: while 12+ monitors every year have no fossil-fired plants nearby, only a handful have one or more nearby. 
+<br>
 <br>
 Still, this plot suggests that air quality in areas near power plants is consistently worse than other areas. Communities near power plants are experiencing higher ambient PM2.5 concentrations, and the power plants are certainly not decreasing that environmental burden. 
 "
 aq_text_4 <- "
 Zooming out from a three-mile radius, we see a similar trend: air quality monitors in counties with no fossil fuel plants tend to report lower PM2.5 concentrations than counties with fossil fuel plant(s). After 2015, though, this pattern appears to shift. Two fossil-fuel counties even drop below 2.5 µg/m3, giving the impression that renewable-only counties have worse air quality overall than fossil-fuel counties. However, the air monitors in these counties only have observations starting in 2015. They are located in the northeast tip of the state, around Lake Superior and the Boundary Waters, where air quality tends to be best. Further, most of the very low, fossil-only counties are relatively large, with air monitors far from plants. Thus, the pattern post-2015 should not be taken as evidence of significant improvement in fossil-fuel counties overall. 
 <br>
-During this time period, both plots also show near-universal spikes in PM2.5 concentrations in 2021 and 2023. This is potentially due to Canadian wildfire smoke, a significant cause of ambient PM2.5 (MPCA trends).
 <br>
-Yet, both plots do show average annual PM2.5 concentration declining over time, which aligns with research by Jbaily et al. at Harvard T.H. Chan School of Public Health, who found that 
-| \"on average across the U.S., PM2.5 concentration levels fell from 2000 to 2016, with average exposure falling from 12.6 μg/m3 to 7.5 μg/m3—a 40.4% drop. They also found that the percentage of the population exposed to PM2.5 levels higher than 12 μg/m3 decreased from 57.3% in 2000 to 4.5% in 2016.\" (Racial, Ethnic Minorities & pollution)
-This aligns with decreasing EPS NAAQS standards for permissible PM2.5, and is part of a greater trend of decreasing PM2.5 levels nationally, potentially indicating the success of EPA programs for pollution control (PM2.5 national trend). It also aligns with the spike in new renewable power plants starting around 2000, potentially demonstrating the effectiveness of Minnesota's commitment to improving air quality via less reliance on fossil fuels. By 2040, in fact, electricity providers will be expected to generate or procure 100% of their electricity from carbon-free sources (EIA profile analysis). 
+During this time period, both plots also show near-universal spikes in PM2.5 concentrations in 2021 and 2023. This is potentially due to Canadian wildfire smoke, a significant cause of ambient PM2.5 (MPCA, n.d.).
+<br>
+<br>
+Yet, both plots do show average annual PM2.5 concentration declining over time, which aligns with research by Jbaily et al. at Harvard T.H. Chan School of Public Health, who found that
+<br>" 
+
+aq_text_5 <- "on average across the U.S., PM2.5 concentration levels fell from 2000 to 2016, with average exposure falling from 12.6 μg/m3 to 7.5 μg/m3—a 40.4% drop. They also found that the percentage of the population exposed to PM2.5 levels higher than 12 μg/m3 decreased from 57.3% in 2000 to 4.5% in 2016. (\"Racial, Ethnic Minorities and Low-Income Groups\", 2022)"
+
+aq_text_6 <- "This aligns with decreasing EPS NAAQS standards for permissible PM2.5, and is part of a greater trend of decreasing PM2.5 levels nationally, potentially indicating the success of EPA programs for pollution control (PM2.5 national trend). It also aligns with the spike in new renewable power plants starting around 2000, potentially demonstrating the effectiveness of Minnesota's commitment to improving air quality via less reliance on fossil fuels. By 2040, in fact, electricity providers will be expected to generate or procure 100% of their electricity from carbon-free sources (US EPA, 2025). 
 "
 
 
@@ -201,17 +210,29 @@ it's just gonna hurt him more. I want... I want to shut [the HERC] down for the 
 ###================================ Text Tab 2  ================================###
 
 
-data_intro <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota as of 2024
-from the US Energy Information Administration (EIA). In order to examine demographics and characteristics of Minnesota
+pp_data_methods <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota as of 2024
+from the US Energy Information Administration (EIA)."
+
+ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from [ADD YEAR]. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental
-Justice Areas.</b> <b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of
-PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1980-2025), which we used to evaluate the impacts of power
-plants on air quality. Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's
+Justice Areas.</b> "
+
+aq_data_methods <-"<b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of
+PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to evaluate the impacts of power
+plants on air quality. I downloaded these via R script from Air Quality System Data Mart available via https://www.epa.gov/outdoor-air-quality-data. Accessed Month DD, YYYY.
+"
+
+health_data_methods <- "Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's
 data</b> on hospitalizations due to asthma and COPD.</b>"
 
-acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable help in guilding the direction of our project. We
-sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks also to Professor Shilad Sen for his help."
+data_methods_conclusion <- "To find code and reproduce our work, please see our github repository at https://github.com/lsokolew/ds-456-environmental-policy/tree/main."
+
+
+
+acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable insight in guilding the direction of our project. We
+sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks to Professor Shilad Sen for his feedback, and Professor Brianna
+Heggeseth also for her help."
 
 
 ai_statement <- "ChatGPT was used to debug code for some plots in the air quality section of this report. No generative AI was used in the 

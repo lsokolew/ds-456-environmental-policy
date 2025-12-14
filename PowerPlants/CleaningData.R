@@ -435,7 +435,7 @@ all_emissions_data <- all_emissions %>%
   mutate(plant_code = as.numeric(plant_code)) %>%
   left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>%
   distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
-  filter(!is.na(latitude) & !is_na(longitude)) %>%
+  filter(!is.na(latitude) & !is.na(longitude)) %>%
   group_by(plant_code, plant_name.x, zip, longitude, latitude) %>%
   summarise(`eia_model_estimates_of_n_ox_emissions_tons` = sum(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
   filter(zip %in% metro_zips) %>%
@@ -529,7 +529,8 @@ saveRDS(AirData_allyears, "Data/aq_data_clean/AirData_allyears.rds")
 save(mn_pp_sf, AirData_sf, air_buffers, grouped_summ_pm25_allyears, all_avgs, file="Data/aq_data_clean/wrangled_airdata.rds")
 
 # emissions
-write.csv(all_emissions_data, "all_emissions_data.csv", row.names = FALSE)
+write_csv(all_emissions_data, "all_emissions_data.csv")
+
 # health
 st_write(zcta_joined_asthma, "zcta_joined.shp", row.names = FALSE)
 # schools
