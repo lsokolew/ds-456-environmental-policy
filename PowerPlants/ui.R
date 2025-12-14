@@ -282,6 +282,19 @@ tabPanel(
       HTML(acknowledgements)
       ), #  close div
     
+    br(),
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("AI Statement")),
+    
+    div(
+      style = "max-width: 900px; 
+               margin: 0 auto; 
+               text-align: justify; 
+               font-size: 18px; 
+               font-family: 'Tinos', serif; 
+               color: #4a4a4a;",
+      HTML(ai_statement)
+    ), #  close div
+    
     ) #closing navpage
   ) # closing tab #2
 ) # closing UI

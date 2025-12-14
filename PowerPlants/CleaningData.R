@@ -19,7 +19,7 @@ mn_powerplants = read_csv('Data/Power_Plants.csv') %>%
          PrimSource = ifelse(PrimSource == "other", "waste heat", PrimSource))  %>% # change 'other' to 'waste heat'
   janitor::clean_names() 
 
-mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel"
+mn_powerplants$fossil_fuel[mn_powerplants$plant_code == "10013"] <- "Fossil Fuel" # change HERC to nonrenewable
 
 
 # power plant dates
