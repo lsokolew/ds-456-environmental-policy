@@ -236,40 +236,114 @@ ui <- navbarPage(
   
    column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
    br(),
-   div(
-     style = "
-     max-width: 900px; 
-     margin: 0 auto; 
-     text-align: justify; 
-     font-size: 18px; 
-     font-family: 'Tinos', serif; 
-     color: #4a4a4a;",HTML(asthma_plot_two)),
-  br(),
-   
-   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
-  br(),
-  div(
-    style = "
-     max-width: 900px; 
-     margin: 0 auto; 
-     text-align: justify; 
-     font-size: 18px; 
-     font-family: 'Tinos', serif; 
-     color: #4a4a4a;",HTML(school_plot)),
+  #  div(
+  #    style = "
+  #    max-width: 900px; 
+  #    margin: 0 auto; 
+  #    text-align: justify; 
+  #    font-size: 18px; 
+  #    font-family: 'Tinos', serif; 
+  #    color: #4a4a4a;",HTML(asthma_plot_two)),
+  # br(),
+  #  
+    column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
+  # br(),
+  # div(
+  #   style = "
+  #    max-width: 900px; 
+  #    margin: 0 auto; 
+  #    text-align: justify; 
+  #    font-size: 18px; 
+  #    font-family: 'Tinos', serif; 
+  #    color: #4a4a4a;",HTML(school_plot)),
  
   ###================================ HERC ===============================###
   br(),
   br(),
-  h2(style = "text-align:center; font-size:22px;", strong("Diving into the HERC")),
+  h2(style = "text-align:center; font-size:22px;", strong("What about the HERC and its community impacts?")),
+  br(),
+  div(
+    style = "
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: justify;
+  font-size: 18px;
+  font-family: 'Tinos', serif;
+  color: #4a4a4a;",HTML(HERC_text_1)),
   
-  h2(style = "text-align:center; font-size:18px;", "Where is it located"),
-
+  column(12, align = "center", leafletOutput(outputId = 'herc_map', height = 400, width = 600)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(HERC_plot_1_text)),
+  br(), 
   
-   column(12, align = "center", leafletOutput(outputId = 'herc_map', height = 400, width = 600)),
+  
+  div(
+    style = "
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: justify;
+  font-size: 18px;
+  font-family: 'Tinos', serif;
+  color: #4a4a4a;",HTML(HERC_text_2)),
   
   column(12, align = "center", plotOutput(outputId = 'herc_lineplot', height = 400, width = 600)),
+
+  br(),
   
-  h2(style = "text-align:center; font-size:22px;", strong("So what now?")),
+  
+  div(
+    style = "
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: justify;
+  font-size: 18px;
+  font-family: 'Tinos', serif;
+  color: #4a4a4a;",HTML(HERC_text_3)),
+  
+  br(),
+  ###================================ Discussion/Conclusion ===============================###
+  h2(style = "text-align:center; font-size:28px;", strong("Discussion")),
+  br(),
+  
+  div(
+  style = "
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: justify;
+  font-size: 18px;
+  font-family: 'Tinos', serif;
+  color: #4a4a4a;",HTML(conclusion_text_1)),
+  br(),
+  br(),
+  br(),
+  div(
+    style = "max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 18px;
+            font-family: 'Tinos', serif;
+            color: #4a4a4a;",HTML(conclusion_text_2)),
+  h2(style = "text-align:center; font-size:18px;", strong("-EIA profile analysis")),
+  br(),
+  br(),
+  br(),
+
+  h2(style = "text-align:center; font-size:24px;", strong("So what now?")),
+  br(),
+  div(
+  style = " max-width: 900px;
+            margin: 0 auto;
+            text-align: justify;
+            font-size: 18px;
+            font-family: 'Tinos', serif;
+            color: #4a4a4a;",HTML(conclusion_text_3)),
+  
   
     ) # closing fluidpage
   ), # Closing tab #1
