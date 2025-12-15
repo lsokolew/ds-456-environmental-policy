@@ -183,7 +183,7 @@ aq_text_5 <- "on average across the U.S., PM2.5 concentration levels fell from 2
 aq_text_6 <- "This aligns with decreasing EPS NAAQS standards for permissible PM2.5, and is part of a greater trend of decreasing PM2.5 levels nationally, potentially indicating the success of EPA programs for pollution control (PM2.5 national trend). It also aligns with the spike in new renewable power plants starting around 2000, potentially demonstrating the effectiveness of Minnesota's commitment to improving air quality via less reliance on fossil fuels. By 2040, in fact, electricity providers will be expected to generate or procure 100% of their electricity from carbon-free sources (US EPA, 2025). 
 "
 
-
+aq_text_7 <- "Yet, plants are still causing damage in the meantime. One study estimates that 'between 1999 and 2020, 460,000 deaths would not have occurred in the absence of emission from the coal power plants' (Doctrow, 2023). Thus, communities near coal power plants are at risk of significant health concerns and even increased mortality. But what do health effects of exposure to pollutants like PM2.5 look like in the Twin Cities?"
 
 # Health 
 

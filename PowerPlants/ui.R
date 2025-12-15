@@ -204,6 +204,25 @@ ui <- navbarPage(
     font-family: 'Tinos', serif;
     color: #4a4a4a;",HTML(aq_text_6)),
   
+  br(),
+  # ADD PHOTO
+  div(style = "text-align: center;",
+      tags$img(
+        src = "power-plant-pollution.jpg",
+        alt = "a photo with a river in the foreground and two smokestacks in the background, one emitting white smoke.",
+        width = 600,
+        height = 400)),
+  
+  br(),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_7)),
+  
   ##=================Health=================##
   
   br(),
