@@ -8,7 +8,7 @@ library(ggplot2)
 library(gganimate)
 library(gifski)
 library(readxl)
-
+library(tigris)
 ###==================== Load in data ===================###
 
 
