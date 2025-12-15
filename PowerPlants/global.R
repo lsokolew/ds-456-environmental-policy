@@ -211,8 +211,18 @@ it's just gonna hurt him more. I want... I want to shut [the HERC] down for the 
 ###================================ Text Tab 2  ================================###
 
 
-pp_data_methods <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota as of 2024
-from the US Energy Information Administration (EIA) and Environmental Protection Agency (EPA). "
+pp_data_methods <- "We got our main dataset about the locations and characteristics of power plants in Minnesota as of 2024
+from the Environmental Protection Agency (EPA), although its original source is the US Energy Information Administration (EIA). The initial dataset contained all power plants in the US,
+so we filtered it down to just Minesota. It contained the plant's geographical coordinates, name, city & county, primary fuel source, and a uniquely-identifying 
+plant code. We also consider the total capacity of the plant, or the most electricity (in MW) it can be producing at any time, from this dataset.
+We grouped plants into fossil fuel or renewable, based on their primary source of fuel, and manually updated the one 'other' fuel plant to 'waste heat' based on information
+we found online. We also re-classified the Covanta plant (The HERC) as fossil-fuel based on Minnesota legislation marking it non-renewable. 
+<br>
+Data from EIA Form-860 was downloaded directly to supply the initial dates of operation for the power plants in our main dataset. 
+Missing data, from plants that began operation in the first two months of 2025, was supplied manually from information via the plants\' 
+website ([https://mysunshare.com/about-us/]). Where there were multiple generators with different start dates, we took the first as the overall
+start date of the plant.
+"
 
 ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from 2022. We made use of <b>Minnesota
@@ -220,7 +230,7 @@ Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to e
 Justice Areas. </b> "
 
 aq_data_methods <-"The EPA provided pre-generated Air Data files of annual summaries of
-PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to explore the impacts of power
+PM2.5 (fine particulate matter) concentration from around 50 total monitors in Minnesota (1999-2025), which we used to explore the impacts of power
 plants on air quality. It contains annual mean PM2.5 readings from various sites around the state, some of which have multiple monitors, and provides the locations
 of the sites and the metric used to calculate annual mean PM2.5 (eg, 1- or 24-hour averages). It also notes the local site name, county name, and city name,
 if applicable. We downloaded these via R script from Air Quality System Data 
