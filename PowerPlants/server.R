@@ -265,117 +265,117 @@ server = function(input, output, session){
   }, bg = "transparent")
   
   ###================================ Health ===============================###
-  # 
-  # mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
-  # top_NOpolluters_metro <- all_emissions_data %>%
-  #   filter(zip %in% metro_zips) %>%
-  #   arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
-  # 
-  # top_NOpolluters_metro_sf <- all_emissions_data %>%
-  #   filter(zip %in% metro_zips) %>%
-  #   arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
-  #   st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
-  # 
-  # polluters <- top_NOpolluters_metro_sf %>%
-  #   arrange(desc(eia_model_estimates_of_n_ox_emissions_tons)) %>%
-  #   st_transform(crs = 4326)
-  # 
-  # polluters_buffer <- st_buffer(polluters, dist = 1609.34)
-  # 
-  # zcta_joined_children <- zcta_joined_asthma %>%
-  #   filter(`Aggroup` == "0-17")
-  # 
-  # zcta_joined_children <- st_as_sf(zcta_joined_asthma, crs = 4326)
-  # 
-  # 
-  # output$asthma_map <- renderLeaflet({
-  # 
-  #   # ---- Color palette for polygons ----
-  #   pal2 <- colorFactor(
-  #     palette = c("lightblue", "lightblue3","skyblue3", "royalblue3", "midnightblue"),
-  #     levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
-  #     na.color = "grey"
-  #   )
-  # 
-  #   leaflet(zcta_joined_children) %>%
-  #     setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
-  #     addTiles() %>%
-  #     addPolygons(
-  #       fillColor = ~pal2(valu_ct),
-  #       color = "black",
-  #       weight = 1,
-  #       opacity = 1,
-  #       fillOpacity = 0.9,
-  #       highlight = highlightOptions(
-  #         weight = 2,
-  #         color = "white"),
-  #       label = ~paste0(
-  #         "Zipcode: ", ZCTA5CE, "\n",
-  #         "Rate: ", ifelse(is.na(`A.rp10.`), "Not given due to small population", `A.rp10.`)),
-  #       labelOptions = labelOptions(
-  #         style = list("white-space" = "pre-line")
-  #       )) %>%
-  #     
-  #     addLegend(
-  #       pal = pal2,
-  #       values = zcta_joined_children$valu_ct,
-  #       opacity = 0.9,
-  #       title = "Asthma-related Emergency Department Visit",
-  #       position = "bottomright",
-  #       na.label = "Not given"
-  #     ) %>%
-  #     addLegend(
-  #       colors = "red",
-  #       labels = "Non-renewable Power Plant",
-  #       opacity = 0.8,
-  #       position = "bottomright"
-  #     ) %>%
-  #     addCircleMarkers(
-  #       data = top_NOpolluters_metro,
-  #       lng = ~longitude,
-  #       lat = ~latitude,
-  #       color = "red",
-  #       radius = 3,
-  #       fill = "red",
-  #       fillOpacity = 1,
-  #       label = ~paste0(
-  #         "Plant Name: ", plant_name.x, "<br>",
-  #         "Plant Code: ", plant_code)) %>%
-  #     addPolygons(data = polluters_buffer,
-  #                 fillColor = "transparent",
-  #                 fillOpacity = 0.4,
-  #                 color = "red",
-  #                 weight = 2,
-  #                 label = ~paste0("Plant: ", plant_name.x))
-  #   })
-  # 
-  # output$asthma_poc_plot = renderPlot({
-  #   
-  #   asthma_poc_powerplant %>%
-  #     mutate(pct_poc = (blackE +asianE + hispanicE) / total_popE) %>%
-  #     ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
-  #     geom_point() +
-  #     facet_wrap(~near_plant, labeller = labeller(near_plant = 
-  #                                                   c("TRUE" = "Within Mile of Power Plant",
-  #                                                     "FALSE" = "Not Within Mile of Power Plant"))) +
-  #     labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
-  #     theme_bw()
-  # }, bg = "transparent")
-    
+
+  mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
+  top_NOpolluters_metro <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons)))
+
+  top_NOpolluters_metro_sf <- all_emissions_data %>%
+    filter(zip %in% metro_zips) %>%
+    arrange(desc(as.numeric(eia_model_estimates_of_n_ox_emissions_tons))) %>%
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+  polluters <- top_NOpolluters_metro_sf %>%
+    arrange(desc(eia_model_estimates_of_n_ox_emissions_tons)) %>%
+    st_transform(crs = 4326)
+
+  polluters_buffer <- st_buffer(polluters, dist = 1609.34)
+
+  zcta_joined_children <- zcta_joined_asthma %>%
+    filter(`Aggroup` == "0-17")
+
+  zcta_joined_children <- st_as_sf(zcta_joined_asthma, crs = 4326)
+
+
+  output$asthma_map <- renderLeaflet({
+
+    # ---- Color palette for polygons ----
+    pal2 <- colorFactor(
+      palette = c("lightblue", "lightblue3","skyblue3", "royalblue3", "midnightblue"),
+      levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
+      na.color = "grey"
+    )
+
+    leaflet(zcta_joined_children) %>%
+      setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
+      addTiles() %>%
+      addPolygons(
+        fillColor = ~pal2(valu_ct),
+        color = "black",
+        weight = 1,
+        opacity = 1,
+        fillOpacity = 0.9,
+        highlight = highlightOptions(
+          weight = 2,
+          color = "white"),
+        label = ~paste0(
+          "Zipcode: ", ZCTA5CE, "\n",
+          "Rate: ", ifelse(is.na(`A.rp10.`), "Not given due to small population", `A.rp10.`)),
+        labelOptions = labelOptions(
+          style = list("white-space" = "pre-line")
+        )) %>%
+
+      addLegend(
+        pal = pal2,
+        values = zcta_joined_children$valu_ct,
+        opacity = 0.9,
+        title = "Asthma-related Emergency Department Visit",
+        position = "bottomright",
+        na.label = "Not given"
+      ) %>%
+      addLegend(
+        colors = "red",
+        labels = "Non-renewable Power Plant",
+        opacity = 0.8,
+        position = "bottomright"
+      ) %>%
+      addCircleMarkers(
+        data = top_NOpolluters_metro,
+        lng = ~longitude,
+        lat = ~latitude,
+        color = "red",
+        radius = 3,
+        fill = "red",
+        fillOpacity = 1,
+        label = ~paste0(
+          "Plant Name: ", plant_name.x, "<br>",
+          "Plant Code: ", plant_code)) %>%
+      addPolygons(data = polluters_buffer,
+                  fillColor = "transparent",
+                  fillOpacity = 0.4,
+                  color = "red",
+                  weight = 2,
+                  label = ~paste0("Plant: ", plant_name.x))
+    })
+
+  output$asthma_poc_plot = renderPlot({
+
+    asthma_poc_powerplant %>%
+      mutate(pct_poc = (blackE +asianE + hispanicE) / total_popE) %>%
+      ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
+      geom_point() +
+      facet_wrap(~near_plant, labeller = labeller(near_plant =
+                                                    c("TRUE" = "Within Mile of Power Plant",
+                                                      "FALSE" = "Not Within Mile of Power Plant"))) +
+      labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
+      theme_bw()
+  }, bg = "transparent")
+
   ###================================ Schools ===============================###
 
-  
-  # output$school_pp_plot = renderPlot({
-  #   distinct_schools_metro %>%
-  #     ggplot(aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
-  #     geom_boxplot() +
-  #     labs(title = "Distance to Nearest Power Plant by EJ Status",
-  #          x = "Environmental Justice Area", y = "Distance (miles)") +
-  #     stat_summary(fun = median, geom = "point", size = 2, color = "red")+
-  #     theme_1 +
-  #     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  # }, bg = "transparent")
-  # 
+
+  output$school_pp_plot = renderPlot({
+    distinct_schools_metro %>%
+      ggplot(aes(x = schools_in_ej, y = nearest_pp_dist_mi)) +
+      geom_boxplot() +
+      labs(title = "Distance to Nearest Power Plant by EJ Status",
+           x = "Environmental Justice Area", y = "Distance (miles)") +
+      stat_summary(fun = median, geom = "point", size = 2, color = "red")+
+      theme_1 +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  }, bg = "transparent")
+
 
   ###================================ HERC ===============================###
   # choose the specific power plant (example: row 1)

@@ -15,7 +15,7 @@ schools_sf                  <- sf::read_sf("Data/shp_struc_school_program_locs/s
 mn_tracts                   <- st_read("Data/cleaning_data/mn_tracts.shp")
 ej_sf                       <- st_read("Data/cleaning_data/ej_sf.shp")
 asthma_poc_powerplant       <- read_csv("Data/cleaning_data/asthma_poc_powerplants.csv")
-distinct_schools_metro.csv  <- read_csv("Data/cleaning_data/distinct_schools_metro.csv")
+distinct_schools_metro      <- read_csv("Data/cleaning_data/distinct_schools_metro.csv")
 ej_shp                      <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 metro_area                  <- st_read("Data/cleaning_data/metro_area_pp.shp")
 powerplants                 <- st_read("Data/cleaning_data/powerplants_sf.shp")
