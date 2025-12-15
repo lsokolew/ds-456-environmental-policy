@@ -99,6 +99,41 @@ server = function(input, output, session){
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
     }, bg = "transparent")
   
+  
+  
+  ###================================ EJ-AREAS ===============================###
+  tribal_shp_wgs <- st_transform(tribal_shp_wgs, crs = 4326)
+  
+  # EJ Areas
+  output$pp_ej_ff = renderLeaflet({
+    leaflet() %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      addPolygons(data = ej_sf, fillColor = "#452814",
+                  fillOpacity = 0.7,color = "white", weight = 0.15) %>%
+      addPolygons(data = tribal_shp_wgs,color = "#452814",         
+                  fillOpacity = 0.3, weight = 1) %>%
+      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"), 
+                       radius = 1, color =  "#962A0C")  %>%
+      addPolygons(data = plants_buffer%>% filter(fssl_fl =="Fossil Fuel"), fillColor = "#F58766",
+                  fillOpacity = 0.4, color = "#F26338",weight = 1) 
+  })
+  
+  
+  output$pp_ej_rr = renderLeaflet({
+    leaflet() %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      addPolygons(data = ej_sf, fillColor = "#23702E",
+                  fillOpacity = 0.7,color = "white", weight = 0.15) %>%
+      addPolygons(data = tribal_shp_wgs,color = "#23702E",         
+                  fillOpacity = 0.3, weight = 1) %>%
+      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Renewable"), 
+                       radius = 1, color =  "#962A0C")  %>%
+      addPolygons(data = plants_buffer%>% filter(fssl_fl =="Renewable"), fillColor = "#F58766",
+                  fillOpacity = 0.4, color = "#F26338",weight = 1) 
+  })
+  
+  
+  
   ###================================ Air Quality ===============================###
 
   # Map the Buffers
@@ -221,9 +256,6 @@ server = function(input, output, session){
         theme_minimal()
   }, bg = "transparent")
   
-  
-  
-
   ###================================ Health ===============================###
   # 
   # mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
@@ -337,26 +369,7 @@ server = function(input, output, session){
   # }, bg = "transparent")
   # 
 
-###================================ EJ ===============================###
-  tribal_shp_wgs <- st_transform(tribal_shp_wgs, crs = 4326)
-  
- # EJ Areas
-  output$pp_ej_ff = renderLeaflet({
-    leaflet() %>%
-      addProviderTiles("CartoDB.Positron") %>%
-      addPolygons(data = ej_sf, fillColor = "blue",
-                  fillOpacity = 0.7,color = "white", weight = 0.15) %>%
-      addPolygons(data = tribal_shp_wgs,color = "blue",         
-                  fillOpacity = 0.3, weight = 1) %>%
-      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"), 
-                       radius = 1, color =  "#962A0C")  %>%
-      addPolygons(data = plants_buffer%>% filter(fssl_fl =="Fossil Fuel"), fillColor = "#F58766",
-                  fillOpacity = 0.4, color = "#F26338",weight = 1) 
-  })
-
-
-# # Plot renable Fuel
-
+  ###================================ HERC ===============================###
   # choose the specific power plant (example: row 1)
   target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
   # find which air buffers intersect this plant's location
@@ -364,7 +377,7 @@ server = function(input, output, session){
   # keep only buffers that intersect
   air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
 
-
+# HERC powerplant and its surrounding tracts
 output$herc_map <- renderLeaflet({
   leaflet() %>%
     setView(lng = -93.265, lat = 44.9778, zoom = 13) %>%
@@ -383,23 +396,22 @@ output$herc_map <- renderLeaflet({
                 fillOpacity = 0.4, color = "#F26338",weight = 1) 
   })
 
-# choose the specific power plant
-
+# PM.2 tracked by nearby monitors vs those not near HERC
 output$herc_lineplot <- renderPlot({
   # diff between avg of all air monitors in the state and air monitors just near the plant
-  ggplot(all_avgs) +
-    geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
-    geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
-    annotate("text", x = 2016,
-             y = 9.3, hjust = 0,
-             label = "National Standard",
-             color = "darkgray") +
-    ylim(0,12)+
-    scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
-    labs(title = "PM2.5 Concentrations Are Consistently Higher Near the HERC",
-         y = "Annual Average PM2.5 Concentration (µg/m3)",
-         x = "Year",
-         color = "Location of Monitor") +
-    theme_1
-}, bg = "transparent")
+    ggplot(all_avgs) +
+      geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
+      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      annotate("text", x = 2016,
+               y = 9.3, hjust = 0,
+               label = "National Standard",
+               color = "darkgray") +
+      ylim(0,12)+
+      scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
+      labs(title = "PM2.5 Concentrations Are Consistently Higher Near the HERC",
+           y = "Annual Average PM2.5 Concentration (µg/m3)",
+           x = "Year",
+           color = "Location of Monitor") +
+      theme_1
+  }, bg = "transparent")
 }
