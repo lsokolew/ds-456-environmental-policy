@@ -265,7 +265,8 @@ distinct_schools <- school_proj %>%
   distinct(GISADDR, .keep_all = TRUE)
 
 distinct_schools_metro <- distinct_schools %>% 
-  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) 
+  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) %>%
+  st_drop_geometry()
 
 
 ###=== EJ Areas ===###
