@@ -54,7 +54,6 @@ ej_spaces <- read_csv("Data/ej_mpca/ej_mpca_census.csv") %>%
 
 ej_shapefile <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 
-
 tribal_shp <- st_read("Data/tribal_areas/census_tribal_areas.shp")
 
 

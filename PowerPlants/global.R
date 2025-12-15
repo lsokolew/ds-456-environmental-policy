@@ -184,26 +184,32 @@ more renewable energy power plants on the outskirts of the metro area,
 in comparison to the concentration of fossil fuel power plants in the metro area. 
 Having said this, the power plants do seem well distributed, though there are 
 significantly more renewable energy plants. For example, there are almost no 
-fossil fuel power plants in the nearby Dulutuh area, but quite a few renewable energy plants in Dulutuh."
+fossil fuel power plants in the nearby Dulutuh area, but quite a few renewable energy plants in Duluth."
 
 
 ej_text_3<-"Research has found that fossil fuel power plants, which emit more harmful pollutants than 
-renewable sources,  aredisproportionately located near black, brown and indigenous, and poor communities 
-(Donaghy2023fossilFuelRacism).  Some of this is a result of redlining that still linger today and disproportionately affect air 
-quality for individual reading in these historic communities(HarvardChan2023redlining). Additionally, health harms have been 
-linked to result from waste and power facilities, particularly for residents living within a 1-mile 
+renewable sources,are disproportionately located near black, brown, and indigenous, and poor communities 
+(Donaghy2023fossilFuelRacism).  Some of this is a result of redlining that still lingers today and disproportionately affects air 
+quality for individuals living in these historic communities(HarvardChan2023redlining). Additionally, health harms have been 
+linked to waste and power facilities, particularly for residents living within a 1-mile radius 
 radius(Vrijheid, 2009)."
 
 
 ej_text_4 <- "To assess local impacts, we explored the proportion of EJ census tracts within a 
 1-mile radius of each fossil fuel power plant. Statewide, most power plants do not overlap with 
 EJ areas. When focusing on the Twin Cities  Metro Area (Anoka, Carver, Dakota, Ramsey, Hennepin,
-Scott, and Washington Counties), 17 of out 28 power plants do not touch an EJ tract within a 1-mile radius."
+Scott, and Washington Counties), 17 out of 28 power plants do not touch an EJ tract within a 1-mile radius."
 
 ej_text_5 <-"Though these findings demonstrate that in Minnesota powerplants aren’t heavily in EJ areas, 
 it is still important to highlight that there do exist fossil fuel power plants that heavily overlap EJ areas. 
-These facilities are particularly ones we should worry abot, as residents in these areas continue to be vulnerable 
-to evneormental and health risks."
+These facilities are particularly ones we should worry about, as residents in these areas continue to be vulnerable 
+to enviromental and health risks. Additionally, though it wasn't an enviromental justice finding, we did find that 
+for census tracts with a mean household income of over 250k, did not have any powerplants in their census tracts, neither renewable
+or fossil fuel. Though the EJ area analysis is important, getting a bigger picture is also useful. Further analysis could focus on treating the 1-mile radius
+as one rather than many census tracts within, as in look at the population overall rather than in each tract.
+
+<br> NOTE: Though we map out indigenous/tribal lands, we didn't consider their locations when calculating EJ areas within 1 mile radius of a powerplant,
+due to geospatial troubles."
 
 ej_plot_text_1<- "<i>Note: the purple shading represents indigenous/tribal lands</i>"
 
@@ -320,9 +326,11 @@ fossil-fired plants down.
 <br><br>
 
 This analysis does have some limitations. For instance, there is limited air quality data, unaccounted confounding variables 
-(e.g.,traffic patterns), and inability to consider plant size in the area or capacity. Moreover, though we do consider Envireomtnal Justice Areas, 
+(e.g.,traffic patterns), and inability to consider plant size in the area or capacity. Moreover, though we do consider EJ Areas, 
 as labeled by the Pollution Control Agency, the data used for such classicaltion comes from 2018-2022, as in it is not recent data. We also worked 
-on the HERC, which is a powerplant that is in the works of being shut down, but did not consider past fossil fuel power plant shutdowns. Additionally, 
+on the HERC, which is a powerplant that is in the works of being shut down, but did not consider past fossil fuel power plant shutdowns. Moreover, during our
+EJ area analysis, we failed to calculate the distance of indigenous/tribal lands to power plants, as the shapefile is a different format. Thus this 
+should be an area that is further studied, rather just mapping or investigating visually. Additionally, 
 although we cite EPA and other US government resources throughout this report, it's important to note that some of these resources have recently been 
 undergoing politically motivated changes, which could impact the quality of outside context we provide."
 
@@ -354,7 +362,12 @@ start date of the plant. We joined this to the main power plants datset using th
 ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from 2022. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental
-Justice Areas. </b> "
+Justice Areas. It is important to note that the enviromental justice areas (as defined by the MPCA), include indigenous/tribal lands that are not
+particularly made up of direct census tracts. Thus we used a shapefile also provided by the MPCA, called  Census Tribal Areas, which was a shapefile,
+and could easily be displayed on top. We also got county level and more tract level information from the tigris and tidycensus libraries. 
+These libraries gave us geospatial information that made it easier to combine the powerplant location to cencus tract information (particularly through the 
+geometry column). We also got the idea that the Minneapolis-St. Paul metropolitan area is made up of 7 counties, as defined by the Metropolitan Council.
+A lot of the analysis just consisted of wrangling and calculating sums and means across the ACS and Powerplant datasets.</b> "
 
 
 aq_data_methods <-"The EPA provided pre-generated Air Data files of annual summaries of
