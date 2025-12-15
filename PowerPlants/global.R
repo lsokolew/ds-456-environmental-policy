@@ -14,7 +14,7 @@ AirData_allyears            <- readRDS("Data/aq_data_clean/AirData_allyears.rds"
 schools_sf                  <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 mn_tracts                   <- st_read("Data/cleaning_data/mn_tracts.shp")
 ej_sf                       <- st_read("Data/cleaning_data/ej_sf.shp")
-asthma_poc_powerplant       <- read_csv("Data/asthma_poc_ppowerplant.csv")
+asthma_poc_powerplant       <- read_csv("Data/asthma_poc_powerplant.csv")
 distinct_schools_metro.csv  <- read_csv("Data/distinct_schools_metro.csv")
 ej_shp                      <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 metro_area                  <- st_read("Data/cleaning_data/metro_area_pp.shp")

@@ -6,6 +6,7 @@ library(sf)
 library(tigris)
 library(scales)
 library(gganimate)
+library(leaflet.extras2) 
 
 
 options(tigris_use_cache = TRUE)
@@ -102,34 +103,41 @@ server = function(input, output, session){
   
   
   ###================================ EJ-AREAS ===============================###
+  
+  # Inspo for this plot from: https://stackoverflow.com/questions/71669825/leaflet-side-by-side-for-2-raster-images-in-r
   tribal_shp_wgs <- st_transform(tribal_shp_wgs, crs = 4326)
   
-  # EJ Areas
-  output$pp_ej_ff = renderLeaflet({
-    leaflet() %>%
-      addProviderTiles("CartoDB.Positron") %>%
-      addPolygons(data = ej_sf, fillColor = "#452814",
-                  fillOpacity = 0.7,color = "white", weight = 0.15) %>%
-      addPolygons(data = tribal_shp_wgs,color = "#452814",         
-                  fillOpacity = 0.3, weight = 1) %>%
-      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"), 
-                       radius = 1, color =  "#962A0C")  %>%
-      addPolygons(data = plants_buffer%>% filter(fssl_fl =="Fossil Fuel"), fillColor = "#F58766",
-                  fillOpacity = 0.4, color = "#F26338",weight = 1) 
-  })
-  
-  
-  output$pp_ej_rr = renderLeaflet({
-    leaflet() %>%
-      addProviderTiles("CartoDB.Positron") %>%
-      addPolygons(data = ej_sf, fillColor = "#23702E",
-                  fillOpacity = 0.7,color = "white", weight = 0.15) %>%
-      addPolygons(data = tribal_shp_wgs,color = "#23702E",         
-                  fillOpacity = 0.3, weight = 1) %>%
-      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Renewable"), 
-                       radius = 1, color =  "#962A0C")  %>%
-      addPolygons(data = plants_buffer%>% filter(fssl_fl =="Renewable"), fillColor = "#F58766",
-                  fillOpacity = 0.4, color = "#F26338",weight = 1) 
+  output$pp_ej_side <- renderLeaflet({
+      leaflet() %>%
+      setView(lng = -93.265, lat = 44.9778, zoom = 6) %>%
+      addMapPane("ff_pane", zIndex = 410)  %>%
+      addMapPane("rr_pane", zIndex = 420)  %>%
+      addProviderTiles("CartoDB.Positron", options = pathOptions(pane = "ff_pane"), layerId = "ff_base")  %>%
+      addProviderTiles("CartoDB.Positron", options = pathOptions(pane = "rr_pane"), layerId = "rr_base")  %>%
+      
+      # fossil fuel info
+      addPolygons(data = ej_sf, fillColor = "#452814", fillOpacity = 0.7, 
+                  color = "white", weight = 0.15, options = pathOptions(pane = "ff_pane"))  %>%
+      addPolygons(data = tribal_shp_wgs, color = "#452814", fillOpacity = 0.3, 
+                  weight = 1, options = pathOptions(pane = "ff_pane"))  %>%
+      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel"),
+                       radius = 1, color = "#962A0C", options = pathOptions(pane = "ff_pane"))  %>%
+      addPolygons(data = plants_buffer %>% filter(fssl_fl == "Fossil Fuel"),
+                  fillColor = "#F58766", fillOpacity = 0.4, color = "#F26338",
+                  weight = 1, options = pathOptions(pane = "ff_pane"))  %>%
+      
+      # renewable info
+      addPolygons(data = ej_sf, fillColor = "#23702E", fillOpacity = 0.7, 
+                  color = "white", weight = 0.15, options = pathOptions(pane = "rr_pane"))  %>%
+      addPolygons(data = tribal_shp_wgs, color = "#23702E", fillOpacity = 0.3,
+                  weight = 1, options = pathOptions(pane = "rr_pane"))  %>%
+      addCircleMarkers(data = mn_powerplants %>% filter(fossil_fuel == "Renewable"),
+                       radius = 1, color = "#962A0C", options = pathOptions(pane = "rr_pane"))  %>%
+      addPolygons(data = plants_buffer %>% filter(fssl_fl == "Renewable"),
+                  fillColor = "#F58766", fillOpacity = 0.4, color = "#F26338", weight = 1, options = pathOptions(pane = "rr_pane"))  %>%
+      
+      #  control for side by side
+      addSidebyside(leftId = "ff_base", rightId = "rr_base")
   })
   
   
@@ -389,7 +397,8 @@ output$herc_map <- renderLeaflet({
                                             textsize = "14px",direction = "auto")) %>%
     addLegend(pal = herc_cols, values = metro_area$prppoc,
               labFormat = labelFormat(suffix  = "%"),
-              title = "Percent POC") %>%
+              title = "Percent POC", 
+              position = "bottomleft") %>%
     addCircleMarkers(data = mn_powerplants %>% filter (plant_code == 10013), 
                      radius = 8, color =  "#962A0C")  %>%
     addPolygons(data = herc_buffer , fillColor = "#F58766",

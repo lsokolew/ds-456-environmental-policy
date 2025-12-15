@@ -34,7 +34,7 @@ ui <- navbarPage(
       h1(style = "text-align:center; font-size:80px;", strong("Power Plants in Minnesota")),
     # main
       column(12, align = "center", imageOutput(outputId = 'animated_map', height = 400, width = 600)),
-    br(),
+    br(), # br() indicate breaks
     br(),
     br(),
     br(),
@@ -46,14 +46,12 @@ ui <- navbarPage(
     br(),
 
   ##=================Introduction=================##
-  div(
-    style = "
-    max-width: 900px; 
-    margin: 0 auto; 
-    text-align: justify; 
-    font-size: 18px; 
-    font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(intro)),
+  div(style = "max-width: 900px; 
+             margin: 0 auto; 
+             text-align: justify; 
+             font-size: 18px; 
+             font-family: 'Tinos', serif; 
+             color: #4a4a4a;",HTML(intro)),
   
   ##=================Power Plants=================##
 
@@ -63,38 +61,33 @@ ui <- navbarPage(
 
   column(12, align = "center", leafletOutput(outputId = "intereactive_pp_types", height = 400, width = 600)),
   br(),
-  div(
-    style = "
-    max-width: 900px; 
-    margin: 0 auto; 
-    text-align: justify; 
-    font-size: 18px; 
-    font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(pp_locations)),
+  div(style = "
+      max-width: 900px; 
+      margin: 0 auto; 
+      text-align: justify; 
+      font-size: 18px; 
+      font-family: 'Tinos', serif; 
+      color: #4a4a4a;",HTML(pp_locations)),
   br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_type_barplot", height = 400, width = 600)),
   br(),
-  div(
-    style = "
-    max-width: 900px; 
-    margin: 0 auto; 
-    text-align: justify; 
-    font-size: 18px; 
-    font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(pp_energy_sources)),
+  div(style = "max-width: 900px; 
+              margin: 0 auto; 
+              text-align: justify; 
+              font-size: 18px; 
+              font-family: 'Tinos', serif; 
+              color: #4a4a4a;",HTML(pp_energy_sources)),
   br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_type_by_mw_barplot", height = 400, width = 600)),
   br(),
-  div(
-    style = "
-    max-width: 900px; 
-    margin: 0 auto; 
-    text-align: justify; 
-    font-size: 18px; 
-    font-family: 'Tinos', serif; 
-    color: #4a4a4a;",HTML(pp_elec_by_source)),
+  div(style = "max-width: 900px; 
+              margin: 0 auto; 
+              text-align: justify; 
+              font-size: 18px; 
+              font-family: 'Tinos', serif; 
+              color: #4a4a4a;",HTML(pp_elec_by_source)),
   br(),
   
   column(12, align = "center", plotOutput(outputId = "pp_dates_barplot", height = 400, width = 600)),
@@ -113,27 +106,15 @@ ui <- navbarPage(
   br(),
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Where Are Minnesota's Most Vulnerable Communities in Relation to Power Plants?")),
-
   
-  # DIV 1: choose how the text should be formated
-  div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
-      font-family: 'Tinos', serif; color: #4a4a4a;",
-      
-      # highlight the source 
-      HTML(paste0(
-        "<style>  b { 
-        background-color: #FFF59D;  /* soft yellow highlight */
-        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
-        ej_text))), # close div
   
-  h2(style = "text-align:center; font-size:18px;", "Fossil Fuel Power Plants vs Enviromental Justice Areas"),
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_side', height = 400, width = 600)),
   
-  column(12, align = "center", leafletOutput(outputId = 'pp_ej_ff', height = 400, width = 600)),
+  
   br(),
   br(),
 
-  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
-  
+
   
   ##=================Air Quality=================##
   
@@ -290,7 +271,7 @@ ui <- navbarPage(
   font-family: 'Tinos', serif;
   color: #4a4a4a;",HTML(HERC_text_1)),
   
-  column(12, align = "center", leafletOutput(outputId = 'herc_map', height = 400, width = 600)),
+  column(12, align = "center", leafletOutput(outputId = 'herc_map')),
   div(
     style = "
     max-width: 900px;
