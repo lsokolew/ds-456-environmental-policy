@@ -405,7 +405,8 @@ server = function(input, output, session){
                                                     c("TRUE" = "Within Mile of Power Plant",
                                                       "FALSE" = "Not Within Mile of Power Plant"))) +
       labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
-      theme_bw()
+      theme_bw()+
+      theme_1
   }, bg = "transparent")
 
   ###================================ Schools ===============================###

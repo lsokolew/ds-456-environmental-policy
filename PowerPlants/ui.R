@@ -125,7 +125,7 @@ ui <- navbarPage(
     max-width: 900px;
     margin: 0 auto;
     text-align: center;
-    font-size: 18px;
+    font-size: 12px;
     font-family: 'Tinos', serif;
     color: #4a4a4a;",HTML(ej_plot_text_1)),
   
@@ -157,7 +157,7 @@ ui <- navbarPage(
     max-width: 900px;
     margin: 0 auto;
     text-align: center;
-    font-size: 18px;
+    font-size: 12px;
     font-family: 'Tinos', serif;
     color: #4a4a4a;",HTML(ej_plot_text_2)),
   
