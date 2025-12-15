@@ -99,12 +99,28 @@ the black film, the kids he’d see with respiratory issues, and even the smell 
 <br>
 The HERC, or the Hennepin Energy Recovery Center, is a waste to energy facility located in the North Loop neighborhood. Since its opening in 1989, it has processed a 
 thousand tons of waste per day. Back then, it was the solution to calls for the redirection of trash from landfills to waste incinerators, but its presence in the
-community has always been heavily debated. 
+community has always been heavily debated. Environmental justice is the idea that everyone has the right to a safe and healthy environment free of hazardous waste. The HERC 
+is considered by many to be in violation of this idea, and the fight to shut it down has spanned many years. 
+
 <br>
 <br>
 In this analysis, we consider power plants to be facilities with a capacity of 1 megawatt or larger. The HERC has a capacity of 40MW. We have two questions: 
 <strong>how do power plants align with Minnesota’s commitment to environmental justice and how do power plants affect the surrounding community?</strong>
+<br>
+<br>
+2020 marked a shift in Minnesota's electricity generation - for the first time, coal-fired power plants contributed less energy than renewable resources (EIA profile analysis). The state is shifting away from fossil fuels. 
+\"Minnesota's mandatory renewable energy standard, initially enacted in 2007, requires that the state's electricity providers generate or procure at least 25% of their electricity retail sales from eligible renewable sources
+by 2025. In 2023, Minnesota's legislature raised the standard, requiring utilities to obtain 80% carbon-free electricity by 2030, 90% by 2035, and 100% by 2040. Eligible carbon-free generating fuels include solar energy, 
+hydropower, wind energy, biomass, and nuclear energy\" (EIA profile analysis). Through these new standards, the state is trying to minimize the amount of plants opening up and limit emissions. With studies showing that 
+fossil fuel plants are often concentrated in neighborhoods with large populations of color, it will be interesting to see how different communities in the area are affected by this new policy. 
+<br>
+<br>
+Anndrea is a community organizer who grew up in ward 5 of North Minneapolis– right near the HERC. She first became aware of the HERC and other large polluters during a town hall meeting and ever since
+then has been pressuring city officials to shut them down. Although the county is responsible for abiding to these new standards, Anndrea feels that the lack of acknowledgement from city
+officials is directly harming vulnerable communities by preventing education and engagement, which makes it hard for locals to take action. “Once the people who are mostly impacted become more involved, 
+I think that that is when the revolution will actually begin.”
 "
+
 
 # power plants
 
