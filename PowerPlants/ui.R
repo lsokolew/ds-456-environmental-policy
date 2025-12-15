@@ -204,6 +204,25 @@ ui <- navbarPage(
     font-family: 'Tinos', serif;
     color: #4a4a4a;",HTML(aq_text_6)),
   
+  br(),
+  # ADD PHOTO
+  div(style = "text-align: center;",
+      tags$img(
+        src = "power-plant-pollution.jpg",
+        alt = "a photo with a river in the foreground and two smokestacks in the background, one emitting white smoke.",
+        width = 600,
+        height = 400)),
+  
+  br(),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: justify;
+    font-size: 18px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(aq_text_7)),
+  
   ##=================Health=================##
   
   br(),
@@ -354,7 +373,7 @@ tabPanel(
   title = "Methods & Sources",
   fluidPage(
     ##=================Data=================##
-    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Work")),
+    h2(style = "text-align:center; font-size:22px; font-weight:900;",strong("About Our Data & Our Work")),
     
     # DIV 1: choose how the text should be formated
     div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
@@ -367,6 +386,62 @@ tabPanel(
         color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
           pp_data_methods))), # close div
     
+    br(),
+    br(),
+    
+    # DIV 1: choose how the text should be formated
+    div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
+        
+        # highlight the source 
+        HTML(paste0(
+          "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+          ej_data_methods))), # close div
+    
+    br(),
+    br(),
+    
+    # DIV 1: choose how the text should be formated
+    div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
+        
+        # highlight the source 
+        HTML(paste0(
+          "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+          aq_data_methods))), # close div
+    
+    br(),
+    br(),
+    
+    # DIV 1: choose how the text should be formated
+    div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
+        
+        # highlight the source 
+        HTML(paste0(
+          "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+          health_data_methods))), # close div
+    
+    br(),
+    
+    # DIV 1: choose how the text should be formated
+    div(style = "max-width: 900px;  margin: 0 auto; text-align: justify;  font-size: 18px; 
+      font-family: 'Tinos', serif; color: #4a4a4a;",
+        
+        # highlight the source 
+        HTML(paste0(
+          "<style>  b { 
+        background-color: #FFF59D;  /* soft yellow highlight */
+        color: #000000;font-weight: 700;  padding: 1px 3px; border-radius: 2px;} </style>",
+          data_methods_conclusion))), # close div
+    
+    br(),
     
     # DIV 2: data source logos
     div(style = "text-align: center;",
