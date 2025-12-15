@@ -20,6 +20,7 @@ server = function(input, output, session){
   
 ###================================ Opening ===============================###
 
+  # animated plot 
   output$animated_map <- renderImage({
     list(
       src = "www/animations/powerplants_animation.gif",
@@ -124,7 +125,7 @@ server = function(input, output, session){
                 weight = 1)  
   })
   
-   # Inspo for this plot from: https://stackoverflow.com/questions/71669825/leaflet-side-by-side-for-2-raster-images-in-r
+  # Inspo for this plot from: https://stackoverflow.com/questions/71669825/leaflet-side-by-side-for-2-raster-images-in-r
   # Plots fossil fuel and renewable power plants next to each other, the ej areas are same, but as you switch the slider you see more
   # of either
 
@@ -424,14 +425,7 @@ server = function(input, output, session){
   }, bg = "transparent")
 
 
-  ###================================ HERC ===============================###
-  # choose the specific power plant (example: row 1)
-  target_pp <- mn_pp_proj %>% filter(str_detect(plant_name, "Covanta"))
-  # find which air buffers intersect this plant's location
-  hits <- st_intersects(air_buffers_proj, target_pp)
-  # keep only buffers that intersect
-  air_buffers_near_target <- air_buffers_proj %>% filter(lengths(hits) > 0)
-
+    ###================================ HERC ===============================###
 # HERC powerplant and its surrounding tracts
 output$herc_map <- renderLeaflet({
   leaflet() %>%

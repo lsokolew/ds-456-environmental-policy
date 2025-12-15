@@ -341,7 +341,8 @@ ui <- navbarPage(
   font-family: 'Tinos', serif;
   color: #4a4a4a;",HTML(HERC_text_1)),
   
-  column(12, align = "center", leafletOutput(outputId = 'herc_map')),
+  column(12, align = "center", leafletOutput(outputId = 'herc_map', height = 400, width = 600)),
+  
   div(
     style = "
     max-width: 900px;

@@ -251,8 +251,8 @@ it's just gonna hurt him more. I want... I want to shut [the HERC] down for the 
 
 # HERC
 
-HERC_text_1 <- "Health harms have been linked to result from waste and power faicilies, particualry for residents living within a 1-mile radius(Martine Vrijheid).
-When investigating the Henneping Energy Recovery Center, we identified 14 census tracts within a 1-mile radius, with a combined population of 45,254 residents.
+HERC_text_1 <- "The Hennepin Energy Recovery Center(HERC) lies right up North of Target Field in Minneapolis, an area where many frequent and live nearby. 
+When investigating the HERC, we identified 14 census tracts within a 1-mile radius, with a combined population of 45,254 residents.
 While the census tract one which the HERC lies on is not classified as an Envriomental Justtice area, 5 surrounding tracts are."
 
 HERC_plot_1_text<- "<i>The orange donut represents the Hennepin Recovery Center, and the orange layer around it represents the 1-mile radius.

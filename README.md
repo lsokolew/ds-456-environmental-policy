@@ -21,7 +21,7 @@ We were initially interested in how policies, both past and present, affect loca
   6. The `Global.R` file is where we set themes and store text chunks
   7. The `CleaningData.R` file is where we clean and wrangle all data required for our analysis
   8. The `process_airdata.R` file is used to acquire air quality data, discussed below
-  9. The `references` qmd and html, as well as the Library.bib file, produce our bibliography
+  9. The `references` qmd and html, and folder (references_files) as well as the Library.bib file, produce our bibliography
 
 To render the app, run the `runApp.R` file after downloading the neccessary data, packages, and running the `CleaningData.R` file. 
 
