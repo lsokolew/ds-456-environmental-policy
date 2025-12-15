@@ -9,13 +9,13 @@ library(gifski)
 
 
 mn_powerplants              <- read_csv('Data/cleaning_data/mn_powerplants.csv') 
-zcta_joined                 <- st_read('Data/cleaning_data/zcta_joined.shp') 
+zcta_joined_asthma                 <- st_read('Data/cleaning_data/zcta_joined_asthma.shp') 
 AirData_allyears            <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
 schools_sf                  <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 mn_tracts                   <- st_read("Data/cleaning_data/mn_tracts.shp")
 ej_sf                       <- st_read("Data/cleaning_data/ej_sf.shp")
-asthma_poc_powerplant       <- read_csv("Data/asthma_poc_ppowerplant.csv")
-distinct_schools_metro.csv  <- read_csv("Data/distinct_schools_metro.csv")
+asthma_poc_powerplant       <- read_csv("Data/cleaning_data/asthma_poc_powerplants.csv")
+distinct_schools_metro.csv  <- read_csv("Data/cleaning_data/distinct_schools_metro.csv")
 ej_shp                      <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 metro_area                  <- st_read("Data/cleaning_data/metro_area_pp.shp")
 powerplants                 <- st_read("Data/cleaning_data/powerplants_sf.shp")
@@ -23,7 +23,7 @@ tribal_shp_wgs              <- st_read("Data/tribal_areas/census_tribal_areas.sh
 
 
 load("Data/aq_data_clean/wrangled_airdata.rds")
-all_emissions_data <- read_csv("all_emissions_data.csv")
+all_emissions_data <- read_csv("Data/cleaning_data/all_emissions_data.csv")
 
 
 # Metro Zip Codes
@@ -91,7 +91,19 @@ herc_buffer <- st_transform(herc_buffer, crs = 4326)
 
 ###================================ Text Tab 1  ================================###
 
-intro <- "Intro"
+intro <- "Without fail, North Minneapolis resident Kim M’s car is covered by a layer of black film just days after a wash. When he lived in Brooklyn Park, 
+his car could go months without needing a carwash, so he knows this is a community issue. After learning about the HERC during a local climate activism group meeting, 
+the black film, the kids he’d see with respiratory issues, and even the smell in the air all made sense. 
+<br>
+<br>
+The HERC, or the Hennepin Energy Recovery Center, is a waste to energy facility located in the North Loop neighborhood. Since its opening in 1989, it has processed a 
+thousand tons of waste per day. Back then, it was the solution to calls for the redirection of trash from landfills to waste incinerators, but its presence in the 
+community has always been heavily debated. 
+<br>
+<br>
+In this analysis, we consider power plants to be facilities with a capacity of 1 megawatt or larger. The HERC has a capacity of 40MW. We have two questions: 
+how do power plants align with Minnesota’s commitment to environmental justice and how do power plants affect the surrounding community?
+"
 
 # power plants
 
@@ -175,59 +187,83 @@ aq_text_6 <- "This aligns with decreasing EPS NAAQS standards for permissible PM
 
 # Health 
 
-health_blurb <- "Asthma, the most common chronic disease in the United States, is triggered by irritants such as air pollution.
+health_blurb <- "As a kid growing up in Ward 5 of Minneapolis, Anndrea was never formally diagnosed with Asthma, but she had an inhaler
+and had to undergo nebulizer treatments. When Covid hit, she decided to return home from Nashville where she had attended university. That's
+when she truly noticed the effects of the air quality around her. “I know that as an adult coming back into Minneapolis, I would notice and I've mentioned 
+like when you blow your nose and sometimes it's like kind of dirty in your nose”
+<br>
+<br>
+Asthma, the most common chronic disease in the United States, is triggered by irritants such as air pollution.
 Class and race are factors that affect the levels of pollutants in the surrounding environment according to the article
-“Environmental Justice: The Economics of Race, Place, and Pollution.” by authors Spencer Banzhaf, Lala Ma and Christopher Timmins.
+“Environmental Justice: The Economics of Race, Place, and Pollution” by authors Spencer Banzhaf, Lala Ma and Christopher Timmins.
 Using the demographics of the neighborhood they studied, it was concluded that facilities may seek out non-white areas with lower income
 levels because of the inexpensive land and low wages. This is a result of past instances of red-lining and the government’s involvement
 in the concentration of regulations in white areas.  These polluters, such as power plants, release tons of particulate matter into the
-surrounding air. Air quality has been monitored for years, showing a steady improvement in air quality over the years."
+surrounding air. Air quality has been monitored for years, showing a steady improvement in air quality over the years.
+<br>
+<br>
+The Environmental Protection Agency recognizes that nonrenewable energy plants are the largest stationary source of nitrogen dioxides and sulfur 
+dioxide emissions, while also being a large source of particulate matter. Nitrogen dioxides form ground level ozone and fine particulate matter, 
+which are known to cause respiratory problems such as asthma. Data released from the Minnesota Pollution Control Agency shows that in 2019, the HERC 
+was Hennepin county’s number one emitter of NO2 and second in the county for sulfur dioxide and PM2.5. These pollutants are known to worsen respiratory
+issues such as asthma and evidence shows that it may cause asthma in both children and adults. 
+"
 
-asthma_plot_one <- "Looking at the plot above, you can see how asthma hospitalization rates are much higher in parts of Northside Minneapolis
-and near downtown Saint Paul. In Northside Minneapolis, there are three nonrenewable power facilities: Covanta Hennepin Energy (changed to
-Hennepin Energy Recovery Center) and two plants belonging to the University of Minnesota. The two university plants, the Southeast Steam
-and CHP plants are low emission plants used for heat and power in university buildings. The Hennepin Energy plant is actually a waste
-incinerator that produces a small amount of energy and steam.
+asthma_plot_one <- "
+The map of the Twin Cities Metro Area visualizes where higher rates of emergency department visits occur and points out where power plants with the largest 
+emissions are located. Each power plant has a radius of 1-mile, which studies have revealed people in radius are most affected. There does seem to be a huge 
+cluster of power plants in North Minneapolis on both sides of the Mississippi, and around downtown Saint Paul. The HERC lies in zip code 55405, which has a 
+rate of 36 emergency department visits per 10,000 people. In the adjacent zip codes within one mile,  55403 has 60 and 55411 has 141. For comparison, zip code 
+55416, which is around 2 miles away, has 11. But could there be a further look into what communities are hit the hardest by these plants?
+"
+
+asthma_plot_two <- "In metro area zip codes not within and within a one mile radius of at least one power plant, there is a trend in asthma rates as the proportion of people of color increases.
+However, in zip codes that are within one mile of a power plant, there is a much higher asthma rate and an uptick in the amount of zip codes highly populated by people of 
+color near power plants. This reflects an EPA study on the effects of low level pollution on African American children with asthma and how levels below national standards still
+had disproportionately detrimental effects. Kids are outside more than adults and their respiratory systems are still developing. A study jointly conducted by the EPA and 
+Johns Hopkin shows that children exposed to outdoor PM2.5-10 are more likely to develop asthma and need to be hospitalized. Since air quality monitors are reported elevated levels
+of PM2.5 around power plants, children in the area are at risk
+"
+
+school_plot <- "Using data on locations of schools in Minnesota, power plants, and environmental justice tracts, on average, schools within designated environmental justice tracts are slightly closer 
+to power plants. However, taking a closer look at the Twin Cities metro area, schools in environmental justice tracts are on average two times closer to power plants. Children in these tracts 
+are often already overburdened without the added exposure to harmful pollutants.
 <br>
-Kim is a life-long Minneapolis resident who recently moved from Brooklyn Park to his home in North Minneapolis with his wife and his four year old son.
-He recalls how when he would wash his car in his previous home, it could stay clean for months, whereas now, a black film appears on his car in just days.
-He says the HERC is the root of this, and has been polluting the area for years. After his wife became interested in joining a climate control group out
-of a local church, Kim became familiarized with the HERC and how the community is affected.
 <br>
-\"I don't think the community knows enough. I think that's the main problem. It's always going to come back to the community that does not know enough.
-They can point out something that burns downtown, and they might not even know that it's burning. They might just think, oh, it's the heating system for
-downtown, and that's why it's got the white smoke. And a lot of people are under the impression that the white smoke does, in fact, mean that it's non-pollutant.
-But that's not the reality of it.\"
-<br>
-Kim also worked at a clinic in North Minneapolis for some time and saw a surprising amount of young people with asthma problems. At one point, the Canadian
-wildfires were blamed, but he now believes the HERC was a root cause, as he was seeing the issue well before the fires started.
-He is concerned about how living near the HERC will impact his young son.
-<br>
-\"He's gonna wanna go to the park and…and walk on the street, and do all of those things that normal kids should and can't do. And my fear is that the Herc
-is not gonna turn off in 20... uh, 2027, 2028. And that he's gonna be playing in the backyard or in the park, running around, taking deep breaths, and
-it's just gonna hurt him more. I want... I want to shut [the HERC] down for the next generation, for my kiddo, for my life, I want to be around for him longer.\""
+Kim fears for his son. \"My kiddo has Down syndrome, he's 4 years old. And he already has a lot of things against him. 
+We are hopeful that a respiratory problem isn't something that catches up to him, we make sure that he...Well, he doesn't get a lot of outside time because of this, too. He plays mostly in the house. But as he gets older, he's gonna wanna play outside.\""
 
 
 ###================================ Text Tab 2  ================================###
 
 
 pp_data_methods <- "We got our main data about the locations, characteristics, and inital operation dates of all power plants in Minnesota as of 2024
-from the US Energy Information Administration (EIA)."
+from the US Energy Information Administration (EIA) and Environmental Protection Agency (EPA). "
 
 ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
 counties, we used <b>American Community Survey (ACS)</b> data, collected by the <b>US Census Bureau,</b> from 2022. We made use of <b>Minnesota
 Pollution Control Agency's (MPCA)</b> restructured version of that ACS data to explore tracts considered Environmental
 Justice Areas. </b> "
 
-aq_data_methods <-"<b>The Environmental Protection Agency (EPA)</b> provided pre-generated Air Data files of annual summaries of
-PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to evaluate the impacts of power
-plants on air quality. I downloaded these via R script from Air Quality System Data Mart available via https://www.epa.gov/outdoor-air-quality-data. Accessed Month DD, YYYY.
+aq_data_methods <-"The EPA provided pre-generated Air Data files of annual summaries of
+PM2.5 (fine particulate matter) concentration from around 50 monitors in Minnesota (1999-2025), which we used to explore the impacts of power
+plants on air quality. It contains annual mean PM2.5 readings from various sites around the state, some of which have multiple monitors, and provides the locations
+of the sites and the metric used to calculate annual mean PM2.5 (eg, 1- or 24-hour averages). It also notes the local site name, county name, and city name,
+if applicable. We downloaded these via R script from Air Quality System Data 
+Mart available via https://www.epa.gov/outdoor-air-quality-data, on November 21st, 2025. We filter the observations to just 
+Minnesota and 24-hour average PM2.5 readings. If there are multiple monitors at a site, we take the average, so that there is at most one reading per site
+per year.  This average annual mean PM2.5 ranges from 1 to 15  μg/m3, with a typical value around 7.5  μg/m3.
+<br>
+Then, to find the number of power plants near a monitor, we create a three-mile buffer around the monitors and check which power plants fall within that buffer,
+and save that count. We then calculate the average annual mean PM2.5 concentrations for monitors near 0, 1, or 2+ power plants.  
 "
 
 health_data_methods <- "Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's
 data</b> on hospitalizations due to asthma and COPD.</b>"
 
 data_methods_conclusion <- "To find code and reproduce our work, please see our github repository at https://github.com/lsokolew/ds-456-environmental-policy/tree/main."
+
+what_now <- ""
 
 acknowledgements <- "We would like to thank Kayla Walsh, Minnesota Environmental Review Board Administrator, for her invaluable insight in guilding the direction of our project. We
 sincerely appreciate Minneapolis community members, Kim and Anndrea, for sharing their experiences with us. Thanks to Professor Shilad Sen for his feedback, and Professor Brianna

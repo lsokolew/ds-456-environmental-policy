@@ -219,6 +219,7 @@ ui <- navbarPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(health_blurb)),
+  br(),
  
   
   column(12, align = "center", leafletOutput(outputId = "asthma_map", height = 400, width = 800)),
@@ -231,19 +232,30 @@ ui <- navbarPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(asthma_plot_one)),
+  br(),
   
-  # column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
-  # br(),
-  # div(
-  #   style = "
-  #   max-width: 900px; 
-  #   margin: 0 auto; 
-  #   text-align: justify; 
-  #   font-size: 18px; 
-  #   font-family: 'Tinos', serif; 
-  #   color: #4a4a4a;",HTML(health_blurb)),
-  # 
-  # column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
+   column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
+   br(),
+   div(
+     style = "
+     max-width: 900px; 
+     margin: 0 auto; 
+     text-align: justify; 
+     font-size: 18px; 
+     font-family: 'Tinos', serif; 
+     color: #4a4a4a;",HTML(asthma_plot_two)),
+  br(),
+   
+   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
+  br(),
+  div(
+    style = "
+     max-width: 900px; 
+     margin: 0 auto; 
+     text-align: justify; 
+     font-size: 18px; 
+     font-family: 'Tinos', serif; 
+     color: #4a4a4a;",HTML(school_plot)),
  
   ###================================ HERC ===============================###
   br(),
