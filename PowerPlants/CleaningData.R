@@ -473,26 +473,6 @@ mn_powerplants_with_EJ <- mn_powerplants %>%
     summarise(number_tracts = n(),
               number_ej_tracts = sum(EJ_Area),
               prop = number_ej_tracts/number_tracts) 
-  
-  pp_summary %>%
-    filter(fossil_fuel == "Fossil Fuel") %>%
-    ggplot(aes(x =prop)) +
-    geom_histogram(fill = "darkblue") +
-    theme_classic() +
-    labs(x = "Proportion", y = "Count",
-         title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
-         subtitle = "For Fossil Fuel Plants")
-  
-  
-  pp_summary %>%
-    filter(fossil_fuel == "Fossil Fuel") %>%
-    filter(COUNTYFP %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%
-    ggplot(aes(x =prop)) +
-    geom_histogram(fill = "darkgreen") +
-    theme_classic() +
-    labs(x = "Proportion", y = "Count",
-         title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
-         subtitle = "For Fossil Fuel Plants in Metro Area (Twin Cities)")
 
 #--------
 # Find if a power plant is by an EJ area
@@ -710,9 +690,7 @@ write.csv(distinct_schools_metro, "Data/cleaning_data/distinct_schools_metro.csv
 st_write(mn_tracts, "mn_tracts.shp", row.names = FALSE)
 st_write(ej_sf, "ej_sf.shp", row.names = FALSE)
 st_write(plants_in_ej_counts, "plants_in_ej_counts.shp", row.names = FALSE)
-# st_write(plants_per_pop, "plants_per_pop.shp", row.names = FALSE)
-
+st_write(pp_summary, "Data/pp_summary.shp", row.names = FALSE)
 st_write(metro_area_pp, "metro_area_pp.shp", row.names = FALSE)
-
 st_write(powerplants_sf, "powerplants_sf.shp", row.names = FALSE)
 

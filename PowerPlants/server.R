@@ -104,9 +104,30 @@ server = function(input, output, session){
   
   ###================================ EJ-AREAS ===============================###
   
-  # Inspo for this plot from: https://stackoverflow.com/questions/71669825/leaflet-side-by-side-for-2-raster-images-in-r
   tribal_shp_wgs <- st_transform(tribal_shp_wgs, crs = 4326)
+
+  output$ej_area <- renderLeaflet({
   
+  leaflet() %>%
+    addProviderTiles("CartoDB.Positron")  %>%
+    setView(lng = -93.265, lat = 44.9778, zoom = 6)  %>%
+    addPolygons(
+      data = ej_sf,
+      fillColor = ~pal1(EJ_area), 
+      fillOpacity = 0.7, 
+      color = "white", 
+      weight = 0.15
+    ) %>%
+    addLegend(
+      pal = pal1, values = ej_sf$EJ_area, title ="Enviromental Justice Area")  %>%
+    addPolygons(data = tribal_shp_wgs, color = "purple", fillOpacity = 0.3,
+                weight = 1)  
+  })
+  
+   # Inspo for this plot from: https://stackoverflow.com/questions/71669825/leaflet-side-by-side-for-2-raster-images-in-r
+  # Plots fossil fuel and renewable power plants next to each other, the ej areas are same, but as you switch the slider you see more
+  # of either
+
   output$pp_ej_side <- renderLeaflet({
       leaflet() %>%
       setView(lng = -93.265, lat = 44.9778, zoom = 6) %>%
@@ -140,7 +161,32 @@ server = function(input, output, session){
       addSidebyside(leftId = "ff_base", rightId = "rr_base")
   })
   
+  # prop of power plants in ej area overall
+  output$ff_prop_all <- renderPlot({
+    pp_summary %>%
+      filter(fssl_fl == "Fossil Fuel") %>%
+      ggplot(aes(x =prop)) +
+      geom_histogram(fill = "#F26338") +
+      theme_classic() +
+      theme_1+
+      labs(x = "Proportion", y = "Count",
+           title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
+           subtitle = "For Fossil Fuel Plants (All MN)")
+  }, bg = "transparent")
   
+  # prop of power plants in ej area
+  output$ff_prop_metro <- renderPlot({
+    pp_summary %>%
+      filter(fssl_fl == "Fossil Fuel") %>%
+      filter(COUNTYF %in% c("123", "053", "003", "019", "025", "037", "049", "139", "163")) %>%
+      ggplot(aes(x =prop)) +
+      geom_histogram(fill = "#452814") +
+      theme_classic() +
+      theme_1+ 
+      labs(x = "Proportion", y = "Count",
+           title = "Proportion of Enviromental Justice areas affected per Powerplant (1 mile radius)",
+           subtitle = "For Fossil Fuel Plants in Metro Area (Twin Cities)") 
+   }, bg = "transparent")
   
   ###================================ Air Quality ===============================###
 
@@ -359,7 +405,8 @@ server = function(input, output, session){
                                                     c("TRUE" = "Within Mile of Power Plant",
                                                       "FALSE" = "Not Within Mile of Power Plant"))) +
       labs(title = "Asthma-related Emergency Department Visits & Percent POC by Zip Code", subtitle = "Does proximity to power plants affect asthma?", x = "Percent People of Color", y = "Emergency Department Visits") +
-      theme_bw()
+      theme_bw()+
+      theme_1
   }, bg = "transparent")
 
   ###================================ Schools ===============================###

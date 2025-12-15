@@ -106,15 +106,85 @@ ui <- navbarPage(
   br(),
   br(),
   h2(style = "text-align:center; font-size:22px;", strong("Where Are Minnesota's Most Vulnerable Communities in Relation to Power Plants?")),
+
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(ej_text)),
+  br(),
   
+  column(12, align = "center", leafletOutput(outputId = 'ej_area', height = 400, width = 600)),
+  
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 12px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(ej_plot_text_1)),
+  
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(ej_text_2)),
+  br(),
+  
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(ej_text_3)),
+  br(),
   
   column(12, align = "center", leafletOutput(outputId = 'pp_ej_side', height = 400, width = 600)),
+  div(
+    style = "
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 12px;
+    font-family: 'Tinos', serif;
+    color: #4a4a4a;",HTML(ej_plot_text_2)),
   
   
   br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(ej_text_4)),
   br(),
-
-
+  
+  fluidRow(column(6, align = "center", plotOutput(outputId = "ff_prop_metro", height = 400, width = 600)),
+           column(6, align = "center", plotOutput(outputId = "ff_prop_all", height = 400, width = 600))),
+  br(),
+  div(
+    style = "
+    max-width: 900px; 
+    margin: 0 auto; 
+    text-align: justify; 
+    font-size: 18px; 
+    font-family: 'Tinos', serif; 
+    color: #4a4a4a;",HTML(ej_text_5)),
+  br(),
   
   ##=================Air Quality=================##
   
