@@ -156,9 +156,9 @@ A concern that arises is if these communities are affected more by power plants 
 
 # Air Quality 
 
-aq_text_1 <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants altogether are the largest stationary source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they produce significant quantities of fine particulate matter under 2.5 micrometers in diameter (PM₂.₅), both directly and through reactions of secondary pollutants in the atmosphere (\"Human Health & Environmental Impacts\", 2025). PM2.5 particles are small enough to enter the lungs and bloodstream, potentially accumulating in the respiratory system. In addition to serious adverse effects on human health, pollutants emitted by power plants are linked to environmental damage, including loss of biodiversity and climate change (\"Human Health & Environmental Impacts\", 2025). To mitigate this damage, the EPA sets air quality national standards for pollutants and works with state and local governments to meet them. In 2020, the standard for annual average PM2.5 was lowered to 9 µg/m3 from 12 µg/m3, set in 2013, down from 15.0 µg/m3 in 2006 and 50 µg/m3 in 1999 (\"Timeline of Particulate Matter\", 2025)." 
+aq_text_1 <- "Electric power plants — especially ones burning fossil fuels such as coal and natural gas — are a major contributor to air pollution and its associated health risks. The EPA states that fossil-fuel fired power plants altogether are the largest stationary source of nitrogen oxides (NOₓ) and sulfur dioxide (SO₂) in the US, and they produce significant quantities of fine particulate matter under 2.5 micrometers in diameter (PM2.5), both directly and through reactions of secondary pollutants in the atmosphere (\"Human Health & Environmental Impacts\", 2025). PM2.5 particles are small enough to enter the lungs and bloodstream, potentially accumulating in the respiratory system. In addition to serious adverse effects on human health, pollutants emitted by power plants are linked to environmental damage, including loss of biodiversity and climate change (\"Human Health & Environmental Impacts\", 2025). To mitigate this damage, the EPA sets air quality national standards for pollutants and works with state and local governments to meet them. In 2020, the standard for annual average PM2.5 was lowered to 9 µg/m3 from 12 µg/m3, set in 2013, down from 15.0 µg/m3 in 2006 and 50 µg/m3 in 1999 (\"Timeline of Particulate Matter\", 2025)." 
 
-aq_text_2 <- "The EPA provides data from air quality monitors, placed at irregular locations across the state.  The map above visualizes the locations of these air monitors in relation to power plants and EJ areas. Many are in or near EJ areas, meaning that it is possible to more accurately apply our analysis to these areas. This placement also offers confidence that the government has access to information about air quality in the most marginalized areas and is able to consider these conditions in creating policy. In the Twin Cities, for instance, there is a higher concentration of power plants, EJ areas, and air monitors than elsewhere in the state. However, there are large clusters of EJ tracts in the northern half of the state that have no nearby air monitors. In the following plots, we compare the readings of air monitors that have nearby power plants, visualized with increasingly dark blue buffers, to those that do not, with white buffers. "
+aq_text_2 <- "The EPA provides data from air quality monitors, placed at irregular locations across the state.  The map above visualizes the locations of these air monitors in relation to power plants and EJ areas. Many are in or near EJ areas, meaning that it is possible to more accurately apply our analysis to these areas. This placement also offers confidence that the government has access to information about air quality in the most marginalized areas and is able to consider these conditions in creating policy. In the Twin Cities, for instance, there is a higher concentration of power plants, EJ areas, and air monitors than elsewhere in the state. However, there are large clusters of EJ tracts in the northern half of the state that have no nearby air monitors. In the following plots, we compare the readings of air monitors that have nearby power plants, visualized above with increasingly dark blue buffers, to those that do not, with white buffers. "
 
 aq_text_3 <- "Monitors which are within a three-mile radius of at least one power plant, and thus are most likely to pick up on the effects of plants' pollution, have consistently higher PM2.5 concentrations than monitors which are not. 
 <br>
@@ -244,10 +244,11 @@ plant code. We also consider the total capacity of the plant, or the most electr
 We grouped plants into fossil fuel or renewable, based on their primary source of fuel, and manually updated the one 'other' fuel plant to 'waste heat' based on information
 we found online. We also re-classified the Covanta plant (The HERC) as fossil-fuel based on Minnesota legislation marking it non-renewable. 
 <br>
-Data from EIA Form-860 was downloaded directly to supply the initial dates of operation for the power plants in our main dataset. 
-Missing data, from plants that began operation in the first two months of 2025, was supplied manually from information via the plants\' 
-website ([https://mysunshare.com/about-us/]). Where there were multiple generators with different start dates, we took the first as the overall
-start date of the plant.
+<br>
+Data from EIA Form-860 was downloaded directly to supply the initial dates of operation for the power plants in our main dataset. These dates range from 1906
+to 2024, with a typical value around 2010. Missing data, from plants that began operation in the first two months of 2025, was supplied manually from information via the plants' utility's 
+website (![https://mysunshare.com/about-us/]). Where there were multiple generators with different start dates, we took the first as the overall
+start date of the plant. We joined this to the main power plants datset using the shared plant ID. 
 "
 
 ej_data_methods <- "In order to examine demographics and characteristics of Minnesota
@@ -263,6 +264,7 @@ if applicable. We downloaded these via R script from Air Quality System Data
 Mart available via https://www.epa.gov/outdoor-air-quality-data, on November 21st, 2025. We filter the observations to just 
 Minnesota and 24-hour average PM2.5 readings. If there are multiple monitors at a site, we take the average, so that there is at most one reading per site
 per year.  This average annual mean PM2.5 ranges from 1 to 15  μg/m3, with a typical value around 7.5  μg/m3.
+<br>
 <br>
 Then, to find the number of power plants near a monitor, we create a three-mile buffer around the monitors and check which power plants fall within that buffer,
 and save that count. We then calculate the average annual mean PM2.5 concentrations for monitors near 0, 1, or 2+ power plants.  
