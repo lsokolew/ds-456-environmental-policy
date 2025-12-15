@@ -66,7 +66,7 @@ mn_tracts <- tracts(state = "MN", cb = TRUE, year = 2023) %>%
   select(GEOID, geometry, County) 
 
 mn_counties <- counties(state = "MN", cb = TRUE, class = "sf")
-
+# schools
 schools_sf <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 
     # census ACS Tract information (full)
@@ -185,7 +185,7 @@ zcta_joined_asthma <- MN_asthma_ED %>%
   left_join(mn_zctas, by = c("_ZIP" = "GEOID20")) %>%
   mutate(`Age-adjusted rate per 10,000` = na_if(`Age-adjusted rate per 10,000`, "*"),
          `Age-adjusted rate per 10,000` = as.numeric(`Age-adjusted rate per 10,000`)) %>%
-  mutate(value_cat = case_when(
+  mutate(value_cat = case_when( # create categories for asthma rate
     `Age-adjusted rate per 10,000` >= 0 & `Age-adjusted rate per 10,000` < 15 ~ "0-15",
     `Age-adjusted rate per 10,000` >= 15 & `Age-adjusted rate per 10,000` < 30 ~ "15-30",
     `Age-adjusted rate per 10,000` >= 30 & `Age-adjusted rate per 10,000` < 45 ~ "30-45",
@@ -201,7 +201,7 @@ points_sf_crs <- st_as_sf( # power plants
   crs = 4326) %>%
   st_transform(26915)  
 
-# join asthma + population, filter once, convert to sf, project once
+# join asthma + population, convert to sf
 asthma_sf_proj <- zcta_joined_asthma %>%
   mutate(`_ZIP` = as.numeric(`_ZIP`)) %>%
   left_join(zcta_pop_data, by = c("_ZIP" = "GEOID")) %>%
@@ -209,12 +209,12 @@ asthma_sf_proj <- zcta_joined_asthma %>%
   st_as_sf() %>%
   st_transform(26915)
 
-# filter + project power plants once
+# filter and transform power plants 
 NR_points_proj <- points_sf_crs %>%
   filter(fossil_fuel == "Fossil Fuel") %>%
   st_transform(26915)
 
-# buffer, spatial join, and count plants
+# buffer, join, and count plants
 zip_plant_counts_mile <- asthma_sf_proj %>%
   st_buffer(dist = 1609.34) %>%
   st_join(NR_points_proj, join = st_intersects) %>%
@@ -223,7 +223,7 @@ zip_plant_counts_mile <- asthma_sf_proj %>%
   summarise(num_plants = n(), .groups = "drop") %>%
   st_drop_geometry()
 
-# final join + indicator variable
+# final join and see if near plant is TRUE/FALSE
 asthma_poc_powerplants <- asthma_sf_proj %>%
   st_drop_geometry() %>%
   left_join(zip_plant_counts_mile, by = "_ZIP") %>%
@@ -235,7 +235,7 @@ ej_areas <- ej_shapefile %>%
   filter(status200x == "YES" | statuspoc == "YES" | statuslep == "YES")
 
 # -------- EJ Tracts ---------
-# If ej_shapefile already has a CRS, USE IT — do not overwrite.
+# If ej_shapefile already has a CRS, 
 # Only set CRS if it is missing:
 if (is.na(st_crs(ej_areas))) {
   ej_areas <- st_set_crs(ej_areas, 26915)
@@ -248,24 +248,24 @@ if (is.na(st_crs(schools_sf))) { # Only set CRS if missing
 schools_sf <- schools_sf %>%
   filter(is.na(GRADERANGE))
 
-school_proj <- st_transform(schools_sf, 26915)
+school_proj <- st_transform(schools_sf, 26915) 
 
-school_pp_dist <- st_distance(school_proj, points_sf_crs)
+school_pp_dist <- st_distance(school_proj, points_sf_crs) # find distance of powerplants to schools
 
-schools_in_ej <- st_within(school_proj, ej_areas)
+schools_in_ej <- st_within(school_proj, ej_areas) # find schools in ej areas
 school_proj$schools_in_ej <- lengths(schools_in_ej) > 0
 
-nearest_pp <- apply(school_pp_dist, 1, which.min)
+nearest_pp <- apply(school_pp_dist, 1, which.min) # get the nearest plant
 
-school_proj$nearest_pp_id <- points_sf_crs$plant_code[nearest_pp]
+school_proj$nearest_pp_id <- points_sf_crs$plant_code[nearest_pp] # gert the nearest plant's code 
 school_proj$nearest_pp_dist_m <- apply(school_pp_dist, 1, min)
-school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34
+school_proj$nearest_pp_dist_mi <- school_proj$nearest_pp_dist_m / 1609.34 # convert to miles
 
 distinct_schools <- school_proj %>% 
   distinct(GISADDR, .keep_all = TRUE)
 
 distinct_schools_metro <- distinct_schools %>% 
-  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) %>%
+  mutate(zip_code = str_extract(GISADDR, "\\b\\d{5}(?:-\\d{4})?(?=\\D|$)")) %>% filter(zip_code %in% metro_zips) %>% # get zip codes for metro area and filter
   st_drop_geometry()
 
 
@@ -652,14 +652,14 @@ NO2_emissions2021 <- NO2_emissions2021 %>%
 all_emissions <- rbind(NO2_emissions2017, NO2_emissions2018)
 all_emissions <- rbind(all_emissions, NO2_emissions2019)
 all_emissions <- rbind(all_emissions, NO2_emissions2020)
-all_emissions <- rbind(all_emissions, NO2_emissions2021)
+all_emissions <- rbind(all_emissions, NO2_emissions2021) # combine all emissions data for 2017-2021
 
 mn_powerplants_nonrenewable <- mn_powerplants %>% filter(fossil_fuel == "Fossil Fuel")
 
 all_emissions_data <- all_emissions %>%
   distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, year, .keep_all = TRUE) %>%
   mutate(plant_code = as.numeric(plant_code)) %>%
-  left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>%
+  left_join(mn_powerplants_nonrenewable, by = c("plant_code" = "plant_code")) %>% # join by fossil fuel plants
   distinct(plant_code, eia_model_estimates_of_n_ox_emissions_tons, .keep_all = TRUE) %>%
   filter(!is.na(latitude) & !is.na(longitude)) %>%
   group_by(plant_code, plant_name.x, zip, longitude, latitude) %>%

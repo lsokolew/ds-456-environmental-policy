@@ -343,7 +343,7 @@ server = function(input, output, session){
       levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
       na.color = "grey"
     )
-
+# asthma map
     leaflet(zcta_joined_children) %>%
       setView(lng = -93.265, lat = 44.9778, zoom = 9) %>%
       addTiles() %>%
@@ -397,7 +397,7 @@ server = function(input, output, session){
     })
 
   output$asthma_poc_plot = renderPlot({
-
+# asthma rates in zip codes within one mile of powerplants vs not within
     asthma_poc_powerplant %>%
       mutate(pct_poc = (blackE +asianE + hispanicE) / total_popE) %>%
       ggplot(aes(x = pct_poc, y = `Age-adjusted rate per 10,000`)) +
