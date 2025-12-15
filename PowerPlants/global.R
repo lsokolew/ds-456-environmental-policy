@@ -355,7 +355,10 @@ Then, to find the number of power plants near a monitor, we create a three-mile 
 and save that count. We then calculate the average annual mean PM2.5 concentrations for monitors near 0, 1, or 2+ power plants. "
 
 health_data_methods <- "Finally, in order to explore the human-level impacts of air quality, we used <b>MN Department of Health's
-data</b> on hospitalizations due to asthma.</b>"
+data</b> on hospitalizations due to asthma.</b> Asthma-related emergency department visits were summarized by each zip code in the Twin Cities metropolitan area. The data was
+summarized based rates per 10,000 people, split into age groups of 0-17,  18+,, and all ages. This data was joined with data from the <b>American Community Survey</b> to get the 
+percent of people of color in the area as well as the geometry of each zip code for mapping purposes. One limitation of this is the data is modeled to predict the amount of people in 
+each zip code and is not a direct headcount."
 
 data_methods_conclusion <- "To find code and reproduce our work, please see our github repository at https://github.com/lsokolew/ds-456-environmental-policy/tree/main."
 
