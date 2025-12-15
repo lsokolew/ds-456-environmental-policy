@@ -8,7 +8,7 @@ library(ggplot2)
 library(gganimate)
 library(gifski)
 library(readxl)
-
+library(tigris)
 ###==================== Load in data ===================###
 
 
@@ -54,12 +54,12 @@ mn_zctas <- readRDS("Data/mn_zctas_2020.rds")
 ###=== EJ Areas ===###
 
 # Environmental justice areas (subseted)
-ej_spaces <- read_csv("Data/ej_mpca_census.csv") %>%
+ej_spaces <- read_csv("Data/ej_mpca/ej_mpca_census.csv") %>%
   select(-Shape_Area, -Shape_Length, -source, -statefp, -funcstat, -name, 
          -namelsad, -mtfcc, -intptlat, -intptlon, -geography, -countyfp, 
          -aland, -awater)
 
-ej_shapefile <- st_read("Data/ej_mpca_census.shp")
+ej_shapefile <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 
 
 tribal_shp <- st_read("Data/tribal_areas/census_tribal_areas.shp")
