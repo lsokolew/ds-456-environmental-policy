@@ -347,5 +347,6 @@ Heggeseth also for her help."
 
 
 ai_statement <- "ChatGPT was used to debug code for some plots in the air quality section of this report. 
-Additonally, ChatGPT was used to debug animation plot, specifically, the one thing used was transition_manual. 
-No generative AI was used in the writing of our analysis."
+Additonally, ChatGPT was used to debug animation plot, specifically, the one thing used was transition_manual. It also
+was used to attempt to realign the legends across the leaflet plots, but didn't really work. Instead, users on stack over flow and other
+platforms explained the issue (sadly no solution seemed to work). No generative AI was used in the writing of our analysis."
