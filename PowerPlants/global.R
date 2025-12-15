@@ -9,13 +9,13 @@ library(gifski)
 
 
 mn_powerplants              <- read_csv('Data/cleaning_data/mn_powerplants.csv') 
-zcta_joined                 <- st_read('Data/cleaning_data/zcta_joined.shp') 
+zcta_joined_asthma          <- st_read('Data/cleaning_data/zcta_joined_asthma.shp') 
 AirData_allyears            <- readRDS("Data/aq_data_clean/AirData_allyears.rds")
 schools_sf                  <- sf::read_sf("Data/shp_struc_school_program_locs/school_program_locations.shp")
 mn_tracts                   <- st_read("Data/cleaning_data/mn_tracts.shp")
 ej_sf                       <- st_read("Data/cleaning_data/ej_sf.shp")
-asthma_poc_powerplant       <- read_csv("Data/asthma_poc_powerplant.csv")
-distinct_schools_metro.csv  <- read_csv("Data/distinct_schools_metro.csv")
+asthma_poc_powerplant       <- read_csv("Data/cleaning_data/asthma_poc_powerplants.csv")
+distinct_schools_metro.csv  <- read_csv("Data/cleaning_data/distinct_schools_metro.csv")
 ej_shp                      <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 metro_area                  <- st_read("Data/cleaning_data/metro_area_pp.shp")
 powerplants                 <- st_read("Data/cleaning_data/powerplants_sf.shp")
@@ -23,7 +23,7 @@ tribal_shp_wgs              <- st_read("Data/tribal_areas/census_tribal_areas.sh
 
 
 load("Data/aq_data_clean/wrangled_airdata.rds")
-all_emissions_data <- read_csv("all_emissions_data.csv")
+all_emissions_data <- read_csv("Data/cleaning_data/all_emissions_data.csv")
 
 
 # Metro Zip Codes
