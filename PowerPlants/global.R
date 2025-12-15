@@ -20,7 +20,8 @@ ej_shp                      <- st_read("Data/ej_mpca/ej_mpca_census.shp")
 metro_area                  <- st_read("Data/cleaning_data/metro_area_pp.shp")
 powerplants                 <- st_read("Data/cleaning_data/powerplants_sf.shp")
 tribal_shp_wgs              <- st_read("Data/tribal_areas/census_tribal_areas.shp")
-
+tribal_shp_wgs              <- st_read("Data/tribal_areas/census_tribal_areas.shp")
+pp_summary                  <- st_read("Data/pp_summary.shp")
 
 load("Data/aq_data_clean/wrangled_airdata.rds")
 all_emissions_data <- read_csv("Data/cleaning_data/all_emissions_data.csv")
@@ -124,15 +125,17 @@ location of the remaining fossil-fuel plants, major sources of pollution, has th
 
 # EJ
 
-ej_text <- "Research has found power plants are more likely to be built around redlining neighborhoods,
-particularly fossil fuel power plants/coal-powered power plants. As a result, already struggling communities
-take on additional health burdens. This is particularly true when it comes to health effects, as there have
-been relationships found between the implementation of power plants and high levels of bad air quality.
+ej_text <- "The Minnesota Pollution Control Agency (MPCA) is dedicated to addressing the 
+disproportionate bearing of negative environmental consequences. Particularly
+when it comes to the state of Minnesota, it has been found that though only 36% 
+of communities have air-pollution related risk above health guidance, in low income 
+areas it is 53% of communities, in communities of color it is 78%. Thus it has become 
+important to put an emphasis on developing strategies to reduce the disparities on these 
+communities most at risk. 
 <br>
 
-The Minnesota pollution agencyhas taken on creating environmentally just environments for all,
-particularly for those most at risk. These communities are defined as Environmental justice areas.
-These areas are census tracts which might fall on one of the following categories:
+These MPCA defines Enviromental Justice areas as 
+census tracts that meet at least one of the following criteria:
 <br>
 <br>
 1.) at least 40% of the population is people of color<br>
@@ -140,7 +143,46 @@ These areas are census tracts which might fall on one of the following categorie
 3.) at least 40 percent of the population has limited proficiency in English<br>
 4.) are located within Indian Country, which is defined as federally recognized reservations and other Indigenous lands<br>
 <br>
-A concern that arises is if these communities are affected more by power plants than other?"
+When mapping out these areas,
+we find that throughout the state of Minnesota, there are more low-income environmental 
+justice areas than EJ areas defined by people of color. Additionally, many of the reservations 
+and indigenous lands seem to be more in the Northern part of the state, where there are significantly 
+fewer power plants.  However, when zooming into the Twin Cities metropolitan area, we find way more 
+environmental justice areas, particularly in clusters. "
+
+
+ej_text_2<-"When mapping out power plants, we notice that there are 
+more renewable energy power plants on the outskirts of the metro area,
+in comparison to the concentration of fossil fuel power plants in the metro area. 
+Having said this, the power plants do seem well distributed, though there are 
+significantly more renewable energy plants. For example, there are almost no 
+fossil fuel power plants in the nearby Dulutuh area, but quite a few renewable energy plants in Dulutuh."
+
+
+ej_text_3<-"Research has found that fossil fuel power plants, which emit more harmful pollutants than 
+renewable sources,  aredisproportionately located near black, brown and indigenous, and poor communities 
+(Donaghy2023fossilFuelRacism).  Some of this is a result of redlining that still linger today and disproportionately affect air 
+quality for individual reading in these historic communities(HarvardChan2023redlining). Additionally, health harms have been 
+linked to result from waste and power facilities, particularly for residents living within a 1-mile 
+radius(Vrijheid, 2009)."
+
+
+ej_text_4 <- "To assess local impacts, we explored the proportion of EJ census tracts within a 
+1-mile radius of each fossil fuel power plant. Statewide, most power plants do not overlap with 
+EJ areas. When focusing on the Twin Cities  Metro Area (Anoka, Carver, Dakota, Ramsey, Hennepin,
+Scott, and Washington Counties), 17 of out 28 power plants do not touch an EJ tract within a 1-mile radius."
+
+ej_text_5 <-"Though these findings demonstrate that in Minnesota powerplants aren’t heavily in EJ areas, 
+it is still important to highlight that there do exist fossil fuel power plants that heavily overlap EJ areas. 
+These facilities are particularly ones we should worry abot, as residents in these areas continue to be vulnerable 
+to evneormental and health risks."
+
+ej_plot_text_1<- "<i>Note: the purple shading represents indigenous/tribal lands</i>"
+
+ej_plot_text_2<- "<i>Note: You can move the plot left to right, the orange dots represent a powerplant and each of it's one mile radius. If the plot 
+is showing brown filled census tracts, you are viewing the fossil fuel power plants. If you see green census tracts, you are viewing the renewable energy
+power plants. The filled census tracts (brown or green) represent EJ Areas. </i>"
+
 
 # Air Quality 
 
