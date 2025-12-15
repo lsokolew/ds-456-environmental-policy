@@ -132,14 +132,8 @@ ui <- navbarPage(
   br(),
   br(),
 
-  # h2(style = "text-align:center; font-size:18px;", "Distribution of Power Plants"),
-  # br(),
-  # 
-  # column(12, align = "center", plotOutput(outputId = "pp_count_all", height = 400, width = 600)),
-  # br(),
-  # 
-  # column(12, align = "center", plotOutput(outputId = "pp_count_ej", height = 400, width = 600)),
-  # 
+  column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
+  
   
   ##=================Air Quality=================##
   
@@ -225,6 +219,7 @@ ui <- navbarPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(health_blurb)),
+  br(),
  
   
   column(12, align = "center", leafletOutput(outputId = "asthma_map", height = 400, width = 800)),
@@ -237,11 +232,30 @@ ui <- navbarPage(
     font-size: 18px; 
     font-family: 'Tinos', serif; 
     color: #4a4a4a;",HTML(asthma_plot_one)),
+  br(),
   
-  column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
-  
-  
-
+   column(12, align = "center", plotOutput(outputId = "asthma_poc_plot", height = 400, width = 800)),
+   br(),
+   div(
+     style = "
+     max-width: 900px; 
+     margin: 0 auto; 
+     text-align: justify; 
+     font-size: 18px; 
+     font-family: 'Tinos', serif; 
+     color: #4a4a4a;",HTML(asthma_plot_two)),
+  br(),
+   
+   column(12, align = "center", plotOutput(outputId = "school_pp_plot", height = 400, width = 600)),
+  br(),
+  div(
+    style = "
+     max-width: 900px; 
+     margin: 0 auto; 
+     text-align: justify; 
+     font-size: 18px; 
+     font-family: 'Tinos', serif; 
+     color: #4a4a4a;",HTML(school_plot)),
  
   ###================================ HERC ===============================###
   br(),
@@ -249,7 +263,9 @@ ui <- navbarPage(
   h2(style = "text-align:center; font-size:22px;", strong("Diving into the HERC")),
   
   h2(style = "text-align:center; font-size:18px;", "Where is it located"),
-   column(12, align = "center", leafletOutput(outputId = 'pp_ej_re', height = 400, width = 600)),
+
+  
+   column(12, align = "center", leafletOutput(outputId = 'herc_map', height = 400, width = 600)),
   
   column(12, align = "center", plotOutput(outputId = 'herc_lineplot', height = 400, width = 600)),
   
@@ -323,13 +339,13 @@ tabPanel(
     ) #closing navpage
   ), # closing tab #2
 
-###=============================================    Tab #2  =================================================###
+###=============================================    Tab #3  =================================================###
 
 tabPanel(
   title = "References",
   fluidPage(
     includeHTML("references.html")
-  ) #closing navpage
-) # closing tab #3
+    ) #closing navpage
+  ) # closing tab #3
 
 ) # closing UI
