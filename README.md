@@ -47,7 +47,7 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `ej_mpca_census.csv` &  `ej_mpca_census.shp` & `census_tribal_areas.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. Link:https://gisdata.mn.gov/dataset/env-ej-mpca-census
 - `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
 - `CensusACSTract.xlsx`: Data from American Community Survery. This was used to look at median household income by census tract. The data is from 2019-2023 and from the following source:https://gisdata.mn.gov/dataset/us-mn-state-metc-society-census-acs 
-- `mn_zctas_2020.rds`
+- `mn_zctas_2020.rds`: Data from the United States Census Bureau. This was used to get the shapefiles for MN counties. 
 
 ### The edited data (needed to run the app):
 
@@ -55,13 +55,13 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `powerplants_sf.shp`: Exact Same as mn_powerplants just as a shapefile instead of csv
 - `mn_tracts.shp`: obtained Minnesota census track geometries from library('tigris') and saved them to a shapefile to be loaded easily
 - `ej_sf.shp`: wrangled the environmental justice area information from above, so the information would be long rather than wide, also saved it as a shapefile so it could be mapped
-- `asthma_poc_powerplants.csv`
-- `distinct_schools_metro.csv`
+- `asthma_poc_powerplants.csv`: Joined data from MN_asthma_ED.csv, zcta_pop_data.csv, and mn_powerplants.csv.
+- `distinct_schools_metro.csv`: Wrangled from the school_program_locations.shp to get the locations of schools in the metro area along with the distance to the nearest power plant.
 - `ej_mpca_census.shp` & `census_tribal_areas.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. Link:https://gisdata.mn.gov/dataset/env-ej-mpca-census
 - `metro_area_pp.shp`
 - `pp_summary.shp`: 
 - `wrangled_airdata.rds`
-- `all_emissions_data.csv`
+- `all_emissions_data.csv`: Joined data on power plant emissions from years 2017-2021.  
 
 ## Required R Packages
 - tidycensus
