@@ -28,17 +28,7 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 
 ## Required Data:
 
-[[TODO: update the following\]
-- `MN_asthma_ED.csv `: By MN Department of Health, via the MN Public Health Data Access Portal. Used for emergency department visits due to asthma.
-- `zcta_pop_data.csv`: American Community Survey 5-Year data at the ZCTA level (acquired through Tidycensus) and has proportions of demographics by race and income.
-- `CensusACSTract.xlsx`: American Community Survey 5-Year Summary File. By US Census Bureau. Via Minnesota Geospatial Commons. Used for househould income data. 
-- `ej_mpca_census.csv` &  `ej_mpca_census.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information.
-- `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
-- `emissions2017.xlsx`, `emissions2018.xlsx`,`emissions2019.xlsx`,`emissions2020.xlsx`,`emissions2021.xlsx`: From the U.S. Energy Information Administration. Used for NOx, SO2, and CO2 emissions.
-
-## Required Data:
-
-### The raw Data (and used to wrangle): 
+### The raw Data (and used to wrangle) used in `CleaningData.R` or `process_airdata.R`: 
 - `Power_Plants.csv`: We acquired this dataset from the EIA, the link, however is no longer working. We have been unable to find the dataset elsewhere, but it is in our repository. Having that, the information was saved by another user at the following link: https://michaelminn.net/tutorials/data/2024-power-plants-metadata.html
 - `powerplant_data_eia_2024_generator_operable.csv`: Data from Form EIA-860 (2024). By EPA. Used for power plant first operation dates, for all operational powerplants in 2024. Available at [https://www.eia.gov/electricity/data/eia860/].
 - `airdata_clean.csv`: Data from EPA. Used for annual average PM2.5 values in MN, 1980-2025. Available at the following link,https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual, but running `process_airdata.R` is recommended, as it pre-combines and filters the datasets as well as downloading them.
@@ -48,8 +38,10 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
 - `CensusACSTract.xlsx`: Data from American Community Survery. This was used to look at median household income by census tract. The data is from 2019-2023 and from the following source:https://gisdata.mn.gov/dataset/us-mn-state-metc-society-census-acs 
 - `mn_zctas_2020.rds`
+- `emissions2017.xlsx`, `emissions2018.xlsx`,`emissions2019.xlsx`,`emissions2020.xlsx`,`emissions2021.xlsx`: From the U.S. Energy Information Administration. Used for NOx, SO2, and CO2 emissions.
 
-### The edited data (needed to run the app):
+
+### The edited data used to run App (all loaded in `global.R`):
 
 - `mn_powerplants.csv`: Wrangled from the houseplants csv, where Minnesota only poweplants were filtered and labeled as fossil fuel or not
 - `powerplants_sf.shp`: Exact Same as mn_powerplants just as a shapefile instead of csv
@@ -58,10 +50,13 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `asthma_poc_powerplants.csv`
 - `distinct_schools_metro.csv`
 - `ej_mpca_census.shp` & `census_tribal_areas.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. Link:https://gisdata.mn.gov/dataset/env-ej-mpca-census
-- `metro_area_pp.shp`
-- `pp_summary.shp`: 
+- `metro_area_pp.shp`: Calculated number of powerplants in EJ areas filtered to the metro area. Used mn_powerplants and ej_mpca_census datasets to do this
+- `pp_summary.shp`: Calculated proportion of powerplants in EJ areas filtered in all MN. Used mn_powerplants and ej_mpca_census datasets to do this
 - `wrangled_airdata.rds`
-- `all_emissions_data.csv`
+- `all_emissions_data.csv`: From the U.S. Energy Information Administration. Used for NOx, SO2, and CO2 emissions, wrangled/single dataset combining 2017-2021 information from emissions excel files
+- `zcta_joined_asthma.shp`
+- `AirData_allyears.rds`
+- `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
 
 ## Required R Packages
 - tidycensus
