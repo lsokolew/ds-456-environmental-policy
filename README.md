@@ -27,10 +27,7 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 
 
 ## Required Data:
-- `Power_Plants.csv`: We acquired this dataset from the EIA, at the following link, which is no longer working. We have been unable to find the dataset elsewhere, but it is in our repository.   \[TODO: ADD lINK, LOOK FOR DATA ELSEWHERE\]
-- `powerplant_data_eia_2024_generator_operable.csv`: Data from Form EIA-860 (2024). By EPA. Used for power plant first operation dates, for all operational powerplants in 2024. Available at [https://www.eia.gov/electricity/data/eia860/].
-- `airdata_clean.csv`: Data from EPA. Used for annual average PM2.5 values in MN, 1980-2025. Available at the following link,https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual, but running `process_airdata.R` is recommended, as it pre-combines and filters the datasets as well as downloading them.
-- 
+
 [[TODO: update the following\]
 - `MN_asthma_ED.csv `: By MN Department of Health, via the MN Public Health Data Access Portal. Used for emergency department visits due to asthma.
 - `zcta_pop_data.csv`: American Community Survey 5-Year data at the ZCTA level (acquired through Tidycensus) and has proportions of demographics by race and income.
@@ -38,18 +35,50 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `ej_mpca_census.csv` &  `ej_mpca_census.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information.
 - `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
 - `emissions2017.xlsx`, `emissions2018.xlsx`,`emissions2019.xlsx`,`emissions2020.xlsx`,`emissions2021.xlsx`: From the U.S. Energy Information Administration. Used for NOx, SO2, and CO2 emissions.
-  
 
+## Required Data:
+
+### The raw Data (and used to wrangle): 
+- `Power_Plants.csv`: We acquired this dataset from the EIA, the link, however is no longer working. We have been unable to find the dataset elsewhere, but it is in our repository. Having that, the information was saved by another user at the following link: https://michaelminn.net/tutorials/data/2024-power-plants-metadata.html
+- `powerplant_data_eia_2024_generator_operable.csv`: Data from Form EIA-860 (2024). By EPA. Used for power plant first operation dates, for all operational powerplants in 2024. Available at [https://www.eia.gov/electricity/data/eia860/].
+- `airdata_clean.csv`: Data from EPA. Used for annual average PM2.5 values in MN, 1980-2025. Available at the following link,https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual, but running `process_airdata.R` is recommended, as it pre-combines and filters the datasets as well as downloading them.
+- `MN_asthma_ED.csv `: By MN Department of Health, via the MN Public Health Data Access Portal. Used for emergency department visits due to asthma.
+- `zcta_pop_data.csv`: American Community Survey 5-Year data at the ZCTA level (acquired through Tidycensus) and has proportions of demographics by race and income.
+- `ej_mpca_census.csv` &  `ej_mpca_census.shp` & `census_tribal_areas.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. Link:https://gisdata.mn.gov/dataset/env-ej-mpca-census
+- `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
+- `CensusACSTract.xlsx`: Data from American Community Survery. This was used to look at median household income by census tract. The data is from 2019-2023 and from the following source:https://gisdata.mn.gov/dataset/us-mn-state-metc-society-census-acs 
+- `mn_zctas_2020.rds`
+
+### The edited data (needed to run the app):
+
+- `mn_powerplants.csv`: Wrangled from the houseplants csv, where Minnesota only poweplants were filtered and labeled as fossil fuel or not
+- `powerplants_sf.shp`: Exact Same as mn_powerplants just as a shapefile instead of csv
+- `mn_tracts.shp`: obtained Minnesota census track geometries from library('tigris') and saved them to a shapefile to be loaded easily
+- `ej_sf.shp`: wrangled the environmental justice area information from above, so the information would be long rather than wide, also saved it as a shapefile so it could be mapped
+- `asthma_poc_powerplants.csv`
+- `distinct_schools_metro.csv`
+- `ej_mpca_census.shp` & `census_tribal_areas.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. Link:https://gisdata.mn.gov/dataset/env-ej-mpca-census
+- `metro_area_pp.shp`
+- `pp_summary.shp`: 
+- `wrangled_airdata.rds`
+- `all_emissions_data.csv`
 
 ## Required R Packages
-- tidyverse
+- tidycensus
 - dplyr
-- shiny
-- ggplot2
+- tidyverse
 - sf
-- bslib
-- readxl
-- leaflet
 - ggthemes
+- ggplot2
 - gganimate
 - gifski
+- readxl
+- tigris
+- shiny
+- bslib
+- leaflegend
+- scales
+- leaflet.extras2
+- leaflet
+
+
