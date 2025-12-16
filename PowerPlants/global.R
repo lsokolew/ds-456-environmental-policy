@@ -367,7 +367,10 @@ particularly made up of direct census tracts. Thus we used a shapefile also prov
 and could easily be displayed on top. We also got county level and more tract level information from the tigris and tidycensus libraries. 
 These libraries gave us geospatial information that made it easier to combine the powerplant location to cencus tract information (particularly through the 
 geometry column). We also got the idea that the Minneapolis-St. Paul metropolitan area is made up of 7 counties, as defined by the Metropolitan Council.
-A lot of the analysis just consisted of wrangling and calculating sums and means across the ACS and Powerplant datasets.</b> "
+A lot of the analysis just consisted of wrangling and calculating sums and means across the ACS and Powerplant datasets. From the EJ data, for each census tract
+it was marked if it fit a ej requirement, such as meeting the percent level of people of color. After wrangling it, it was easier to plot in a leaflet plot. 
+Additionally, the powerplant information was able to be joined with the EJ information through a spatial join, which then allowed us to observe where a power plants was located
+in terms of census tract, rather that just county.</b> "
 
 
 aq_data_methods <-"The EPA provided pre-generated Air Data files of annual summaries of
