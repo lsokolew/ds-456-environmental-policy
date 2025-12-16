@@ -53,10 +53,10 @@ To render the app, run the `runApp.R` file after downloading the neccessary data
 - `ej_mpca_census.shp` & `census_tribal_areas.shp`:  By Minnesota Pollution Control Agency. Via Minnesota Geospatial Commons. Used for location of environmental justice areas and demographic information. Link:https://gisdata.mn.gov/dataset/env-ej-mpca-census
 - `metro_area_pp.shp`: Calculated number of powerplants in EJ areas filtered to the metro area. Used mn_powerplants and ej_mpca_census datasets to do this
 - `pp_summary.shp`: Calculated proportion of powerplants in EJ areas filtered in all MN. Used mn_powerplants and ej_mpca_census datasets to do this
-- `wrangled_airdata.rds`
+- `wrangled_airdata.rds`: a combination of wrangled datasets for air quality anlysis, using `airdata_clean.csv` and `mn_powerplants.csv`. 
 - `all_emissions_data.csv`: From the U.S. Energy Information Administration. Used for NOx, SO2, and CO2 emissions, wrangled/single dataset combining 2017-2021 information from emissions excel files
 - `zcta_joined_asthma.shp`: Joined zip code data with asthma data from the MN Department of Health. Used to map out zip codes using Leaflet, along with asthma rates in these zip codes. 
-- `AirData_allyears.rds`
+- `AirData_allyears.rds`: a cleaned version of `airdata_clean.csv` above. 
 - `school_program_locations.shp`: From the Minnesota Department of Education via the Minnesota Geospatial Commons. Used to map out the locations of schools in Minnesota.
 
 
