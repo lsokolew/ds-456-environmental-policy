@@ -267,11 +267,11 @@ server = function(input, output, session){
   output$grouped_summ_lineplot = renderPlot({
     ggplot(grouped_summ_pm25_allyears) +
       geom_line(aes(x = year, y = avg_pm25_grouped, group = fct_rev(as.factor(grouped_nearby_pp_count)), color = fct_rev(as.factor(grouped_nearby_pp_count)))) +
-      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      geom_hline(yintercept = 9, linetype = "dashed", color = "#636262") +
       annotate("text", x = 2015,
                y = 9.3, hjust = 0,
                label = "National Standard",
-               color = "darkgray") +
+               color = "#636262") +
       labs(x = "Year", y = "Average PM2.5 Concentration (µg/m3)",
          color = "Number of Plants \nNear Monitor",
          title = "Air Monitors Near More Plants Report Higher Pollutant Concentrations") +
@@ -293,11 +293,11 @@ server = function(input, output, session){
       mutate(plant_group = ifelse(is.na(plant_group), "Only Renewable/None", plant_group)) %>%
       ggplot(aes(x = year, y = avg_pm25_grouped, group = county_name, color = plant_group)) +
         geom_line(alpha = 0.4) + #  individual counties
-      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      geom_hline(yintercept = 9, linetype = "dashed", color = "#636262") +
       annotate("text", x = 2015,
                y = 9.3, hjust = 0,
                label = "National Standard",
-               color = "darkgray") +
+               color = "#636262") +
         stat_summary(aes(group = plant_group), fun = mean, geom = "line", size = 1.5) + # mean trend
         labs(
           title = "Average PM2.5 Concentration by County Type",
@@ -341,7 +341,7 @@ server = function(input, output, session){
     pal2 <- colorFactor(
       palette = c("lightblue", "lightblue3","skyblue3", "royalblue3", "midnightblue"),
       levels = c("0-15", "15-30", "30-45", "45-60", "60+"),
-      na.color = "grey"
+      na.color = "#636262"
     )
 # asthma map
     leaflet(zcta_joined_children) %>%
@@ -451,11 +451,11 @@ output$herc_lineplot <- renderPlot({
   # diff between avg of all air monitors in the state and air monitors just near the plant
     ggplot(all_avgs) +
       geom_line(aes(y=pm25_avg_by_year, x=year, color = id)) +
-      geom_hline(yintercept = 9, linetype = "dashed", color = "darkgray") +
+      geom_hline(yintercept = 9, linetype = "dashed", color = "#636262") +
       annotate("text", x = 2016,
                y = 9.3, hjust = 0,
                label = "National Standard",
-               color = "darkgray") +
+               color = "#636262") +
       ylim(0,12)+
       scale_color_manual(values = c("Near HERC" = "red", "Whole State" = "black")) +
       labs(title = "PM2.5 Concentrations Are Consistently Higher Near the HERC",
